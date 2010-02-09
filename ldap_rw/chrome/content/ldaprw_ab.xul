@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<overlay id="ldaprw_ab_overlay" 
+xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script type="application/x-javascript" src="chrome://ldaprw/content/ldaprw_ab.js"/> 
+
+  <toolbarpalette id="AddressBookToolbarPalette">
+<------><toolbarbutton id="button-sync-ldaprw"
+<------><------>  class="toolbarbutton-1"
+<------><------>  type="menu-button"
+<------><------>  value="reload"
+<------><------>  label="&ldaprw.reload;" tooltiptext="&ldaprw.reload_tip;"
+<------><------>  oncommand='gLDContactManagerAB.doLDABCommand(event)'>
+
+<------><------><menupopup id="LDUndoAccount">
+<------><------><------><menuitem label="&ldaprw.reload;" value="reload" tooltiptext="&ldaprw.reload_tip;"/>
+<------><------><------><menu label="&ldaprw.undo;" tooltiptext="&ldaprw.undo_tip;">
+<------><------><------><------><menupopup id="LDUndoAccountPopup" onpopupshowing="gLDContactManagerAB.undoAccountShowing(event.target)"/>
+<------><------><------></menu>
+<------><------></menupopup>
+<------></toolbarbutton>
+  </toolbarpalette>
+
+</overlay>
+
