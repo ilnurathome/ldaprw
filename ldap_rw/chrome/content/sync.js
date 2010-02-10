@@ -1,4 +1,4 @@
-
+Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 function getService(aContract, aInterface) {
 	return Components.classes[aContract].getService(Components.interfaces[aInterface]);
@@ -25,9 +25,20 @@ function getProxyThread(aObject, aInterface) {
     // 5 == PROXY_ALWAYS | PROXY_SYNC
 }
 
+/*
+ * class definition
+ */
+
+//class constructor
 function ldapDataSource() {}
 
+//class definition
 ldapDataSource.prototype = {
+
+	// properties required for XPCOM registration:
+  classDescription: "My ldapDataSource XPCOM Component",
+	classID:          Components.ID("bb9bd3e8-11ec-4dae-9a38-c0278420e092");
+	contractID:       "@ilnurathome.dyndns.org/ldapDataSource;1",
 
   mIOSvc: {},
 	mLDAPSvc: {},
@@ -45,12 +56,13 @@ ldapDataSource.prototype = {
 
   kInited: -1,
 
-	QueryInterface: function (iid) {
+	QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIldapDataSource]),
+		/*function (iid) {
 										if (iid.equals(Components.interfaces.nsISupports) )
 											return this;
 
 										throw Components.results.NS_ERROR_NO_INTERFACE;
-									},
+									},*/
 
 	Init: function() {
 					if (this.kInited == -1 ){
@@ -168,6 +180,13 @@ ldapDataSource.prototype = {
 						}
 					}	
 }
+
+var components = [ldapDataSource];
+
+function NSGetModule(compMgr, fileSpec) {
+  return XPCOMUtils.generateModule(components);
+}
+
 
 function testSearch() {
 	var basedn = "ou=private,ou=addressbook,dc=local";
