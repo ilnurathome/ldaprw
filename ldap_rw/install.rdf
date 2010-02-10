@@ -4,7 +4,7 @@
     <em:id>ilnurathome@gmail.com</em:id>
     <em:type>2</em:type>
     <em:name>LDAP Read Write</em:name>
-    <em:version>0.1.201002101218</em:version>
+    <em:version>0.1.201002101601</em:version>
     <em:creator>Ilnur Kiyamov</em:creator>
     <em:contributor></em:contributor>
     <em:description>Address book for LDAP Read Write</em:description>
