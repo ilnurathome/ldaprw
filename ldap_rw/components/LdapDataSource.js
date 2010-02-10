@@ -42,8 +42,8 @@ LdapDataSource.prototype = {
 	_xpcom_categories: [{ category: "app-startup", service: true }],
 
 
-	//QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsILdapDataSource]),
-	QueryInterface:   XPCOMUtils.generateQI(),
+	QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsILdapDataSource]),
+	//QueryInterface:   XPCOMUtils.generateQI(),
   mIOSvc: {},
 	mLDAPSvc: {},
 	mLDAPDataSource: {},
