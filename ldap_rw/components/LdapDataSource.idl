@@ -2,7 +2,7 @@
 #include "nsIArray.idl"
 
 [scriptable, uuid(bb9bd3e8-11ec-4dae-9a38-c0278420e092)]
-interface ldapDataSource: nsISupports {
+interface nsILdapDataSource: nsISupports {
     // attributes, constants, methods, ...
 
 	attribute nsIArray mMessages;
