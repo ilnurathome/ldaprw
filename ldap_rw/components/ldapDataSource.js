@@ -66,7 +66,7 @@ ldapDataSource.prototype = {
 										throw Components.results.NS_ERROR_NO_INTERFACE;
 									},*/
 
-	Init: function() {
+	init: function() {
 					if (this.kInited == -1 ){
 							this.mIOSvc = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService)
 							this.mLDAPSvc = Components.classes["@mozilla.org/network/ldap-service;1"].getService(Components.interfaces.nsILDAPService);
@@ -76,7 +76,7 @@ ldapDataSource.prototype = {
 				},
 
 
-	Create: function (aLdapUri, aBindName, password) {
+	create: function (aLdapUri, aBindName, password) {
 					function generateGetTargetsBoundCallback(){
 						function getTargetsBoundCallback () {}
 
