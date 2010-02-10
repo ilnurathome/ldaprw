@@ -41,8 +41,9 @@ LdapDataSource.prototype = {
 	contractID:       "@ilnurathome.dyndns.org/LdapDataSource;1",
 	_xpcom_categories: [{ category: "app-startup", service: true }],
 
-	QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsILdapDataSource]),
 
+	//QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsILdapDataSource]),
+	QueryInterface:   XPCOMUtils.generateQI(),
   mIOSvc: {},
 	mLDAPSvc: {},
 	mLDAPDataSource: {},
