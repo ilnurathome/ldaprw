@@ -1,14 +1,16 @@
 #include "nsISupports.idl"
-#include "nsIArray.idl"
+#include "nsILDAPMessage.idl"
 
 [scriptable, uuid(bb9bd3e8-11ec-4dae-9a38-c0278420e092)]
 interface nsILdapDataSource: nsISupports {
     // attributes, constants, methods, ...
 
-	attribute nsIArray mMessages;
-	attribute nsIArray mMessagesEntry;
+	//attribute nsIArray mMessages;
+	//attribute nsIArray mMessagesEntry;
 
 	void init();
+
+	void getArray(out unsigned long count, [array, size_is(count), retv] out nsILDAPMessage retv );
   
 	void create(in wstring aLdapUri,
                                in wstring aBindName, in wstring password);

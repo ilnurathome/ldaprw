@@ -76,6 +76,10 @@ LdapDataSource.prototype = {
 					this.kInited = 0;
 				},
 
+  getArray: function (count, retv) {
+							count.value = mMessages.length;
+							return mMessages;
+						},
 
 	create: function (aLdapUri, aBindName, password) {
 					function generateGetTargetsBoundCallback(){
