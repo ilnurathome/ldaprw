@@ -51,12 +51,9 @@ LdapDataSource.prototype = {
 	mConnection: {},
 	mOperation: {},
 	mMessages: new Array(),
-	mMessagesHash: {},
-
-  mMessagesListHash: {},
-  mInProgressHash: {},
-
 	mMessagesEntry: new Array(),
+
+	mFinished: 0,
 
   kInited: -1,
 
@@ -74,12 +71,24 @@ LdapDataSource.prototype = {
 							
 					}
 					this.kInited = 0;
+					this.mStatus = 0;
 				},
 
-  getArray: function (count, retv) {
-							count.value = mMessages.length;
-							return mMessages;
+  getMessages: function (count) {
+							count.value = this.mMessages.length;
+							return this.mMessages;
 						},
+  getMessagesEntry: function (count) {
+							count.value = this.mMessagesEntry.length;
+							return this.mMessagesEntry;
+						},
+
+	getMessagesEntryIndexBy: function(index) {
+											return this.mMessagesEntry[index];
+										},
+	getMessageEntryLength: function() {
+														return this.mMessagesEntry.length;
+													},
 
 	create: function (aLdapUri, aBindName, password) {
 					function generateGetTargetsBoundCallback(){
@@ -157,7 +166,8 @@ LdapDataSource.prototype = {
 								if (aMsg.type == aMsg.RES_SEARCH_ENTRY) {
 									caller.mMessagesEntry[caller.mMessagesEntry.length] = aMsg;
 								}
-								else if (aMsg.type == aMsg.RES_SEARCH_RESULT) {									
+								else if (aMsg.type == aMsg.RES_SEARCH_RESULT) {		
+									mFinished = 1;
 								}
 							}
 						}
@@ -193,19 +203,27 @@ var components = [LdapDataSource];
 var NSGetModule = XPCOMUtils.generateNSGetModule(components);
 
 
-
+/*
 function testSearch() {
 	var basedn = "ou=private,ou=addressbook,dc=local";
 	var url = "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(objectclass=*)";
 	var binddb = "uid=ilnur,ou=people,dc=local";
 
-	var ldap = new LdapDataSource();
-	ldap.Init();
+//	var ldap = new LdapDataSource();
+  var ldap = Components.classes["@ilnurathome.dyndns.org/LdapDataSource;1"].
+								createInstance(Components.interfaces.nsILdapDataSource);
+	
+	ldap.init();
 	try {
-		ldap.Create(url, binddb, "04en5fhjkm");
+		ldap.create(url, binddb, "04en5fhjkm");
 	} catch (e) {
 		dump ("Error: " + e + "\n" );
 	}
 
+	while(!ldap.mFinished) {
+
+	}
+
 //	return rv, listener.myar;
 }
+*/
