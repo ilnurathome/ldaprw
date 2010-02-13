@@ -21,7 +21,7 @@ function getProxyThread(aObject, aInterface) {
 
 		dump("about to get proxy\n");
    
-	return proxyMgr.getProxyForObject(mainThread, aInterface, aObject, 5);
+	return proxyMgr.getProxyForObject(mainThread, aInterface, aObject, 6);
     // 5 == PROXY_ALWAYS | PROXY_SYNC
 }
 
@@ -48,8 +48,8 @@ LdapDataSource.prototype = {
 	mLDAPSvc: {},
 	mLDAPDataSource: {},
 
-	mConnection: {},
-	mOperation: {},
+	mConnection: null,
+	mOperation: null,
 	mMessages: new Array(),
 	mMessagesEntry: new Array(),
 
@@ -63,17 +63,6 @@ LdapDataSource.prototype = {
 
 										throw Components.results.NS_ERROR_NO_INTERFACE;
 									},*/
-
-	init: function() {
-					if (this.kInited == -1 ){
-							this.mIOSvc = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService)
-							this.mLDAPSvc = Components.classes["@mozilla.org/network/ldap-service;1"].getService(Components.interfaces.nsILDAPService);
-							
-					}
-					this.kInited = 0;
-					this.mStatus = 0;
-				},
-
   getMessages: function (count) {
 							count.value = this.mMessages.length;
 							return this.mMessages;
@@ -90,10 +79,23 @@ LdapDataSource.prototype = {
 														return this.mMessagesEntry.length;
 													},
 
+// ************** INIT *****************
+	init: function() {
+					if (this.kInited == -1 ){
+							this.mIOSvc = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService)
+							this.mLDAPSvc = Components.classes["@mozilla.org/network/ldap-service;1"].getService(Components.interfaces.nsILDAPService);
+							
+					}
+					this.kInited = 0;
+					this.mStatus = 0;
+				},
+
+// ************** CREATE ***************
 	create: function (aLdapUri, aBindName, password) {
 					function generateGetTargetsBoundCallback(){
-						function getTargetsBoundCallback () {}
 
+						////////////////////////////////////////////
+						function getTargetsBoundCallback () {}
 						getTargetsBoundCallback.prototype = { 
 							QueryInterface: function QI(iid) {
 																if (iid.equals(Components.interfaces.nsISupports) ||
@@ -104,7 +106,7 @@ LdapDataSource.prototype = {
 															},
 
 							onLDAPMessage: function (aMsg) {
-															 dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback: " + aMsg.type + "\n");
+//															 dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback: " + aMsg.type + "\n");
 															 if (aMsg.type != aMsg.RES_BIND) {
 																 dump("bind failed\n");
 																 return;
@@ -121,10 +123,10 @@ LdapDataSource.prototype = {
 														 },
 
 							onLDAPInit: function(aConn, aStatus) {
-														dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback.onLDAPInit: " + aStatus + " " + password + "\n");
+//														dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback.onLDAPInit: " + aStatus + " " + password + "\n");
 														
 														if (!Components.isSuccessCode(aStatus)) {
-															dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback.onLDAPInit: Error\n" );
+//															dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback.onLDAPInit: Error\n" );
 															throw aStatus;
 														}
 																	
@@ -147,6 +149,7 @@ LdapDataSource.prototype = {
 					}
 					
 
+					//////////////////////////////////////////////////////
 					function generateGetTargetsSearchCallback() {
 						function getTargetsSearchCallback() {
 						}
@@ -161,13 +164,14 @@ LdapDataSource.prototype = {
 								},
 							
 							onLDAPMessage: function (aMsg) {
-								dump("Create.generateGetTargetsSearchCallback.getTargetsSearchCallback: " + aMsg.type + "\n");
+//								dump("Create.generateGetTargetsSearchCallback.getTargetsSearchCallback: " + aMsg.type + "\n");
 								caller.mMessages[caller.mMessages.length] = aMsg;
 								if (aMsg.type == aMsg.RES_SEARCH_ENTRY) {
 									caller.mMessagesEntry[caller.mMessagesEntry.length] = aMsg;
 								}
-								else if (aMsg.type == aMsg.RES_SEARCH_RESULT) {		
-									mFinished = 1;
+								else if (aMsg.type == aMsg.RES_SEARCH_RESULT) {	
+//									dump("search complete");
+									caller.mFinished = 1;
 								}
 							}
 						}
@@ -202,27 +206,73 @@ var components = [LdapDataSource];
 
 var NSGetModule = XPCOMUtils.generateNSGetModule(components);
 
+function write(imgname, array, replace) {
+	var dir = Components.classes["@mozilla.org/file/directory_service;1"].  
+                       getService(Components.interfaces.nsIProperties).  
+                       get("ProfD", Components.interfaces.nsIFile);  
+
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	dir.append("Photos");
+	dir.append(imgname);
+	var fullpath = dir.path;
+
+	if(replace) {
+				file.initWithPath( fullpath );  
+		if (file.exists())  
+			file.remove(true);  
+		file.create(file.NORMAL_FILE_TYPE, 0666);  
+	} else {
+		dir.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);
+		file = dir;
+	}
+
+	var fileStream = Components.classes['@mozilla.org/network/file-output-stream;1']
+									.createInstance(Components.interfaces.nsIFileOutputStream);  
+	fileStream.init(file, 2, 0x200, false);  
+	var binaryStream = Components.classes['@mozilla.org/binaryoutputstream;1']  
+                    .createInstance(Components.interfaces.nsIBinaryOutputStream);  
+	binaryStream.setOutputStream(fileStream);  
+	binaryStream.writeByteArray(array , array.length);  
+	binaryStream.close();  
+	fileStream.close();
+	return file.path;
+}
+
 
 /*
 function testSearch() {
 	var basedn = "ou=private,ou=addressbook,dc=local";
 	var url = "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(objectclass=*)";
-	var binddb = "uid=ilnur,ou=people,dc=local";
+	var binddn = "uid=ilnur,ou=people,dc=local";
 
 //	var ldap = new LdapDataSource();
   var ldap = Components.classes["@ilnurathome.dyndns.org/LdapDataSource;1"].
 								createInstance(Components.interfaces.nsILdapDataSource);
+
+	var mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
 	
+
 	ldap.init();
 	try {
-		ldap.create(url, binddb, "04en5fhjkm");
+		ldap.create(url, binddn, "04en5fhjkm");
 	} catch (e) {
 		dump ("Error: " + e + "\n" );
 	}
 
+	dump ("finshed? " + ldap.mFinished + "\n");
 	while(!ldap.mFinished) {
-
+	  dump ("+" );
+		mainThread.processNextEvent(true);
 	}
+	dump("\ncomplete\n");
+
+	var ar = ldap.getMessagesEntry({});
+	for ( a in ar ) {
+		dump(a + " : " + ar[a].dn + "\n"); 
+		dump("\t" + ar[a].getAttributes({}) + "\n" );
+	}
+
+	write ( ar[47].dn + '.jpg', ar[47].getBinaryValues("jpegPhoto",{})[0].get({}) );
 
 //	return rv, listener.myar;
 }
