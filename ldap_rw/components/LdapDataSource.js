@@ -4,8 +4,7 @@ function getService(aContract, aInterface) {
 	return Components.classes[aContract].getService(Components.interfaces[aInterface]);
 }
 
-function createInstance(aContract, aInterface)
-{
+function createInstance(aContract, aInterface) {
 	return Components.classes[aContract].createInstance(Components.interfaces[aInterface]);
 }
 
@@ -48,8 +47,9 @@ LdapDataSource.prototype = {
 	mLDAPSvc: {},
 	mLDAPDataSource: {},
 
-	mConnection: null,
-	mOperation: null,
+	mConnection: {},
+	mOperationBind: {},
+	mOperationSearch: {},
 	mMessages: new Array(),
 	mMessagesEntry: new Array(),
 
@@ -91,7 +91,7 @@ LdapDataSource.prototype = {
 				},
 
 // ************** CREATE ***************
-	create: function (aLdapUri, aBindName, password) {
+	query: function (aLdapUri, aBindName, password) {
 					function generateGetTargetsBoundCallback(){
 
 						////////////////////////////////////////////
@@ -112,10 +112,14 @@ LdapDataSource.prototype = {
 																 return;
 															 }
 
-															 var searchOp = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
+															 caller.mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
 															 try {
-																 searchOp.init(connection, generateGetTargetsSearchCallback(), null);
-																 searchOp.searchExt(queryURL.dn, queryURL.scope, queryURL.filter, 0, new Array(), 0, -1);
+																 caller.mOperationSearch.init(caller.mConnection, generateGetTargetsSearchCallback(), null);
+																 dump("caller.mOperationSearch");
+																 dump(caller.mOperationSearch);
+																 dump("\n");
+																 dump(caller.mOperationSearch.connection);
+  															 caller.mOperationSearch.searchExt(queryURL.dn, queryURL.scope, queryURL.filter, 0, new Array(), 0, -1);
 															 } catch (e) {
 																 dump("init error: " + e + "\n");
 																 return
@@ -131,17 +135,19 @@ LdapDataSource.prototype = {
 														}
 																	
 
-														var operation = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
+														caller.mOperationBind = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
 														dump ("init oper\n");
 														try {
-															operation.init(connection, getProxyThread(this, Components.interfaces.nsILDAPMessageListener), null);
-															operation.simpleBind(password);														
-														} catch (e) {
+															caller.mOperationBind.init(caller.mConnection, getProxyThread(this, Components.interfaces.nsILDAPMessageListener), null);
+															dump("caller.mOperationBind");
+															dump(caller.mOperationBind);
+															dump("\n");
+															dump(caller.mOperationBind.connection);
+ 															caller.mOperationBind.simpleBind(password);																		} catch (e) {
 															dump("init error: " + e + "\n");
 															return
 														}
 														dump ("created operation\n");
-
 														return;
 													}
 						}
@@ -152,6 +158,7 @@ LdapDataSource.prototype = {
 					//////////////////////////////////////////////////////
 					function generateGetTargetsSearchCallback() {
 						function getTargetsSearchCallback() {
+
 						}
 						
 						getTargetsSearchCallback.prototype = {
@@ -172,6 +179,7 @@ LdapDataSource.prototype = {
 								else if (aMsg.type == aMsg.RES_SEARCH_RESULT) {	
 //									dump("search complete");
 									caller.mFinished = 1;
+//									caller.mOperationSearch.abandonExt();
 								}
 							}
 						}
@@ -192,10 +200,10 @@ LdapDataSource.prototype = {
 						dump ( queryURL.filter + "\n" );
 						
 
-						var connection = 	Components.classes["@mozilla.org/network/ldap-connection;1"].createInstance().QueryInterface(Components.interfaces.nsILDAPConnection);
+						this.mConnection = 	Components.classes["@mozilla.org/network/ldap-connection;1"].createInstance().QueryInterface(Components.interfaces.nsILDAPConnection);
 
 						try {
-							connection.init(queryURL, aBindName, generateGetTargetsBoundCallback(), null, Components.interfaces.nsILDAPConnection.VERSION3 );
+							this.mConnection.init(queryURL, aBindName, generateGetTargetsBoundCallback(), null, Components.interfaces.nsILDAPConnection.VERSION3 );
 						} catch (e) {
 							dump ("Error:" + e + "\n");
 						}
@@ -238,6 +246,23 @@ function write(imgname, array, replace) {
 	return file.path;
 }
 
+/*
+45 [scriptable, uuid(f64ef501-0623-11d6-a7f2-b65476fc49dc)]
+46 interface nsILDAPModification : nsISupports
+51   attribute long operation;
+/**
+74    * The attribute to modify.
+75    */
+76   attribute ACString type;
+77 
+78   /**
+79    * The array of values this modification sets for the attribute
+80    */
+81   attribute nsIArray values;
+
+var ldapmodif = Components.classes["@mozilla.org/network/ldap-modification;1"].createInstance(Components.interfaces.nsILDAPModification);
+
+ */
 
 /*
 function testSearch() {
@@ -254,12 +279,12 @@ function testSearch() {
 
 	ldap.init();
 	try {
-		ldap.create(url, binddn, "04en5fhjkm");
+		ldap.query(url, binddn, "04en5fhjkm");
 	} catch (e) {
 		dump ("Error: " + e + "\n" );
 	}
 
-	dump ("finshed? " + ldap.mFinished + "\n");
+	dump ("finished? " + ldap.mFinished + "\n");
 	while(!ldap.mFinished) {
 	  dump ("+" );
 		mainThread.processNextEvent(true);

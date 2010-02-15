@@ -8,7 +8,8 @@ interface nsILdapDataSource: nsISupports {
     // attributes, constants, methods, ...
 
 	attribute nsILDAPConnection mConnection;
-	attribute nsILDAPOperation  mOperation; 
+	attribute nsILDAPOperation  mOperationBind; 
+	attribute nsILDAPOperation  mOperationSearch;
 	attribute long mFinished;
 
 	void init();
@@ -20,7 +21,7 @@ interface nsILdapDataSource: nsISupports {
 	unsigned long getMessagesEntryLength();
 	nsILDAPMessage getMessagesEntryIndexBy(in unsigned long index);
   
-	void create(in wstring aLdapUri, in wstring aBindName, in wstring password);
+	void query(in wstring aLdapUri, in wstring aBindName, in wstring password);
 
 //                               out unsigned long count,
 //                               [array, size_is(count), retval] out wstring completions
