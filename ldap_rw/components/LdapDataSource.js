@@ -18,7 +18,7 @@ function getProxyThread(aObject, aInterface) {
 	var proxyMgr = Components.classes["@mozilla.org/xpcomproxy;1"].getService(
                                   Components.interfaces.nsIProxyObjectManager);
 
-		dump("about to get proxy\n");
+//		dump("about to get proxy\n");
    
 	return proxyMgr.getProxyForObject(mainThread, aInterface, aObject, 6);
     // 5 == PROXY_ALWAYS | PROXY_SYNC
@@ -115,10 +115,10 @@ LdapDataSource.prototype = {
 															 caller.mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
 															 try {
 																 caller.mOperationSearch.init(caller.mConnection, generateGetTargetsSearchCallback(), null);
-																 dump("caller.mOperationSearch");
-																 dump(caller.mOperationSearch);
-																 dump("\n");
-																 dump(caller.mOperationSearch.connection);
+//																 dump("caller.mOperationSearch");
+//																 dump(caller.mOperationSearch);
+//																 dump("\n");
+//																 dump(caller.mOperationSearch.connection);
   															 caller.mOperationSearch.searchExt(queryURL.dn, queryURL.scope, queryURL.filter, 0, new Array(), 0, -1);
 															 } catch (e) {
 																 dump("init error: " + e + "\n");
@@ -139,10 +139,10 @@ LdapDataSource.prototype = {
 														dump ("init oper\n");
 														try {
 															caller.mOperationBind.init(caller.mConnection, getProxyThread(this, Components.interfaces.nsILDAPMessageListener), null);
-															dump("caller.mOperationBind");
-															dump(caller.mOperationBind);
-															dump("\n");
-															dump(caller.mOperationBind.connection);
+//															dump("caller.mOperationBind");
+//															dump(caller.mOperationBind);
+//															dump("\n");
+//															dump(caller.mOperationBind.connection);
  															caller.mOperationBind.simpleBind(password);																		} catch (e) {
 															dump("init error: " + e + "\n");
 															return
@@ -190,14 +190,14 @@ LdapDataSource.prototype = {
 						var caller = this;
 						var queryURL;
 
-						dump ( "Create: " + aLdapUri + " " + aBindName + " " + password + "\n");
+//						dump ( "Create: " + aLdapUri + " " + aBindName + " " + password + "\n");
 						if (queryURL == null) {
 							queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(aLdapUri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
 						}
-						dump ( queryURL.host + "\n" );
-						dump ( queryURL.dn + "\n" );
-						dump ( queryURL.scope + "\n" );
-						dump ( queryURL.filter + "\n" );
+//						dump ( queryURL.host + "\n" );
+//						dump ( queryURL.dn + "\n" );
+//						dump ( queryURL.scope + "\n" );
+//						dump ( queryURL.filter + "\n" );
 						
 
 						this.mConnection = 	Components.classes["@mozilla.org/network/ldap-connection;1"].createInstance().QueryInterface(Components.interfaces.nsILDAPConnection);
@@ -247,19 +247,6 @@ function write(imgname, array, replace) {
 }
 
 /*
-45 [scriptable, uuid(f64ef501-0623-11d6-a7f2-b65476fc49dc)]
-46 interface nsILDAPModification : nsISupports
-51   attribute long operation;
-/**
-74    * The attribute to modify.
-75    */
-76   attribute ACString type;
-77 
-78   /**
-79    * The array of values this modification sets for the attribute
-80    */
-81   attribute nsIArray values;
-
 var ldapmodif = Components.classes["@mozilla.org/network/ldap-modification;1"].createInstance(Components.interfaces.nsILDAPModification);
 
  */

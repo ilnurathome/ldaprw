@@ -101,7 +101,7 @@ LdaptoAB.prototype = {
 										  	this.AbCard.setProperty("HomeCity",  this.LDAPMessage.getValues( "mozillaHomeLocalityName",{} ));		
 										 },
   mozillaHomeState: function() {
-										  	this.AbCard.setProperty("HomeState",  this.LDAPMessage.getValues( "mozillaHomeStreet",{} ));		
+										  	this.AbCard.setProperty("HomeState",  this.LDAPMessage.getValues( "mozillaHomeState",{} ));		
 										},
   mozillaHomePostalCode: function() {
 										  	this.AbCard.setProperty("HomeZipCode",  this.LDAPMessage.getValues( "mozillaHomePostalCode",{} ));		
@@ -113,7 +113,7 @@ LdaptoAB.prototype = {
 										  	this.AbCard.setProperty("WebPage2",  this.LDAPMessage.getValues( "mozillaHomeUrl",{} ));		
 									},
   homeurl: function() {
-										  	this.AbCard.setProperty("HomeState",  this.LDAPMessage.getValues( "homeurl",{} ));		
+										  	this.AbCard.setProperty("WebPage2",  this.LDAPMessage.getValues( "homeurl",{} ));		
 					 },
    	// Address > Work
   title: function() {
@@ -249,13 +249,20 @@ LdaptoAB.prototype = {
 			                           .createInstance(Components.interfaces.nsIBinaryOutputStream);  
 		binaryStream.setOutputStream(fileStream); 
 	
-		var array = this.LDAPMessage.getBinaryValues("jpegPhoto",{})[0].get({}) 
-		binaryStream.writeByteArray(array , array.length);  
+		var array = this.LDAPMessage.getBinaryValues("jpegPhoto",{})[0].get({});
+		try {
+			binaryStream.writeByteArray(array , array.length);
+			this.AbCard.setProperty("PhotoURI", fullpath);
+			this.AbCard.setProperty("PhotoType", "file");
+		} catch(e) {
+			dump(e + "\n");
+		}
 	
 		binaryStream.close();  
 		fileStream.close();
 		
 	},
+
 
 	// example
 	// var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"]
@@ -274,6 +281,17 @@ LdaptoAB.prototype = {
 		}
 	}
 }
+
+/*
+
+	 try{ 
+	   window.openDialog("chrome://messenger/content/addressbook/abEditCardDialog.xul", "", "chrome,resizable=no,modal,titlebar,centerscreen", {card:card}); 
+		 } catch(e){ 
+		   dump(e+"\n"); 
+		}
+
+ */
+
 
 /*
 // default mapping of addressbook properties to ldap attributes
