@@ -1,8 +1,11 @@
-<!ENTITY ldap rw.label "Your localized menuitem">
-<!ENTITY ldap rwContext.label "Your Menuitem">
-<!ENTITY ldap rwContext.accesskey "Y">
-<!ENTITY ldap rwToolbarButton.label "Your Toolbar Button">
-<!ENTITY ldap rwToolbarButton.tooltip "This is your toolbar button!">
-<!ENTITY ldap rwSidebar.label "Your Sidebar">
-<!ENTITY ldap rwToolbar.name  "example">
-<!ENTITY ldap rwToolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &ldap rwToolbar.name;">
+<!ENTITY ldaprw.label "Your localized menuitem">
+<!ENTITY ldaprwContext.label "Your Menuitem">
+<!ENTITY ldaprwContext.accesskey "Y">
+<!ENTITY ldaprwToolbarButton.label "Your Toolbar Button">
+<!ENTITY ldaprwToolbarButton.tooltip "This is your toolbar button!">
+<!ENTITY ldaprwSidebar.label "Your Sidebar">
+<!ENTITY ldaprwToolbar.name  "example">
+<!ENTITY ldaprwToolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &ldap rwToolbar.name;">
+<!ENTITY ldaprwCmd.label "LdapSync" >
+<!ENTITY ldaprwCmd.accesskey "L" >
+<!ENTITY ldaprwCmd.tip "LdapSync" >

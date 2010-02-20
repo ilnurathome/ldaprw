@@ -1,8 +1,8 @@
-var ldap rw = {
+var ldaprw = {
   onLoad: function() {
     // initialization code
     this.initialized = true;
-    this.strings = document.getElementById("ldap rw-strings");
+    this.strings = document.getElementById("ldaprw-strings");
   },
 
   onMenuItemCommand: function(e) {
@@ -14,8 +14,8 @@ var ldap rw = {
 
   onToolbarButtonCommand: function(e) {
     // just reuse the function above.  you can change this, obviously!
-    ldap rw.onMenuItemCommand(e);
+    ldaprw.onMenuItemCommand(e);
   }
 };
 
-window.addEventListener("load", ldap rw.onLoad, false);
+window.addEventListener("load", ldaprw.onLoad, false);

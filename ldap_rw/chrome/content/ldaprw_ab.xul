@@ -1,7 +1,23 @@
 <?xml version="1.0"?>
+<!DOCTYPE overlay [
+  <!ENTITY % overlayDTD SYSTEM "chrome://ldaprw/locale/overlays.dtd">
+  %overlayDTD;
+]>
+
 <overlay id="ldaprw_ab_overlay" 
-xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript" src="chrome://ldaprw/content/abtoldap.js.js"/> 
+  <script type="application/x-javascript" src="chrome://ldaprw/content/ldaptoab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaprw_ab.js"/> 
+  <script type="application/x-javascript" src="chrome://ldaprw/content/overlay.js"/> 
+
+  <menupopup id="teskPopup">
+    <menuitem id="ldaprw-launch" label="&ldaprwCmd.label;"
+        accesskey="&ldaprwCmd.accesskey;" tooltiptext="&ldaprwCmd.tip;"
+        insertafter="javaScriptConsole,devToolsSeparator"
+        oncommand="gXpcomViewerOverlay.run ();"/>
+  </menupopup>
 
   <toolbarpalette id="AddressBookToolbarPalette">
 <------><toolbarbutton id="button-sync-ldaprw"
