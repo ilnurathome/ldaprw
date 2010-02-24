@@ -1,205 +1,190 @@
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-
-function getService(aContract, aInterface) {
-	return Components.classes[aContract].getService(Components.interfaces[aInterface]);
-}
-
-function createInstance(aContract, aInterface)
-{
-	return Components.classes[aContract].createInstance(Components.interfaces[aInterface]);
-}
-
-
-function getProxyThread(aObject, aInterface) {
-
-	var mainThread;
-
-  mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
-	
-	var proxyMgr = Components.classes["@mozilla.org/xpcomproxy;1"].getService(
-                                  Components.interfaces.nsIProxyObjectManager);
-
-		dump("about to get proxy\n");
-   
-	return proxyMgr.getProxyForObject(mainThread, aInterface, aObject, 5);
-    // 5 == PROXY_ALWAYS | PROXY_SYNC
-}
 
 /*
- * class definition
- */
-
-//class constructor
-function ldapDataSource() {}
-
-//class definition
-ldapDataSource.prototype = {
-
-	// properties required for XPCOM registration:
-  classDescription: "My ldapDataSource XPCOM Component",
-	classID:          Components.ID("bb9bd3e8-11ec-4dae-9a38-c0278420e092");
-	contractID:       "@ilnurathome.dyndns.org/ldapDataSource;1",
-
-  mIOSvc: {},
-	mLDAPSvc: {},
-	mLDAPDataSource: {},
-
-	mConnection: {},
-	mOperation: {},
-	mMessages: new Array(),
-	mMessagesHash: {},
-
-  mMessagesListHash: {},
-  mInProgressHash: {},
-
-	mMessagesEntry: new Array(),
-
-  kInited: -1,
-
-	QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIldapDataSource]),
-		/*function (iid) {
-										if (iid.equals(Components.interfaces.nsISupports) )
-											return this;
-
-										throw Components.results.NS_ERROR_NO_INTERFACE;
-									},*/
-
-	Init: function() {
-					if (this.kInited == -1 ){
-							this.mIOSvc = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService)
-							this.mLDAPSvc = Components.classes["@mozilla.org/network/ldap-service;1"].getService(Components.interfaces.nsILDAPService);
-							
-					}
-					this.kInited = 0;
-				},
+load("chrome://ldaprw/content/abtoldap.js"); 
+load("chrome://ldaprw/content/ldaptoab.js"); 
+load("chrome://ldaprw/content/ldaprw_ab.js");
+load("chrome://ldaprw/content/overlay.js");
+load("chrome://ldaprw/content/sync.js");
+load("chrome://ldaprw/content/prefs.js");
+*/
 
 
-	Create: function (aLdapUri, aBindName, password) {
-					function generateGetTargetsBoundCallback(){
-						function getTargetsBoundCallback () {}
 
-						getTargetsBoundCallback.prototype = { 
-							QueryInterface: function QI(iid) {
-																if (iid.equals(Components.interfaces.nsISupports) ||
-																		iid.equals(Components.interfaces.nsILDAPMessageListener))
-																	return this;
-																
-																throw Components.results.NS_ERROR_NO_INTERFACE;
-															},
-
-							onLDAPMessage: function (aMsg) {
-															 dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback: " + aMsg.type + "\n");
-															 if (aMsg.type != aMsg.RES_BIND) {
-																 dump("bind failed\n");
-																 return;
-															 }
-
-															 var searchOp = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
-															 try {
-																 searchOp.init(connection, generateGetTargetsSearchCallback(), null);
-																 searchOp.searchExt(queryURL.dn, queryURL.scope, queryURL.filter, 0, new Array(), 0, -1);
-															 } catch (e) {
-																 dump("init error: " + e + "\n");
-																 return
-															 }
-														 },
-
-							onLDAPInit: function(aConn, aStatus) {
-														dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback.onLDAPInit: " + aStatus + " " + password + "\n");
-														
-														if (!Components.isSuccessCode(aStatus)) {
-															dump("Create.generateGetTargetsBoundCallback.getTargetsBoundCallback.onLDAPInit: Error\n" );
-															throw aStatus;
-														}
-																	
-
-														var operation = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
-														dump ("init oper\n");
-														try {
-															operation.init(connection, getProxyThread(this, Components.interfaces.nsILDAPMessageListener), null);
-															operation.simpleBind(password);														
-														} catch (e) {
-															dump("init error: " + e + "\n");
-															return
-														}
-														dump ("created operation\n");
-
-														return;
-													}
-						}
-						return getProxyThread(new getTargetsBoundCallback(), Components.interfaces.nsILDAPMessageListener);
-					}
-					
-
-					function generateGetTargetsSearchCallback() {
-						function getTargetsSearchCallback() {
-						}
-						
-						getTargetsSearchCallback.prototype = {
-							QueryInterface: function(iid) {
-									if (iid.equals(Components.interfaces.nsISupports) ||
-											iid.equals(Components.interfaces.nsILDAPMessageListener))
-										return this;
-								
-									throw Components.results.NS_ERROR_NO_INTERFACE;
-								},
-							
-							onLDAPMessage: function (aMsg) {
-								dump("Create.generateGetTargetsSearchCallback.getTargetsSearchCallback: " + aMsg.type + "\n");
-								caller.mMessages[caller.mMessages.length] = aMsg;
-								if (aMsg.type == aMsg.RES_SEARCH_ENTRY) {
-									caller.mMessagesEntry[caller.mMessagesEntry.length] = aMsg;
-								}
-								else if (aMsg.type == aMsg.RES_SEARCH_RESULT) {									
-								}
-							}
-						}
-
-							return getProxyThread(new getTargetsSearchCallback(), Components.interfaces.nsILDAPMessageListener);
-						}
-
-						var caller = this;
-						var queryURL;
-
-						dump ( "Create: " + aLdapUri + " " + aBindName + " " + password + "\n");
-						if (queryURL == null) {
-							queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(aLdapUri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
-						}
-						dump ( queryURL.host + "\n" );
-						dump ( queryURL.dn + "\n" );
-						dump ( queryURL.scope + "\n" );
-						dump ( queryURL.filter + "\n" );
-						
-
-						var connection = 	Components.classes["@mozilla.org/network/ldap-connection;1"].createInstance().QueryInterface(Components.interfaces.nsILDAPConnection);
-
-						try {
-							connection.init(queryURL, aBindName, generateGetTargetsBoundCallback(), null, Components.interfaces.nsILDAPConnection.VERSION3 );
-						} catch (e) {
-							dump ("Error:" + e + "\n");
-						}
-					}	
+function ldapsync() {
+  var prefs = getprefs();
+  for ( var i in prefs) {
+    getAbCardsFromLdap(prefs[i]);
+  }
 }
 
-var components = [ldapDataSource];
+function getAbCardsFromLdap(pref) {
 
-function NSGetModule(compMgr, fileSpec) {
-  return XPCOMUtils.generateModule(components);
+//  var url = "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(objectclass=*)";
+//  var binddn = "uid=ilnur,ou=people,dc=local";
+
+    var binddn = pref.binddn;
+    var uri = pref.uri;
+    var filename = pref.filename;
+    var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
+    function getpassword() {
+      var passwordManager = Components.classes["@mozilla.org/login-manager;1"].
+                         getService(Components.interfaces.nsILoginManager);
+      var logins = passwordManager.findLogins( {}, queryURL.prePath, null, queryURL.spec); 
+      return logins[0].password;
+    };
+//  var ldap = Components.classes["@ilnurathome.dyndns.org/LdapDataSource;1"].
+//                createInstance(Components.interfaces.nsILdapDataSource);
+  var mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
+
+  var ldapcards = new Array();
+  var ldapABcards = new Array();
+  var mapper = new LdaptoAB();
+  var mappertoldap = new ABtoLdap();
+
+
+  function callbacksearchresult(aMsg) {
+    //dump("callbacksearchresultcallbacksearchresultcallbacksearchresultcallbacksearchresult" + aMsg + "\n");
+    ldapcards[ldapcards.length] = aMsg;
+    var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"]  
+                       .createInstance(Components.interfaces.nsIAbCard);
+    mapper.map(aMsg, card);
+    ldapABcards[ldapABcards.length] = card;
+  };
+
+  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+//  var mybook = abManager.getDirectory("moz-abmdbdirectory://abook-3.mab");
+  var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + filename );
+
+  var modcards = new Array();
+  var querydn = new Array();
+  var newcards = new Array();
+  var allcards = mybook.childCards;
+
+  while (allcards.hasMoreElements()) {
+    var c = allcards.getNext();
+    if ( c instanceof Components.interfaces.nsIAbCard) {
+      var dn = c.getProperty("dn", null);
+      dump("c=" + c.lastName + " " + dn + "\n");
+      if (dn == null) {
+        newcards[newcards.length]=c;
+      } else {
+        modcards[modcards.length]=c;
+        querydn[querydn.length] = dn;
+      }
+    }
+  }
+
+  var ldap = new LdapDataSource();
+  var attrs = new Array(); 
+  for (i in mapper.__proto__) { 
+    attrs[attrs.length] = i; 
+  };
+  ldap.init(attrs);
+  try {
+    //queryURL.filter = "(objectclass=inetorgperson)"
+    ldap.query(queryURL, binddn, "(objectclass=inetorgperson)", getpassword, [queryURL.dn], callbacksearchresult );
+    //ldap.query(queryURL, binddn, "(objectclass=inetorgperson)", getpassword, querydn, callbacksearchresult );
+  } catch (e) {
+    dump ("Error: " + e + "\n" );
+  }
+
+  dump ("finished? " + ldap.mFinished + "\n");
+  while(!ldap.mFinished) {
+    dump ("+" );
+    mainThread.processNextEvent(true);
+  }
+  dump("\ncomplete\n");
+
+  var ar = ldap.getMessagesEntry({});
+  for ( a in ar ) {
+    dump(a + " : " + ar[a].dn + "\n"); 
+    dump("\t" + ar[a].getAttributes({}) + "\n" );
+  }
+
+
+
+  /*
+  var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"]  
+                       .createInstance(Components.interfaces.nsIAbCard);
+  */
+
+  var querymods = new Array();
+//  for (i in ar) {
+  dump("ar.length=" + ar.length +"\n");
+  for (var i=0; i<ar.length; i++) {
+    dump("\nIteration " + i + "\n");
+    var d = ar[i].getValues ("modifytimestamp", {}).toString();
+    var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
+    var card = mybook.getCardFromProperty("dn", ar[i].dn, false);
+    if ( card == undefined ) {
+      var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"] 
+                           .createInstance(Components.interfaces.nsIAbCard); 
+      mapper.map(ar[i], card);
+      card.setProperty("LastLDAPLoadDate", (new Date()).getTime() );
+      card.setProperty("LastLDAPModifyDate", ldapdate.getTime() );
+      dump("new card from LDAP "+ i +" " + ar[i].dn +"\n");
+      var newcard= mybook.addCard(card);
+    } else {
+      var carddate = new Date();
+      var carddatestr = card.getProperty("LastModifiedDate", "");
+      if ( carddatestr == 0 ) 
+        carddatestr = (new Date()).getTime().toString().substring(0,10);
+      carddate.setTime( carddatestr + "000");
+      dump("card exists " + ldapdate.getTime() + " " +carddate.getTime()+ "\n");
+
+      if ( ldapdate.getTime() != carddate.getTime() ){
+        if (ldapdate.getTime() > carddate.getTime()) {
+          mapper.map(ar[i], card);
+          dump("modify card in Book "+ i +" " + ar[i].dn + "\n");
+          var newcard= mybook.modifyCard(card);
+        } else {
+          var mods = CreateNSMutArray();
+          dump("modify card in LDAP "+ i +" " + ar[i].dn + "\n");
+          var query = {dn: ar[i].dn, mods: mods};
+          var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard); 
+          
+          mapper.map(ar[i], oldcard);
+
+          mappertoldap.map(card, mods, oldcard);
+          if ( query.mods.length >0){
+            querymods[querymods.length] = query;
+            dump("modify card in LDAP "+ i +" " + ar[i].dn + "\n");
+          }else{
+            dump("nothing to modify\n");
+          }
+        }
+      }
+    }
+  }
+
+  if (querymods.length > 0) {
+    try { 
+      ldap.modify(queryURL, binddn, getpassword, querymods ); 
+    } catch (e) {
+      dump("Error: " + e+ "\n"); 
+    }
+  }
+
+  var mappertoldap= new ABtoLdap();
+  var addqueries = new Array();
+  for ( card in newcards) {
+    var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"] .createInstance(Components.interfaces.nsIAbCard);
+    var mods = CreateNSMutArray();
+    var dn = generateDN(newcards[card]); //"uid=ldapsync,ou=addressbook,dc=local";
+    mappertoldap.map(newcards[card], mods, oldcard);
+    addqueries[addqueries.length] = {dn: dn, mods: mods};
+ // query.mods.appendElement( CreateLDAPMod( "objectClass", ["top", "person", "inetorgperson" ] ), false );
+  }
+  
+    try { 
+      ldap.add(queryURL, binddn, getpassword, addqueries ); 
+    } catch (e) {
+      dump("Error: " + e+ "\n"); 
+    }
+  }
+
+function generateDN(card){
+  return card.firstName + card.lastName ;
 }
 
 
-function testSearch() {
-	var basedn = "ou=private,ou=addressbook,dc=local";
-	var url = "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(objectclass=*)";
-	var binddb = "uid=ilnur,ou=people,dc=local";
-
-	var ldap = new ldapDataSource();
-	ldap.Init();
-	try {
-		ldap.Create(url, binddb, "04en5fhjkm");
-	} catch (e) {
-		dump ("Error: " + e + "\n" );
-	}
-
-//	return rv, listener.myar;
-}

@@ -7,6 +7,25 @@
 
 
 function LdaptoAB() {
+    // example
+  // var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"]
+  //                      .createInstance(Components.interfaces.nsIAbCard);
+  // var mapper = new LdaptoAB();
+  // mapper.map(ldapmessage, card);
+  this.map = function(LDAPMessage, AbCard) {
+    this.LDAPMessage = LDAPMessage;
+    this.AbCard = AbCard;
+
+    this.dn();
+
+    var attrs = this.LDAPMessage.getAttributes({});
+    for (var i in attrs) {
+      if ( !attrs.hasOwnProperty(i) ) continue;
+      if ( this[attrs[i]]==undefined ) continue;
+      this[attrs[i]]();
+    }
+  }
+
 }
 
 LdaptoAB.prototype = {
@@ -269,25 +288,13 @@ LdaptoAB.prototype = {
     
   },
 
+  modifytimestamp: function() {
+    var d = this.LDAPMessage.getValues("modifytimestamp", {} ).toString();
+    var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
 
-  // example
-  // var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"]
-  //                      .createInstance(Components.interfaces.nsIAbCard);
-  // var mapper = new LdaptoAB();
-  // mapper.map(ldapmessage, card);
-  map: function(LDAPMessage, AbCard) {
-    this.LDAPMessage = LDAPMessage;
-    this.AbCard = AbCard;
-
-    this.dn();
-
-    var attrs = this.LDAPMessage.getAttributes({});
-    for (var i in attrs) {
-      if ( !attrs.hasOwnProperty(i) ) continue;
-      if ( this[attrs[i]]==undefined ) continue;
-      this[attrs[i]]();
-    }
+    this.AbCard.setProperty("LastModifiedDate", ldapdate.getTime().toString().substring(0,10));
   }
+
 }
 
 /*

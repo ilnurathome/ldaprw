@@ -11,14 +11,16 @@ function CreateLdapBerVal() {
   return Components.classes["@mozilla.org/network/ldap-ber-value;1"].createInstance(Components.interfaces.nsILDAPBERValue);
 }
 
-function CreateLDAPMod (type, vals) {
+function CreateLDAPMod (type, vals, operation) {
   var mod = CreateLDAPModification();
   dump( "CreateLDAPMod: type=" + type + "\n" );
   mod.type = type;
+  if (operation != undefined) mod.operation = operation;
+  dump( "CreateLDAPMod: operation=" + operation + "\n");
   mod.values = CreateNSMutArray();
   if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
     dump( "CreateLDAPMod: vals=" + vals + "\n" );   
-    for (i in vals) {
+    for (var i in vals) {
       var val = CreateLdapBerVal();
       dump( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
       val.setFromUTF8(vals[i], false);
@@ -29,169 +31,205 @@ function CreateLDAPMod (type, vals) {
 }
 
 function ABtoLdap() {
+  this.map = function(AbCard, LdapModifications, OldCard) {
+         this.LdapModifications = LdapModifications;
+         this.AbCard = AbCard;
+
+         dump("map begin\n");
+
+         var props = this.AbCard.properties;
+         var dn = this.AbCard.getProperty("dn",null);
+         if ( dn == null) {
+           this.LdapModifications.appendElement( CreateLDAPMod( "objectClass", ["top", "person", "inetorgperson" ] ), false );
+         }
+
+         while ( props.hasMoreElements() ){
+           var attr = props.getNext();
+           if (attr instanceof Components.interfaces.nsIProperty){
+             //if (attr.value){
+               if( this[attr.name]==undefined ) continue;
+               if( OldCard == undefined ) {
+                 this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+               } else {
+                 var oldprop = OldCard.getProperty(attr.name, null);
+                 if ( oldprop != null ){
+                   if ( oldprop != attr.value ){
+                     this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                    dump("mod attr=" + attr.name + "\t" + attr.value + "\n");                    
+                   }
+                 }else {
+                   this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                   dump("add attr=" + attr.name + "\t" + attr.value + "\n");
+                 }
+               }
+             //}
+           }
+         }
+         return dn;
+       }
 }
 
 ABtoLdap.prototype = {
 /*
-  dn: function() {
-        this.LdapModifications.appendElement( CreateLDAPMod("dn", [this.AbCard.getProperty("dn","")]));
+  dn: function(operation) {
+        this.LdapModifications.appendElement( CreateLDAPMod("dn", [this.AbCard.getProperty("dn","")], operation));
       },
 */
   // Contact > Name
-  FirstName : function() {
-                this.LdapModifications.appendElement( CreateLDAPMod("givenName", [this.AbCard.firstName]) , false);
+  FirstName : function(operation) {
+                this.LdapModifications.appendElement( CreateLDAPMod("givenName", [this.AbCard.firstName], operation) , false);
               },
 
-  LastName: function() {
-                this.LdapModifications.appendElement( CreateLDAPMod("sn", [this.AbCard.firstName]) , false);
-                //this.LdapModifications.appendElement( CreateLDAPMod("surname", [this.AbCard.firstName]) , false);
+  LastName: function(operation) {
+                this.LdapModifications.appendElement( CreateLDAPMod("sn", [this.AbCard.firstName], operation) , false);
+                //this.LdapModifications.appendElement( CreateLDAPMod("surname", [this.AbCard.firstName], operation) , false);
             },
 
-  DisplayName: function() {
-                this.LdapModifications.appendElement( CreateLDAPMod("cn", [this.AbCard.displayName]) , false);
-                //this.LdapModifications.appendElement( CreateLDAPMod("commonname", [this.AbCard.displayName]) , false);
+  DisplayName: function(operation) {
+                this.LdapModifications.appendElement( CreateLDAPMod("cn", [this.AbCard.displayName], operation) , false);
+                //this.LdapModifications.appendElement( CreateLDAPMod("commonname", [this.AbCard.displayName], operation) , false);
             },
 
-  NickName: function() {
-                this.LdapModifications.appendElement( CreateLDAPMod("mozillaNickname", [this.AbCard.getProperty("NickName")]) , false);
-                this.LdapModifications.appendElement( CreateLDAPMod("xmozillanickname", [this.AbCard.getProperty("NickName","")]) , false);
+  NickName: function(operation) {
+                this.LdapModifications.appendElement( CreateLDAPMod("mozillaNickname", [this.AbCard.getProperty("NickName")], operation) , false);
+                this.LdapModifications.appendElement( CreateLDAPMod("xmozillanickname", [this.AbCard.getProperty("NickName","")], operation) , false);
             },
 
 
 
           // Contact > Internet
-  PrimaryEmail: function() {
-                  this.LdapModifications.appendElement( CreateLDAPMod("mail", [this.AbCard.getProperty("PrimaryEmail", "")] ), false  );
+  PrimaryEmail: function(operation) {
+                  this.LdapModifications.appendElement( CreateLDAPMod("mail", [this.AbCard.getProperty("PrimaryEmail", "")], operation ), false  );
                 } ,
-  SecondEmail: function() {
-                  this.LdapModifications.appendElement( CreateLDAPMod("mail", [this.AbCard.getProperty("PrimaryEmail", "")] ), false  );
+  SecondEmail: function(operation) {
+                  this.LdapModifications.appendElement( CreateLDAPMod("mail", [this.AbCard.getProperty("PrimaryEmail", "")], operation ), false  );
                },
 
 
 
           // Contact > Phones
-  WorkPhone: function() {
-               this.LdapModifications.appendElement( CreateLDAPMod("telephoneNumber", [this.AbCard.getProperty("WorkPhone", "")]),false);
+  WorkPhone: function(operation) {
+               this.LdapModifications.appendElement( CreateLDAPMod("telephoneNumber", [this.AbCard.getProperty("WorkPhone", "")], operation),false);
              },
-  HomePhone: function() {
-               this.LdapModifications.appendElement( CreateLDAPMod("homePhone", [this.AbCard.getProperty("HomePhone", "")]),false);
+  HomePhone: function(operation) {
+               this.LdapModifications.appendElement( CreateLDAPMod("homePhone", [this.AbCard.getProperty("HomePhone", "")], operation),false);
              },
-  FaxNumber: function() {
-               this.LdapModifications.appendElement( CreateLDAPMod("fax", [this.AbCard.getProperty("FaxNumber", "")]),false);
-               //this.LdapModifications.appendElement( CreateLDAPMod("facsimiletelephonenumber", [this.AbCard.getProperty("FaxNumber", "")]),false);
+  FaxNumber: function(operation) {
+               this.LdapModifications.appendElement( CreateLDAPMod("fax", [this.AbCard.getProperty("FaxNumber", "")], operation),false);
+               //this.LdapModifications.appendElement( CreateLDAPMod("facsimiletelephonenumber", [this.AbCard.getProperty("FaxNumber", "")], operation),false);
              },
-  PagerNumber: function() {
-                 this.LdapModifications.appendElement( CreateLDAPMod("pager", [this.AbCard.getProperty("PagerNumber", "")]),false);
+  PagerNumber: function(operation) {
+                 this.LdapModifications.appendElement( CreateLDAPMod("pager", [this.AbCard.getProperty("PagerNumber", "")], operation),false);
                },
-  CellularNumber: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mobile", [this.AbCard.getProperty("CellularNumber", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("cellphone", [this.AbCard.getProperty("CellularNumber", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("carphone", [this.AbCard.getProperty("CellularNumber", "")]),false);
+  CellularNumber: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mobile", [this.AbCard.getProperty("CellularNumber", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("cellphone", [this.AbCard.getProperty("CellularNumber", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("carphone", [this.AbCard.getProperty("CellularNumber", "")], operation),false);
                   },
 
 
           // Address > Home
-  HomeAddress: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeStreet", [this.AbCard.getProperty("HomeAddress", "")]),false);
+  HomeAddress: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeStreet", [this.AbCard.getProperty("HomeAddress", "")], operation),false);
                },
-  HomeAddress2: function() {
-                  this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeStreet2", [this.AbCard.getProperty("HomeAddress2", "")]),false);
+  HomeAddress2: function(operation) {
+                  this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeStreet2", [this.AbCard.getProperty("HomeAddress2", "")], operation),false);
                 },
-  HomeCity: function() {
-              this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeLocalityName", [this.AbCard.getProperty("HomeCity", "")]),false);
+  HomeCity: function(operation) {
+              this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeLocalityName", [this.AbCard.getProperty("HomeCity", "")], operation),false);
             },
                 
-  HomeState: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeState", [this.AbCard.getProperty("HomeState", "")]),false);
+  HomeState: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeState", [this.AbCard.getProperty("HomeState", "")], operation),false);
              },
-  HomeZipCode: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomePostalCode", [this.AbCard.getProperty("HomeZipCode", "")]),false);
+  HomeZipCode: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomePostalCode", [this.AbCard.getProperty("HomeZipCode", "")], operation),false);
                },
-  HomeCountry: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeCountryName", [this.AbCard.getProperty("HomeCountry", "")]),false);
+  HomeCountry: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeCountryName", [this.AbCard.getProperty("HomeCountry", "")], operation),false);
                },
-  WebPage2: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeUrl", [this.AbCard.getProperty("WebPage2", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("homeurl", [this.AbCard.getProperty("WebPage2", "")]),false);
+  WebPage2: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaHomeUrl", [this.AbCard.getProperty("WebPage2", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("homeurl", [this.AbCard.getProperty("WebPage2", "")], operation),false);
             },
 
 
 
           // Address > Work
-  JobTitle: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("title", [this.AbCard.getProperty("JobTitle", "")]),false);
+  JobTitle: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("title", [this.AbCard.getProperty("JobTitle", "")], operation),false);
             },
-  Department: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("ou", [this.AbCard.getProperty("Department", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("department", [this.AbCard.getProperty("Department", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("departmentnumber", [this.AbCard.getProperty("Department", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("orgunit", [this.AbCard.getProperty("Department", "")]),false);
+  Department: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("ou", [this.AbCard.getProperty("Department", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("department", [this.AbCard.getProperty("Department", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("departmentnumber", [this.AbCard.getProperty("Department", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("orgunit", [this.AbCard.getProperty("Department", "")], operation),false);
               },
-  Company: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("o", [this.AbCard.getProperty("Company", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("company", [this.AbCard.getProperty("Company", "")]),false);
+  Company: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("o", [this.AbCard.getProperty("Company", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("company", [this.AbCard.getProperty("Company", "")], operation),false);
            },
-  WorkAddress: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("street", [this.AbCard.getProperty("WorkAddress", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("streetaddress", [this.AbCard.getProperty("WorkAddress", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("postOfficeBox", [this.AbCard.getProperty("WorkAddress", "")]),false);
+  WorkAddress: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("street", [this.AbCard.getProperty("WorkAddress", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("streetaddress", [this.AbCard.getProperty("WorkAddress", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("postOfficeBox", [this.AbCard.getProperty("WorkAddress", "")], operation),false);
                },
-  WorkAddress2: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaWorkStreet2", [this.AbCard.getProperty("WorkAddress2", "")]),false);
+  WorkAddress2: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaWorkStreet2", [this.AbCard.getProperty("WorkAddress2", "")], operation),false);
                 },
-  WorkCity: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("l", [this.AbCard.getProperty("WorkCity", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("locality", [this.AbCard.getProperty("WorkCity", "")]),false);
+  WorkCity: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("l", [this.AbCard.getProperty("WorkCity", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("locality", [this.AbCard.getProperty("WorkCity", "")], operation),false);
             },
-  WorkState: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("st", [this.AbCard.getProperty("WorkState", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("region", [this.AbCard.getProperty("WorkState", "")]),false);
+  WorkState: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("st", [this.AbCard.getProperty("WorkState", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("region", [this.AbCard.getProperty("WorkState", "")], operation),false);
              },
-  WorkZipCode: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("postalCode", [this.AbCard.getProperty("WorkZipCode", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("zip", [this.AbCard.getProperty("WorkZipCode", "")]),false);
+  WorkZipCode: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("postalCode", [this.AbCard.getProperty("WorkZipCode", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("zip", [this.AbCard.getProperty("WorkZipCode", "")], operation),false);
                },
-  WorkCountry: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("c", [this.AbCard.getProperty("WorkCountry", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("countryname", [this.AbCard.getProperty("WorkCountry", "")]),false);
+  WorkCountry: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("c", [this.AbCard.getProperty("WorkCountry", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("countryname", [this.AbCard.getProperty("WorkCountry", "")], operation),false);
                },
-  WebPage1: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaWorkUrl", [this.AbCard.getProperty("WebPage1", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("labeledURI", [this.AbCard.getProperty("WebPage1", "")]),false);
+  WebPage1: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("mozillaWorkUrl", [this.AbCard.getProperty("WebPage1", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("labeledURI", [this.AbCard.getProperty("WebPage1", "")], operation),false);
             },
 
 
 
           // Other > (custom)
-  Custom1: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("custom1", [this.AbCard.getProperty("Custom1", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom1", [this.AbCard.getProperty("Custom1", "")]),false);
+  Custom1: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("custom1", [this.AbCard.getProperty("Custom1", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom1", [this.AbCard.getProperty("Custom1", "")], operation),false);
            },
-  Custom2: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("custom2", [this.AbCard.getProperty("Custom2", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom2", [this.AbCard.getProperty("Custom2", "")]),false);
+  Custom2: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("custom2", [this.AbCard.getProperty("Custom2", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom2", [this.AbCard.getProperty("Custom2", "")], operation),false);
            },
-  Custom3: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("custom3", [this.AbCard.getProperty("Custom3", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom3", [this.AbCard.getProperty("Custom3", "")]),false);
+  Custom3: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("custom3", [this.AbCard.getProperty("Custom3", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom3", [this.AbCard.getProperty("Custom3", "")], operation),false);
            },
-  Custom4: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("custom4", [this.AbCard.getProperty("Custom4", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom4", [this.AbCard.getProperty("Custom4", "")]),false);
+  Custom4: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("custom4", [this.AbCard.getProperty("Custom4", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("mozillaCustom4", [this.AbCard.getProperty("Custom4", "")], operation),false);
            },
          // Other > Notes
-  Notes: function() {
-                    this.LdapModifications.appendElement( CreateLDAPMod("notes", [this.AbCard.getProperty("Notes", "")]),false);
-                    //this.LdapModifications.appendElement( CreateLDAPMod("description", [this.AbCard.getProperty("Notes", "")]),false);
+  Notes: function(operation) {
+                    this.LdapModifications.appendElement( CreateLDAPMod("notes", [this.AbCard.getProperty("Notes", "")], operation),false);
+                    //this.LdapModifications.appendElement( CreateLDAPMod("description", [this.AbCard.getProperty("Notes", "")], operation),false);
          },
 
-  PhotoName: function() {
+  PhotoName: function(operation) {
              },
-  PhotoURI: function() {
+  PhotoURI: function(operation) {
             },
-  PhotoType: function() {
+  PhotoType: function(operation) {
                var photoURI = this.AbCard.getProperty("PhotoURI", "");
-               switch( this.AbCard.getProperty("PhotoType", "") ) {
+             switch( this.AbCard.getProperty("PhotoType", "") ) {
                  case "file":
                    try {
                      var pfile = Components.classes["@mozilla.org/network/io-service;1"]
@@ -202,6 +240,7 @@ ABtoLdap.prototype = {
 
                    } catch (e) {}
                    if (pfile) {
+                     var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
                      file.initWithFile(pfile);  
                      var fileStream = Components.classes['@mozilla.org/network/file-input-stream;1'].createInstance(Components.interfaces.nsIFileInputStream);
                      fileStream.init(file, 1, 0, false);  
@@ -209,35 +248,13 @@ ABtoLdap.prototype = {
                      binaryStream.setInputStream(fileStream);  
                      var array = binaryStream.readByteArray(fileStream.available());  
 
-                     this.LdapModifications.appendElement( CreateLDAPMod("jpegPhoto", [array]),false);
+                     this.LdapModifications.appendElement( CreateLDAPMod("jpegPhoto", [array], operation),false);
 
                      binaryStream.close();  
                      fileStream.close();  
                    }
                };
-             },
-
-
-  map: function(AbCard, LdapModifications) {
-         this.LdapModifications = LdapModifications;
-         this.AbCard = AbCard;
-
-         dump("map begin");
-
-         var props = this.AbCard.properties;
-
-         while ( props.hasMoreElements() ){
-           var attr = props.getNext();
-           if (attr instanceof Components.interfaces.nsIProperty){
-             dump("attr=" + attr.name + "\t" + attr.value + "\n");
-             //if (attr.value){
-               if( this[attr.name]==undefined ) continue;
-               this[attr.name]();
-             //}
-           }
-         }
-         return this.AbCard.getProperty("dn","");
-  }
+             }
 }
 
 /*
