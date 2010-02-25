@@ -171,8 +171,13 @@ function getAbCardsFromLdap(pref) {
     var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"] .createInstance(Components.interfaces.nsIAbCard);
     var mods = CreateNSMutArray();
     var dn = generateDN(newcards[card]); //"uid=ldapsync,ou=addressbook,dc=local";
+    dn = "uid=" + dn + "," + queryURL.dn;
     mappertoldap.map(newcards[card], mods, oldcard);
+    dump("dn = " + dn + "\n");
     addqueries[addqueries.length] = {dn: dn, mods: mods};
+
+    newcards[card].setProperty("dn", dn);
+    var newcard= mybook.modifyCard(newcards[card]);
  // query.mods.appendElement( CreateLDAPMod( "objectClass", ["top", "person", "inetorgperson" ] ), false );
   }
   

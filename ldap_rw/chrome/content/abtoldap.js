@@ -1,3 +1,7 @@
+/*
+load("chrome://ldaprw/content/abtoldap.js");                                                          
+ */
+
 function CreateLDAPModification() {
   return Components.classes["@mozilla.org/network/ldap-modification;1"].createInstance(Components.interfaces.nsILDAPModification);
 }
@@ -30,7 +34,46 @@ function CreateLDAPMod (type, vals, operation) {
   return mod;
 }
 
+function CreateLDAPModBin (type, vals, operation) {
+  var mod = CreateLDAPModification();
+  dump( "CreateLDAPMod: type=" + type + "\n" );
+  mod.type = type;
+  if (operation != undefined) mod.operation = operation;
+  dump( "CreateLDAPMod: operation=" + operation + "\n");
+  mod.values = CreateNSMutArray();
+  if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
+    dump( "CreateLDAPMod: vals=" + vals + "\n" );   
+    for (var i in vals) {
+      var val = CreateLdapBerVal();
+      dump( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
+      val.set( vals[i].length , vals[i]);
+      mod.values.appendElement(val, false);
+    }
+  }
+  return mod;
+}
+
+
+
+
+
 function ABtoLdap() {
+
+  function genfun (from, to) {
+    return function(operation) {
+      for (var i in to) {
+        this.LdapModifications.appendElement( CreateLDAPMod( to[i], [this.AbCard.getProperty( from, "")], operation ), false  );
+      }
+    }
+  }
+
+  for (i in this.__proto__) { 
+    if (this.__proto__[i] instanceof Array){ 
+      this.__proto__[i]=   genfun(i, this.__proto__[i] ); 
+    } 
+  } 
+
+
   this.map = function(AbCard, LdapModifications, OldCard) {
          this.LdapModifications = LdapModifications;
          this.AbCard = AbCard;
@@ -75,6 +118,7 @@ ABtoLdap.prototype = {
         this.LdapModifications.appendElement( CreateLDAPMod("dn", [this.AbCard.getProperty("dn","")], operation));
       },
 */
+  TestTest : ["ldaptest"],
   // Contact > Name
   FirstName : function(operation) {
                 this.LdapModifications.appendElement( CreateLDAPMod("givenName", [this.AbCard.firstName], operation) , false);
@@ -102,7 +146,7 @@ ABtoLdap.prototype = {
                   this.LdapModifications.appendElement( CreateLDAPMod("mail", [this.AbCard.getProperty("PrimaryEmail", "")], operation ), false  );
                 } ,
   SecondEmail: function(operation) {
-                  this.LdapModifications.appendElement( CreateLDAPMod("mail", [this.AbCard.getProperty("PrimaryEmail", "")], operation ), false  );
+                  this.LdapModifications.appendElement( CreateLDAPMod("mail", [this.AbCard.getProperty("SecondEmail", "")], operation ), false  );
                },
 
 
@@ -240,15 +284,18 @@ ABtoLdap.prototype = {
 
                    } catch (e) {}
                    if (pfile) {
-                     var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-                     file.initWithFile(pfile);  
+                     //var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+                     //file.initWithFile(pfile);  
+                     var file = pfile;
                      var fileStream = Components.classes['@mozilla.org/network/file-input-stream;1'].createInstance(Components.interfaces.nsIFileInputStream);
-                     fileStream.init(file, 1, 0, false);  
+                     fileStream.init(file, -1, -1, false);  
                      var binaryStream = Components.classes['@mozilla.org/binaryinputstream;1'].createInstance(Components.interfaces.nsIBinaryInputStream);  
                      binaryStream.setInputStream(fileStream);  
                      var array = binaryStream.readByteArray(fileStream.available());  
+//                     var bytes = binaryStream.readBytes(fileStream.available());  
 
-                     this.LdapModifications.appendElement( CreateLDAPMod("jpegPhoto", [array], operation),false);
+                     this.LdapModifications.appendElement( CreateLDAPModBin("jpegPhoto", [array], operation),false);
+//                     this.LdapModifications.appendElement( CreateLDAPModBin("jpegPhoto", [bytes], operation),false);
 
                      binaryStream.close();  
                      fileStream.close();  
