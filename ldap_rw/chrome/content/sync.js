@@ -11,6 +11,7 @@ load("chrome://ldaprw/content/prefs.js");
 
 
 function ldapsync() {
+  dump("ldapsync\n");
   var prefs = getprefs();
   for ( var i in prefs) {
     getAbCardsFromLdap(prefs[i]);
@@ -60,20 +61,6 @@ function getAbCardsFromLdap(pref) {
   var newcards = new Array();
   var allcards = mybook.childCards;
 
-  while (allcards.hasMoreElements()) {
-    var c = allcards.getNext();
-    if ( c instanceof Components.interfaces.nsIAbCard) {
-      var dn = c.getProperty("dn", null);
-      dump("c=" + c.lastName + " " + dn + "\n");
-      if (dn == null) {
-        newcards[newcards.length]=c;
-      } else {
-        modcards[modcards.length]=c;
-        querydn[querydn.length] = dn;
-      }
-    }
-  }
-
   var ldap = new LdapDataSource();
   var attrs = new Array(); 
   for (i in mapper.__proto__) { 
@@ -101,6 +88,19 @@ function getAbCardsFromLdap(pref) {
     dump("\t" + ar[a].getAttributes({}) + "\n" );
   }
 
+  while (allcards.hasMoreElements()) {
+    var c = allcards.getNext();
+    if ( c instanceof Components.interfaces.nsIAbCard) {
+      var dn = c.getProperty("dn", null);
+      dump("c=" + c.lastName + " " + dn + "\n");
+      if (dn == null || ar[dn] == undefined) {
+        newcards[newcards.length]=c;
+      } else {
+        modcards[modcards.length]=c;
+        querydn[querydn.length] = dn;
+      }
+    }
+  }
 
 
   /*
@@ -189,6 +189,7 @@ function getAbCardsFromLdap(pref) {
   }
 
 function generateDN(card){
+  if ( card.primaryEmail != undefined ) return card.primaryEmail.replace("@","_at_").replace(".", "_dot_");
   return card.firstName + card.lastName ;
 }
 

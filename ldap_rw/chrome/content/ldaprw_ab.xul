@@ -10,6 +10,8 @@
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaptoab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaprw_ab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/overlay.js"/> 
+  <script type="application/x-javascript" src="chrome://ldaprw/content/sync.js"/>
+  <script type="application/x-javascript" src="chrome://ldaprw/content/prefs.js"/>
 
   <menupopup id="taskPopup">
     <menuitem id="ldaprw-launch" label="LdapRW" oncommand="ldaprw.onMenuItemCommand();"/>

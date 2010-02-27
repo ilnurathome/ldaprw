@@ -7,6 +7,22 @@
 
 
 function LdaptoAB() {
+
+  function genfun (from, to) {
+    return function(operation) {
+      dump("from = " + from + " to = " + to + " " + this.LDAPMessage.getValues( from ,{} ) +"\n");
+      for (var i in to) {
+        this.AbCard.setProperty( to[i] , this.LDAPMessage.getValues( from ,{} ) );
+      }
+    }    
+  }
+
+  for (i in this.__proto__) { 
+    if (this.__proto__[i] instanceof Array){ 
+      this.__proto__[i]=   genfun(i, this.__proto__[i] ); 
+    } 
+  } 
+
     // example
   // var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"]
   //                      .createInstance(Components.interfaces.nsIAbCard);
@@ -34,213 +50,115 @@ LdaptoAB.prototype = {
         this.AbCard.setProperty("dn", this.LDAPMessage.dn );
       },
   
-  //  Contact > Name
-  givenName: function() {this.AbCard.firstName = this.LDAPMessage.getValues("givenName", {} );},
-  sn: function() {this.AbCard.lastName = this.LDAPMessage.getValues("sn", {} );},
-  surname: function() { this.sn(); },
-
-  cn: function() { 
-    // DisplayName
-    this.AbCard.displayName = this.LDAPMessage.getValues( "cn", {} );
+  //  Contact > NamefirstName
+  //givenName: ["FirstName"],
+  givenName: function() {
+     this.AbCard.firstName = this.LDAPMessage.getValues( "givenName",{} );
   },
-  commonname: function() {
-                this.AbCard.displayName = this.LDAPMessage.getValues( "commonname",{} );
-              },
+  //sn: ["LastName"],
+  sn: function() {
+     this.AbCard.lastName = this.LDAPMessage.getValues( "sn",{} );
+  },
+  //surname: ["LastName"],
+  surname: function() {
+     this.AbCard.lastName = this.LDAPMessage.getValues( "surname",{} );
+  },
 
-  mozillaNickname: function() {
-                     // NickName
-                     this.AbCard.setProperty("NickName", this.LDAPMessage.getValues( "mozillaNickname",{} ) );
-                   },
-  xmozillanickname: function() {
-                      // NickName
-                     this.AbCard.setProperty("NickName", this.LDAPMessage.getValues( "xmozillanickname",{} ) );
-                    },
+  //cn: ["DisplayName"], 
+  cn: function() {
+     this.AbCard.displayName = this.LDAPMessage.getValues( "cn",{} );
+  },
+  //commonname: ["DisplayName"], 
+  commonname: function() {
+     this.AbCard.displayName = this.LDAPMessage.getValues( "commonname",{} );
+  },
+
+  mozillaNickname: ["NickName"],
+  xmozillanickname: ["NickName"],
 
   // Contact > Internet
   mail: function() {
           // PrimaryEmail
           var mails = this.LDAPMessage.getValues( "mail",{} );
+          dump("mails = " + mails + "\n");
           this.AbCard.primaryEmail = mails[0];
-          if ( !mails[1]==undefined ) this.AbCard.setProperty("SecondEmail", mails[1]);
+          dump("mails[0] = " + mails[0] + "\n");
+          if ( ! (mails[1]==undefined) ) {
+             dump("mails[1] = " + mails[1] + "\n");
+             this.AbCard.setProperty("SecondEmail", mails[1]);
+          } 
         },
-  mozillaSecondEmail: function() {
-                        // SecondEmail
-                        this.AbCard.setProperty("SecondEmail",  this.LDAPMessage.getValues( "mozillaSecondEmail",{} ));
-                      },
-  xmozillasecondemail: function() {
-                        this.AbCard.setProperty("SecondEmail",  this.LDAPMessage.getValues( "xmozillasecondemail",{} ));
-                       },
-  nsAIMid: function() {
-    //_AimScreenName
-                        this.AbCard.setProperty("_AimScreenName",  this.LDAPMessage.getValues( "nsAIMid",{} ));
-  },
+  mozillaSecondEmail: ["SecondEmail"],
+  xmozillasecondemail: ["SecondEmail"],
+  nsAIMid: ["_AimScreenName"], 
 
   // Contact > Phones
-  telephoneNumber: function() {
-                     // WorkPhone
-                        this.AbCard.setProperty("WorkPhone",  this.LDAPMessage.getValues( "telephoneNumber",{} ));
-                   },
-  homePhone: function() {
-               // HomePhone
-                        this.AbCard.setProperty("HomePhone",  this.LDAPMessage.getValues( "homePhone",{} ));
-             },
-  fax: function () {
-         // FaxNumber
-                        this.AbCard.setProperty("FaxNumber",  this.LDAPMessage.getValues( "fax",{} ));
-       },
-  facsimiletelephonenumber: function () { 
-                        this.AbCard.setProperty("FaxNumber",  this.LDAPMessage.getValues( "facsimiletelephonenumber",{} ));
-                              
-                            },
+  telephoneNumber: ["WorkPhone"], 
+  homePhone: ["HomePhone"],  
+  fax: ["FaxNumber"],  
+  facsimiletelephonenumber: ["FaxNumber"],
 
-  pager: function () {
-    // PagerNumber
-    this.AbCard.setProperty("PagerNumber",  this.LDAPMessage.getValues( "pager",{} ));
-  },
-  pagerphone: function() { 
-                        this.AbCard.setProperty("PagerNumber",  this.LDAPMessage.getValues( "pagerphone",{} ));               
-              },
+  pager: ["PagerNumber"],
+  pagerphone: ["PagerNumber"],
   
-  mobile: function() {
-    // CellularNumber
-                        this.AbCard.setProperty("CellularNumber",  this.LDAPMessage.getValues( "mobile",{} ));
-  },
-  cellphone: function() {
-                        this.AbCard.setProperty("CellularNumber",  this.LDAPMessage.getValues( "cellphone",{} ));
-             },
-  carphone: function() {
-                        this.AbCard.setProperty("CellularNumber",  this.LDAPMessage.getValues( "carphone",{} ));              
-            },
+  mobile: ["CellularNumber"],
+  cellphone: ["CellularNumber"],
+  carphone: ["CellularNumber"],
 
   // Address > Home
-  mozillaHomeStreet: function() {
-                        this.AbCard.setProperty("HomeAddress",  this.LDAPMessage.getValues( "mozillaHomeStreet",{} ));
-                     },
-  mozillaHomeStreet2: function() {
-                        this.AbCard.setProperty("HomeAddress2",  this.LDAPMessage.getValues( "mozillaHomeStreet2",{} ));    
-                     },
+  mozillaHomeStreet: ["HomeAddress"],
+  mozillaHomeStreet2: ["HomeAddress2"],
 
-  mozillaHomeLocalityName: function() {
-                        this.AbCard.setProperty("HomeCity",  this.LDAPMessage.getValues( "mozillaHomeLocalityName",{} ));   
-                     },
-  mozillaHomeState: function() {
-                        this.AbCard.setProperty("HomeState",  this.LDAPMessage.getValues( "mozillaHomeState",{} ));   
-                    },
-  mozillaHomePostalCode: function() {
-                        this.AbCard.setProperty("HomeZipCode",  this.LDAPMessage.getValues( "mozillaHomePostalCode",{} ));    
-                         },
-  mozillaHomeCountryName: function() {
-                        this.AbCard.setProperty("HomeCountry",  this.LDAPMessage.getValues( "mozillaHomeCountryName",{} ));   
-                          },
-  mozillaHomeUrl: function() {
-                        this.AbCard.setProperty("WebPage2",  this.LDAPMessage.getValues( "mozillaHomeUrl",{} ));    
-                  },
-  homeurl: function() {
-                        this.AbCard.setProperty("WebPage2",  this.LDAPMessage.getValues( "homeurl",{} ));   
-           },
+  mozillaHomeLocalityName: ["HomeCity"],
+  mozillaHomeState: ["HomeState"],
+  mozillaHomePostalCode: ["HomeZipCode"],
+  mozillaHomeCountryName: ["HomeCountry"],
+  mozillaHomeUrl: ["WebPage2"],
+  homeurl: ["WebPage2"],
     // Address > Work
-  title: function() {
-                        this.AbCard.setProperty("JobTitle",  this.LDAPMessage.getValues( "title",{} ));   
-         },
-  ou: function() {
-                        this.AbCard.setProperty("Department",  this.LDAPMessage.getValues( "ou",{} ));    
-         },
-  department: function() {
-                        this.AbCard.setProperty("Department",  this.LDAPMessage.getValues( "department",{} ));    
-         },
-  departmentnumber: function() {
-                        this.AbCard.setProperty("Department",  this.LDAPMessage.getValues( "departmentnumber",{} ));    
-         },
-  orgunit: function() {
-                        this.AbCard.setProperty("Department",  this.LDAPMessage.getValues( "orgunit",{} ));   
-         },
+  title: ["JobTitle"],
+  ou: ["Department"],
+  department: ["Department"],
+  departmentnumber: ["Department"],
+  orgunit: ["Department"],
 
-  o: function() {
-                        this.AbCard.setProperty("Company",  this.LDAPMessage.getValues( "o",{} ));    
-         },
-  company: function() {
-                        this.AbCard.setProperty("Company",  this.LDAPMessage.getValues( "company",{} ));    
-         },
+  o: ["Company"],
+  company: ["Company"],
   
-  street: function() {
-                        this.AbCard.setProperty("WorkAddress",  this.LDAPMessage.getValues( "street",{} ));   
-          },
-  streetaddress: function() {
-                        this.AbCard.setProperty("WorkAddress",  this.LDAPMessage.getValues( "streetaddress",{} ));    
-         },
-  postOfficeBox: function() {
-                        this.AbCard.setProperty("WorkAddress",  this.LDAPMessage.getValues( "postOfficeBox",{} ));    
-         },
+  street: ["WorkAddress"],
+  streetaddress: ["WorkAddress"],
+  postOfficeBox: ["WorkAddress"],
 
-  mozillaWorkStreet2: function() {
-                        this.AbCard.setProperty("WorkAddress2",  this.LDAPMessage.getValues( "mozillaWorkStreet2",{} ));    
-         },
+  mozillaWorkStreet2: ["WorkAddress2"],
 
-  l: function() {
-                        this.AbCard.setProperty("WorkCity",  this.LDAPMessage.getValues( "l",{} ));   
-         },
-  locality: function() {
-                        this.AbCard.setProperty("WorkCity",  this.LDAPMessage.getValues( "locality",{} ));    
-         },
+  l: ["WorkCity"],
+  locality: ["WorkCity"],
 
-  st: function() {
-                        this.AbCard.setProperty("WorkState",  this.LDAPMessage.getValues( "st",{} ));   
-         },
-  region: function() {
-                        this.AbCard.setProperty("WorkState",  this.LDAPMessage.getValues( "region",{} ));   
-         },
+  st: ["WorkState"],
+  region: ["WorkState"],
 
-  postalCode: function() {
-                        this.AbCard.setProperty("WorkZipCode",  this.LDAPMessage.getValues( "postalCode",{} ));   
-         },
-  zip: function() {
-                        this.AbCard.setProperty("WorkZipCode",  this.LDAPMessage.getValues( "zip",{} ));    
-         },
+  postalCode: ["WorkZipCode"],
+  zip: ["WorkZipCode"],
 
-  c: function() {
-                        this.AbCard.setProperty("WorkCountry",  this.LDAPMessage.getValues( "c",{} ));    
-         },
-  countryname: function() {
-                        this.AbCard.setProperty("WorkCountry",  this.LDAPMessage.getValues( "countryname",{} ));    
-         },
+  c: ["WorkCountry"],
+  countryname: ["WorkCountry"],
 
-  workurl: function() {
-                        this.AbCard.setProperty("WebPage1",  this.LDAPMessage.getValues( "workurl",{} ));   
-         },
-  mozillaWorkUrl: function() {
-                        this.AbCard.setProperty("WebPage1",  this.LDAPMessage.getValues( "mozillaWorkUrl",{} ));    
-         },
-  labeledURI: function() {
-                        this.AbCard.setProperty("WebPage1",  this.LDAPMessage.getValues( "labeledURI",{} ));    
-         },
+  workurl: ["WebPage1"],
+  mozillaWorkUrl: ["WebPage1"],
+  labeledURI: ["WebPage1"],
             // Other > (custom)
-  custom1: function() {
-                        this.AbCard.setProperty("Custom1",  this.LDAPMessage.getValues( "custom1",{} ));
-           },
-  mozillaCustom1: function() {
-                        this.AbCard.setProperty("Custom1",  this.LDAPMessage.getValues( "mozillaCustom1",{} ));
-           },
+  custom1: ["Custom1"],
+  mozillaCustom1: ["Custom1"],
  
-  custom2: function() {
-                        this.AbCard.setProperty("Custom2",  this.LDAPMessage.getValues( "custom2",{} ));
-           },
-  mozillaCustom2: function() {
-                        this.AbCard.setProperty("Custom2",  this.LDAPMessage.getValues( "mozillaCustom2",{} ));
-           },
+  custom2: ["Custom2"],
+  mozillaCustom2: ["Custom2"],
 
-  custom3: function() {
-                        this.AbCard.setProperty("Custom3",  this.LDAPMessage.getValues( "custom3",{} ));
-           },
-  mozillaCustom3: function() {
-                        this.AbCard.setProperty("Custom3",  this.LDAPMessage.getValues( "mozillaCustom3",{} ));
-           },
+  custom3: ["Custom3"],
+  mozillaCustom3: ["Custom3"],
 
-  custom4: function() {
-                        this.AbCard.setProperty("Custom4",  this.LDAPMessage.getValues( "custom4",{} ));
-           },
-  mozillaCustom4: function() {
-                        this.AbCard.setProperty("Custom4",  this.LDAPMessage.getValues( "mozillaCustom4",{} ));
-           },
+  custom4: ["Custom4"],
+  mozillaCustom4: ["Custom4"],
+
     // Other > Notes
 
   jpegPhoto: function() {   
