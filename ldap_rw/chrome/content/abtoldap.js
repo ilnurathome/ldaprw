@@ -1,3 +1,7 @@
+function debugabtoldap(str){
+//  dump("abtoldap.js: " + str);
+}
+
 /*
 load("chrome://ldaprw/content/abtoldap.js");                                                          
  */
@@ -17,16 +21,16 @@ function CreateLdapBerVal() {
 
 function CreateLDAPMod (type, vals, operation) {
   var mod = CreateLDAPModification();
-  dump( "CreateLDAPMod: type=" + type + "\n" );
+  debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
   mod.type = type;
   if (operation != undefined) mod.operation = operation;
-  dump( "CreateLDAPMod: operation=" + operation + "\n");
+  debugabtoldap( "CreateLDAPMod: operation=" + operation + "\n");
   mod.values = CreateNSMutArray();
   if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
-    dump( "CreateLDAPMod: vals=" + vals + "\n" );   
+    debugabtoldap( "CreateLDAPMod: vals=" + vals + "\n" );   
     for (var i in vals) {
       var val = CreateLdapBerVal();
-      dump( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
+//      debugabtoldap( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
       val.setFromUTF8(vals[i], false);
       mod.values.appendElement(val, false);
     }
@@ -36,16 +40,16 @@ function CreateLDAPMod (type, vals, operation) {
 
 function CreateLDAPModBin (type, vals, operation) {
   var mod = CreateLDAPModification();
-  dump( "CreateLDAPMod: type=" + type + "\n" );
+  debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
   mod.type = type;
   if (operation != undefined) mod.operation = operation;
-  dump( "CreateLDAPMod: operation=" + operation + "\n");
+  debugabtoldap( "CreateLDAPMod: operation=" + operation + "\n");
   mod.values = CreateNSMutArray();
   if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
-    dump( "CreateLDAPMod: vals=" + vals + "\n" );   
+    debugabtoldap( "CreateLDAPMod: vals=" + vals + "\n" );   
     for (var i in vals) {
       var val = CreateLdapBerVal();
-      dump( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
+      debugabtoldap( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
       val.set( vals[i].length , vals[i]);
       mod.values.appendElement(val, false);
     }
@@ -61,16 +65,17 @@ function ABtoLdap() {
 
   function genfun (from, to) {
     return function(operation) {
-      //      dump("from = " + from + " to = " + to + "\n");
+      //      debugabtoldap("from = " + from + " to = " + to + "\n");
       for (var i in to) {
         this.LdapModifications.appendElement( CreateLDAPMod( to[i], [this.AbCard.getProperty( from, "")], operation ), false  );
       }
     }
   }
 
-  for (i in this.__proto__) { 
+  for (var i in this.__proto__) { 
     if (this.__proto__[i] instanceof Array){ 
-      this.__proto__[i]=   genfun(i, this.__proto__[i] ); 
+//      this.__proto__[i]=   genfun(i, this.__proto__[i] ); 
+      this[i]=   genfun(i, this.__proto__[i] ); 
     } 
   } 
 
@@ -78,14 +83,12 @@ function ABtoLdap() {
   this.map = function(AbCard, LdapModifications, OldCard) {
          this.LdapModifications = LdapModifications;
          this.AbCard = AbCard;
+         this.mail =0;
 
-         dump("map begin\n");
+         debugabtoldap("map begin\n");
 
          var props = this.AbCard.properties;
-         var dn = this.AbCard.getProperty("dn",null);
-         if ( dn == null) {
-           this.LdapModifications.appendElement( CreateLDAPMod( "objectClass", ["top", "person", "inetorgperson" ] ), false );
-         }
+
 
          while ( props.hasMoreElements() ){
            var attr = props.getNext();
@@ -99,17 +102,17 @@ function ABtoLdap() {
                  if ( oldprop != null ){
                    if ( oldprop != attr.value ){
                      this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
-                    dump("mod attr=" + attr.name + "\t" + attr.value + "\n");                    
+                    debugabtoldap("mod attr=" + attr.name + "\n" ); // + attr.value + "\n");                    
                    }
                  }else {
                    this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
-                   dump("add attr=" + attr.name + "\t" + attr.value + "\n");
+                   debugabtoldap("add attr=" + attr.name + "\n"); // + "\t" + attr.value + "\n");
                  }
                }
              //}
            }
          }
-         return dn;
+         return ;
        }
 }
 
@@ -130,8 +133,19 @@ ABtoLdap.prototype = {
   NickName: ["mozillaNickname", "xmozillanickname"],
 
           // Contact > Internet
-  PrimaryEmail: ["mail"],
-  SecondEmail:  ["mail"],
+  PrimaryEmail: function(operation){ //["mail"],
+    if (!this.mail){
+      this.LdapModifications.appendElement( CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation ), false  );
+    }
+    this.mail++;
+  },
+
+  SecondEmail: function(operation){ //["mail"],
+    if (!this.mail){
+      this.LdapModifications.appendElement( CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation ), false  );
+    }
+    this.mail++;
+  },
 
           // Contact > Phones
   WorkPhone: ["telephoneNumber"],
@@ -217,7 +231,7 @@ ABtoLdap.prototype = {
    try{ 
      window.openDialog("chrome://messenger/content/addressbook/abEditCardDialog.xul", "", "chrome,resizable=no,modal,titlebar,centerscreen", {card:card}); 
      } catch(e){ 
-       dump(e+"\n"); 
+       debugabtoldap(e+"\n"); 
     }
 
  */

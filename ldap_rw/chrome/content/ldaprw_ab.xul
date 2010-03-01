@@ -15,6 +15,7 @@
 
   <menupopup id="taskPopup">
     <menuitem id="ldaprw-launch" label="LdapRW" oncommand="ldaprw.onMenuItemCommand();"/>
+    <menuitem id="ldaprw-pref" label="LdapRW Preferences" oncommand="ldaprw.onMenuPrefCommand();"/>
     <menuitem id="ldaprw-sync" label="LdapSync" oncommand="ldapsync();"/>    
   </menupopup>
 </overlay>

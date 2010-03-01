@@ -15,4 +15,8 @@
 <!ENTITY auth.dn.accesskey "D">
 <!ENTITY maxHits.label "maxHits">
 <!ENTITY maxHits.accesskey "M">
+<!ENTITY attrRdn.label "Attribute for RDN">
+<!ENTITY attrRdn.accesskey "R">
+<!ENTITY objClasses.label "Object Classes">
+<!ENTITY objClasses.accesskey "C">
 

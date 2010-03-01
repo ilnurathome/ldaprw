@@ -16,6 +16,8 @@ function getprefs(){
           var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
           list[key].binddn = myprefs.getCharPref(key + ".auth.dn");
           list[key].uri = myprefs.getCharPref(key + ".uri");
+          list[key].attrRdn = myprefs.getCharPref(key + ".attrRdn");
+          list[key].objClasses = myprefs.getCharPref(key + ".objClasses");
           list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
           
           list[key].bookname = key;
@@ -31,12 +33,17 @@ function getprefs(){
   return list;
 }
 
-function setpref(bookname, uri, binddn, maxHits) {
+function setpref(bookname, newpref) {
+
   var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
   prefs = prefs.getBranch("extensions.ldaprw.");
-  prefs.setCharPref("ldap_2.servers." + bookname + ".auth.dn", binddn);
-  prefs.setCharPref("ldap_2.servers." + bookname + ".uri", uri);
-  prefs.setIntPref("ldap_2.servers." + bookname + ".maxHits", maxHits);
+  prefs.setCharPref("ldap_2.servers." + bookname + ".auth.dn", newpref.binddn);
+  prefs.setCharPref("ldap_2.servers." + bookname + ".uri", newpref.uri);
+
+  prefs.setCharPref("ldap_2.servers." + bookname + ".attrRdn", newpref.attrRdn);
+  prefs.setCharPref("ldap_2.servers." + bookname + ".objClasses", newpref.objClasses);
+
+  prefs.setIntPref("ldap_2.servers." + bookname + ".maxHits", newpref.maxHits);
 }
 
 function delpref(bookname) {

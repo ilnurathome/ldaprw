@@ -1,3 +1,7 @@
+function debugldaptoab(str){
+  //dump("ldaptoab.js: " + str);
+}
+
 /*
  var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"] 
                       .createInstance(Components.interfaces.nsIAbCard);
@@ -10,7 +14,7 @@ function LdaptoAB() {
 
   function genfun (from, to) {
     return function(operation) {
-      dump("from = " + from + " to = " + to + " " + this.LDAPMessage.getValues( from ,{} ) +"\n");
+      debugldaptoab("from = " + from + " to = " + to + " " + this.LDAPMessage.getValues( from ,{} ) +"\n");
       for (var i in to) {
         this.AbCard.setProperty( to[i] , this.LDAPMessage.getValues( from ,{} ) );
       }
@@ -19,7 +23,8 @@ function LdaptoAB() {
 
   for (i in this.__proto__) { 
     if (this.__proto__[i] instanceof Array){ 
-      this.__proto__[i]=   genfun(i, this.__proto__[i] ); 
+//      this.__proto__[i]=   genfun(i, this.__proto__[i] ); 
+      this[i]=   genfun(i, this.__proto__[i] ); 
     } 
   } 
 
@@ -80,11 +85,11 @@ LdaptoAB.prototype = {
   mail: function() {
           // PrimaryEmail
           var mails = this.LDAPMessage.getValues( "mail",{} );
-          dump("mails = " + mails + "\n");
+          debugldaptoab("mails = " + mails + "\n");
           this.AbCard.primaryEmail = mails[0];
-          dump("mails[0] = " + mails[0] + "\n");
+          debugldaptoab("mails[0] = " + mails[0] + "\n");
           if ( ! (mails[1]==undefined) ) {
-             dump("mails[1] = " + mails[1] + "\n");
+             debugldaptoab("mails[1] = " + mails[1] + "\n");
              this.AbCard.setProperty("SecondEmail", mails[1]);
           } 
         },
@@ -198,7 +203,7 @@ LdaptoAB.prototype = {
       this.AbCard.setProperty("PhotoType", "file");
       this.AbCard.setProperty("PhotoName", this.LDAPMessage.dn + ".jpg" );
     } catch(e) {
-      dump(e + "\n");
+      debugldaptoab(e + "\n");
     }
   
     binaryStream.close();  
@@ -220,7 +225,7 @@ LdaptoAB.prototype = {
    try{ 
      window.openDialog("chrome://messenger/content/addressbook/abEditCardDialog.xul", "", "chrome,resizable=no,modal,titlebar,centerscreen", {card:card}); 
      } catch(e){ 
-       dump(e+"\n"); 
+       debugldaptoab(e+"\n"); 
     }
 
  */
