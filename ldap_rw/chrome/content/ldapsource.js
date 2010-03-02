@@ -2,6 +2,10 @@ function debugldapsource(str){
 //  dump("ldapsource.js: " + str);
 }
 
+function dumperrors(str){
+   dump(str);
+}
+
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -186,7 +190,7 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
                               
                     caller.mOperationBind.simpleBind(getpassword());                                   
                   } catch (e) {
-                      debugldapsource("init error: " + e + "\n");
+                      dumperrors("init error: " + e + "\n");
                       alert("init error: " + e + "\n");
                       return
                   }
@@ -241,7 +245,7 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
             */
         //   function createcallmetod(queryes) {
             // return function(){
-            function callmetod(aMsg) {
+            var callmetod = function(aMsg) {
 //               debugldapsource("callmetod query\t" + getquery + "\n");
                if (!( getquery == undefined )) {
                  var query = getquery(aMsg);
@@ -252,11 +256,13 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
                      //mOperationSearch.searchExt(queryes[mFinished], queryURL.scope, filter, caller.kAttributes.length, caller.kAttributes, 0, -1);
                      caller.mOperationSearch.searchExt(query, queryURL.scope, queryURL.filter, caller.kAttributes.length, caller.kAttributes, 0, caller.kMaxMess);
                    } catch (e) {
-                     debugldapsource("init error: " + e + "\n");
+                     dumperrors("init error: " + e + "\n");
                      return;
                    }
                  }
+                 return;
                }
+               dumperrors("query getquery undefined\n");               
                return;
              }
 //           }
@@ -281,7 +287,7 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
             try {
               caller.mConnection.init(queryURL, aBindName, caller.generateGetTargetsBoundCallback(caller, queryURL, getpassword, callmetod), null, Components.interfaces.nsILDAPConnection.VERSION3 );
             } catch (e) {
-              debugldapsource ("Error:" + e + "\n");
+              dumperrors ("Error:" + e + "\n");
             }
 };
 
@@ -303,11 +309,13 @@ LdapDataSource.prototype.add = function (queryURL, aBindName, getpassword, getqu
                    mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
                    mOperationSearch.addExt(query.dn, query.mods);
                  } catch (e) {
-                   debugldapsource("init error: " + e + "\n");
+                   dumperrors("init error: " + e + "\n");
                    return;
                  }
                }
+               return;
              }
+               dumperrors("add getquery undefined\n");             
              return;  
            }
 
@@ -332,7 +340,7 @@ LdapDataSource.prototype.add = function (queryURL, aBindName, getpassword, getqu
             try {
               this.mConnection.init(queryURL, aBindName, this.generateGetTargetsBoundCallback(caller, queryURL, getpassword, callmetod), null, Components.interfaces.nsILDAPConnection.VERSION3 );
             } catch (e) {
-              debugldapsource ("Error:" + e + "\n");
+              dumperrors ("Error:" + e + "\n");
             }
 };
 
@@ -353,11 +361,13 @@ LdapDataSource.prototype.modify = function (queryURL, aBindName, getpassword, ge
                      mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod), null);
                      mOperationSearch.modifyExt(query.dn, query.mods);
                    } catch (e) {
-                     debugldapsource("init error: " + e + "\n");
+                     dumperrors("init error: " + e + "\n");
                      return;
                    }
                  }
+                 return;
                }
+               dumperrors("mod getquery undefined\n");
                return;
              
            }
@@ -382,7 +392,7 @@ LdapDataSource.prototype.modify = function (queryURL, aBindName, getpassword, ge
             try {
               this.mConnection.init(queryURL, aBindName, this.generateGetTargetsBoundCallback(caller, queryURL, getpassword, callmetod), null, Components.interfaces.nsILDAPConnection.VERSION3 );
             } catch (e) {
-              debugldapsource ("Error:" + e + "\n");
+              dumperrors ("Error:" + e + "\n");
             }
 };
 

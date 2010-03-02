@@ -2,6 +2,11 @@ function debugldaptoab(str){
   //dump("ldaptoab.js: " + str);
 }
 
+function dumperrors(str){
+   dump(str + "\n");
+}
+
+
 /*
  var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"] 
                       .createInstance(Components.interfaces.nsIAbCard);
@@ -165,6 +170,8 @@ LdaptoAB.prototype = {
   mozillaCustom4: ["Custom4"],
 
     // Other > Notes
+  description: ["Notes"],
+  notes: ["Notes"],
 
   jpegPhoto: function() {   
     var dir = Components.classes["@mozilla.org/file/directory_service;1"]
@@ -203,7 +210,7 @@ LdaptoAB.prototype = {
       this.AbCard.setProperty("PhotoType", "file");
       this.AbCard.setProperty("PhotoName", this.LDAPMessage.dn + ".jpg" );
     } catch(e) {
-      debugldaptoab(e + "\n");
+      dumperrors(e + "\n");
     }
   
     binaryStream.close();  
@@ -225,7 +232,7 @@ LdaptoAB.prototype = {
    try{ 
      window.openDialog("chrome://messenger/content/addressbook/abEditCardDialog.xul", "", "chrome,resizable=no,modal,titlebar,centerscreen", {card:card}); 
      } catch(e){ 
-       debugldaptoab(e+"\n"); 
+       dumperrors(e+"\n"); 
     }
 
  */

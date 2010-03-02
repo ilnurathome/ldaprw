@@ -130,7 +130,7 @@ ABtoLdap.prototype = {
 
   DisplayName: ["cn"], //["commonname"],
 
-  NickName: ["mozillaNickname", "xmozillanickname"],
+  NickName: ["mozillaNickname"], //["xmozillanickname"],
 
           // Contact > Internet
   PrimaryEmail: function(operation){ //["mail"],
@@ -150,9 +150,10 @@ ABtoLdap.prototype = {
           // Contact > Phones
   WorkPhone: ["telephoneNumber"],
   HomePhone: ["homePhone"],
-  FaxNumber: ["fax"], //["facsimiletelephonenumber"],
+  FaxNumber: ["facsimiletelephonenumber"], // ["fax"], //
   PagerNumber: ["pager"],
   CellularNumber: ["mobile"], //["cellphone", "carphone"],
+  _AimScreenName: ["nsAIMid"],
 
 
           // Address > Home
@@ -176,18 +177,18 @@ ABtoLdap.prototype = {
   WorkCity: ["l"], //["locality"],
   WorkState: ["st"], //["region"],
   WorkZipCode: ["postalCode"], //["zip"],
-  WorkCountry: ["c"], //["countryname"],
+  WorkCountry: ["c"], // my be to use objClass friendlyCountry RFC 4524 //["countryname"],
   WebPage1: ["mozillaWorkUrl"], //["labeledURI"],
 
 
 
           // Other > (custom)
-  Custom1: ["custom1"], //["mozillaCustom1"],
-  Custom2: ["custom2"], //["mozillaCustom2"],
-  Custom3: ["custom3"], //["mozillaCustom3"],
-  Custom4: ["custom4"], //["mozillaCustom4"],
+  Custom1: ["mozillaCustom1"],//["custom1"], //
+  Custom2: ["mozillaCustom2"],//["custom2"], //
+  Custom3: ["mozillaCustom3"],//["custom3"], //
+  Custom4: ["mozillaCustom4"],//["custom4"], //
          // Other > Notes
-  Notes: ["notes"], //["description"],
+  Notes:   ["description"],//["notes"], //
 
   PhotoName: function(operation) {
              },

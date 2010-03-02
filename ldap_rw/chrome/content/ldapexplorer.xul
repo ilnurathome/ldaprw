@@ -81,11 +81,11 @@ function Init(){
    document.getElementById('morelabel').disabled=true;                        
 
     var searchformattmp = "" ;
-    var classes = curpref.objClasses.split(',');
+    var classes = curpref.objClasses.replace(/\s*/g, '').split(',');
     for (i in classes) { 
       searchformattmp += "(objectClass=" + classes[i] + ")";
     };
-    searchformat = "(&" + searchformattmp + searchformat + ")";
+//    searchformat = "(&" + searchformattmp + searchformat + ")";
 //     dump(searchformat);
 }
 
@@ -114,6 +114,7 @@ function gencallbacksearchresult(tree, attrs){
            var cell = new Array();
            cell["aMsg"] = aMsg;
            cell["dn"] = aMsg.dn;
+           dump("attrs:" + aMsg.getAttributes({}) + "\n" );
            for (var i in attrs) {
               try{
                 dump("callbacksearchresult: attr=" + i + "\t"+ attrs[i]);
@@ -200,7 +201,7 @@ function doAdd() {
     for (var v = start.value; v <= end.value; v++){
       dump("Item " + v + " is selected.\t" + cardtreeView.treeData[v].dn+"\n");
       try{
-           if ( addcardfromldap(mybook, cardtreeView.treeData[v].aMsg, false) ) {
+           if ( addcardfromldap(curpref, cardtreeView.treeData[v].aMsg, true) ) {
             dump("card allready exists, sync it.");
             }
        }catch(e){
