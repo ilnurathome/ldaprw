@@ -1,5 +1,5 @@
 function debugldaprw_ab(str){
-  dump("ldaprw_ab.js: " + str);
+//  dump("ldaprw_ab.js: " + str);
 }
 
 
@@ -86,6 +86,7 @@ LdapDataSource.prototype = {
   mFinished: 0,
 
   kInited: -1,
+  kMaxMess: -1,
 
   kAttributes: new Array(),
 
@@ -111,7 +112,7 @@ LdapDataSource.prototype = {
 };
 
 // ************** INIT *****************
-LdapDataSource.prototype.init = function(attrs) {
+LdapDataSource.prototype.init = function(attrs, maxmess) {
       if (this.kInited == -1 ){
           this.mIOSvc = Components.classes["@mozilla.org/network/io-service;1"]
                                   .getService(Components.interfaces.nsIIOService)
@@ -130,7 +131,7 @@ LdapDataSource.prototype.init = function(attrs) {
 
       this.mBinded =   0;
       this.mFinished = 0;
-      
+      if (maxmess != undefined) this.kMaxMess = maxmess;
 };
 
 
@@ -249,7 +250,7 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
                    try {
                      caller.mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
                      //mOperationSearch.searchExt(queryes[mFinished], queryURL.scope, filter, caller.kAttributes.length, caller.kAttributes, 0, -1);
-                     caller.mOperationSearch.searchExt(query, queryURL.scope, queryURL.filter, caller.kAttributes.length, caller.kAttributes, 0, -1);
+                     caller.mOperationSearch.searchExt(query, queryURL.scope, queryURL.filter, caller.kAttributes.length, caller.kAttributes, 0, caller.kMaxMess);
                    } catch (e) {
                      debugldaprw_ab("init error: " + e + "\n");
                      return;
