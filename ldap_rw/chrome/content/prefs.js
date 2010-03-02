@@ -20,7 +20,7 @@ function getprefs(){
           list[key].objClasses = myprefs.getCharPref(key + ".objClasses");
           list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
 
-          list[key].queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(list[key].uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
+          //list[key].queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(list[key].uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
           
           
           list[key].bookname = key;

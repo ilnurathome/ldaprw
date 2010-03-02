@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!DOCTYPE prefwindow SYSTEM "chrome://ldaprw/locale/options.dtd">
+<window id="ldaprw-preferences" 
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+        title="ldaprw prefs"
+        onload="onLoad();">
+ 
+  <script type="application/x-javascript" src="chrome://ldaprw/content/prefs.js"/>
+
+  <script>
+<![CDATA[
+    var prefs;
+    function onLoad(){
+      var preflist = document.getElementById('preflist');
+       while (preflist.itemCount){
+           preflist.removeItemAt(0); 
+      }
+
+      prefs = getprefs();     
+      //dump(prefs + "\n");
+      for ( var i in prefs) { 
+      //  dump(i + "\n") 
+          var cell1 = document.createElement("listcell");
+          var cell2 = document.createElement("listcell");
+          cell1.setAttribute("label", prefs[i].uri );
+          cell2.setAttribute("label", prefs[i].description);
+
+          var item = document.createElement("listitem");
+
+          item.appendChild(cell1); 
+          item.appendChild(cell2);
+
+          item.setAttribute("label", i );
+          preflist.appendChild(item); 
+      }  
+    }
+
+    prefedit = {};
+
+    function doSelect(caller){
+    // dump(caller + "\n");
+    //   dump(caller.id + "\n");
+
+    //   dump(caller.selectedItem.tagName + "\n");
+    //   dump(caller.selectedItem.label + "\n"); 
+         prefedit = caller.selectedItem.label;
+
+         document.getElementById('modify').disabled=false;
+         document.getElementById('delete').disabled = false;
+
+         document.getElementById('textboxabdir').value = prefedit;
+         document.getElementById('textboxuri').value = prefs[prefedit].uri;
+         document.getElementById('textboxauthdn').value = prefs[prefedit].binddn;
+         document.getElementById('textboxrdn').value = prefs[prefedit].attrRdn;
+         document.getElementById('textboxobjClasses').value = prefs[prefedit].objClasses;
+         document.getElementById('textboxmaxHits').value = prefs[prefedit].maxHits;
+    }
+
+
+    function modifyPref(){
+         abdir = document.getElementById('textboxabdir').value;
+         var pref = {};
+         pref.uri= document.getElementById('textboxuri').value;
+         pref.binddn= document.getElementById('textboxauthdn').value;
+         pref.attrRdn= document.getElementById('textboxrdn').value;
+         pref.objClasses= document.getElementById('textboxobjClasses').value;
+         pref.maxHits= document.getElementById('textboxmaxHits').value;
+
+         //dump(pref.uri+ "\n" );
+         //dump(pref.binddn+ "\n" );
+         //dump(pref.attrRdn+ "\n" );
+         //dump(pref.objClasses+ "\n" );
+         //dump(pref.maxHits+ "\n" );
+
+         setpref(abdir, pref);   
+   }
+
+    function delPref(){
+         var abdir = document.getElementById('textboxabdir').value;
+         //dump("abdir = " + abdir + "\n" );
+         delpref(abdir);   
+   }
+
+]]>
+  </script>
+       
+  <hbox flex="1">
+     <listbox id="preflist" onselect="doSelect(this);" flex="1">
+        <listhead>
+          <listheader label="Server" flex="1"/>
+          <listheader label="Book"/>
+      </listhead>
+    </listbox>
+
+
+   <vbox> 
+    <label accesskey="&abdir.accesskey;" control="textboxabdir">&abdir.label;</label><textbox id="textboxabdir" preference="uri"/>
+
+    <label accesskey="&uri.accesskey;" control="textboxuri">&uri.label;</label><textbox id="textboxuri" preference="uri"/>
+
+    <label accesskey="&auth.dn.accesskey;" control="textboxauthdn">&auth.dn.label;</label><textbox id="textboxauthdn" preference="auth.dn"/>
+
+    <label accesskey="&attrRdn.accesskey;" control="textboxrdn">&attrRdn.label;</label><textbox id="textboxrdn" preference="attrRdn"/>
+
+    <label accesskey="&objClasses.accesskey;" control="textboxobjClasses">&objClasses.label;</label><textbox id="textboxobjClasses" preference="objClasses"/>
+
+    <label accesskey="&maxHits.accesskey;" control="textboxmaxHits">&maxHits.label;</label><textbox id="textboxmaxHits" preference="maxHits" value="-1"/>
+
+    <hbox>
+      <button id="new" label="New" oncommand="modifyPref();onLoad();"/>
+      <button id="modify" label="Modify" disabled="true" oncommand="modifyPref(); onLoad();"/>
+      <button id="delete" label="Delete" disabled="true" oncommand="delPref(); onLoad();"/>
+    </hbox>
+   </vbox>
+  </hbox>
+
+</window>
+

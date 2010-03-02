@@ -5,8 +5,8 @@ var ldaprw = {
     this.strings = document.getElementById("ldaprw-strings");
   },
 
-  onMenuItemCommand: function(e) {
-    window.open("chrome://ldaprw/content/sync.xul", "sync", "chrome");
+  onMenuExplorerCommand: function(e) {
+    window.open("chrome://ldaprw/content/ldapexplorer.xul", "Explorer", "chrome");
     //var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
 //                                  .getService(Components.interfaces.nsIPromptService);
 //    promptService.alert(window, this.strings.getString("helloMessageTitle"),

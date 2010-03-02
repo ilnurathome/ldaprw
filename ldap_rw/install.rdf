@@ -4,12 +4,13 @@
     <em:id>ilnurathome@gmail.com</em:id>
     <em:type>2</em:type>
     <em:name>LDAP Read Write</em:name>
-    <em:version>0.1.201002101601</em:version>
+    <em:version>0.1.201003021409</em:version>
     <em:creator>Ilnur Kiyamov</em:creator>
     <em:contributor></em:contributor>
     <em:description>Address book for LDAP Read Write</em:description>
     <em:aboutURL>chrome://ldaprw/content/about.xul</em:aboutURL>
     <em:optionsURL>chrome://ldaprw/content/options.xul</em:optionsURL>
+    <em:homepageURL>http://ilnurathome.dyndns.org/</em:homepageURL>
     <em:targetApplication>
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id> <!-- Thunderbird -->

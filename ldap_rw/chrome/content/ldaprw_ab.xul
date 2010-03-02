@@ -9,14 +9,15 @@
   <script type="application/x-javascript" src="chrome://ldaprw/content/abtoldap.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaptoab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaprw_ab.js"/> 
+  <script type="application/x-javascript" src="chrome://ldaprw/content/ldapsource.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/overlay.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/sync.js"/>
   <script type="application/x-javascript" src="chrome://ldaprw/content/prefs.js"/>
 
   <menupopup id="taskPopup">
-    <menuitem id="ldaprw-launch" label="LdapRW" oncommand="ldaprw.onMenuItemCommand();"/>
+    <menuitem id="ldaprw-explorer" label="LdapRW Explorer" oncommand="ldaprw.onMenuExplorerCommand();"/>
     <menuitem id="ldaprw-pref" label="LdapRW Preferences" oncommand="ldaprw.onMenuPrefCommand();"/>
-    <menuitem id="ldaprw-sync" label="LdapSync" oncommand="ldapsync();"/>    
+    <menuitem id="ldaprw-sync" label="LdapRW Sync" oncommand="ldapsync();"/>    
   </menupopup>
 </overlay>
 
