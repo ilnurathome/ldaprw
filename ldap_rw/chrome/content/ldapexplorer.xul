@@ -47,7 +47,7 @@ function onLoad() {
 
     searchformat = "(|";
     attrs = new Array(); 
-    for (i in mapper.__proto__) { 
+    for (var i in mapper.__proto__) { 
       if ( i == "dn" ) continue;
       attrs[attrs.length] = i; 
       searchformat += "(" + i + "=*@V*" + ")";
@@ -82,7 +82,7 @@ function Init(){
 
     var searchformattmp = "" ;
     var classes = curpref.objClasses.replace(/\s*/g, '').split(',');
-    for (i in classes) { 
+    for (var i in classes) { 
       searchformattmp += "(objectClass=" + classes[i] + ")";
     };
 //    searchformat = "(&" + searchformattmp + searchformat + ")";

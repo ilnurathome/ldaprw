@@ -20,16 +20,18 @@ function LdaptoAB() {
   function genfun (from, to) {
     return function(operation) {
       debugldaptoab("from = " + from + " to = " + to + " " + this.LDAPMessage.getValues( from ,{} ) +"\n");
-      for (var i in to) {
-        this.AbCard.setProperty( to[i] , this.LDAPMessage.getValues( from ,{} ) );
+      for (var prop in to) {
+        var value = this.LDAPMessage.getValues( from ,{} );
+        if ( value instanceof Array)
+           this.AbCard.setProperty( to[prop] , value[0] );
       }
     }    
   }
 
-  for (i in this.__proto__) { 
-    if (this.__proto__[i] instanceof Array){ 
-//      this.__proto__[i]=   genfun(i, this.__proto__[i] ); 
-      this[i]=   genfun(i, this.__proto__[i] ); 
+  for (var met in this.__proto__) { 
+    if (this.__proto__[met] instanceof Array){ 
+//      this.__proto__[met]=   genfun(met, this.__proto__[met] ); 
+      this[met]=   genfun(met, this.__proto__[met] ); 
     } 
   } 
 
