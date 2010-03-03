@@ -11,7 +11,6 @@ function dumperrors(str){
 load("chrome://ldaprw/content/abtoldap.js"); 
 load("chrome://ldaprw/content/ldaptoab.js"); 
 load("chrome://ldaprw/content/ldapsource.js");
-load("chrome://ldaprw/content/overlay.js");
 load("chrome://ldaprw/content/sync.js");
 load("chrome://ldaprw/content/prefs.js");
 */
@@ -309,12 +308,12 @@ function genaddtoldap(pref, ldapser) {
     }
 }
 
-function addcardfromldap(pref, aMsg, replace){
-  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-  var book = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename );
+function addcardfromldap(book, aMsg, replace){
+//  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+//  var book = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename );
  
   var mapper = new LdaptoAB();
-  var card = mybook.getCardFromProperty("dn", aMsg.dn, false);
+  var card = book.getCardFromProperty("dn", aMsg.dn, false);
   if ( card == undefined ) {
     var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard); 
 

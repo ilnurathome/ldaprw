@@ -3,6 +3,8 @@
 <!ENTITY % overlayDTD SYSTEM "chrome://ldaprw/locale/overlays.dtd"> %overlayDTD;
 ]>
 
+<?xul-overlay href="chrome://ldaprw/content/ldapexplorer.xul"?>  
+
 <overlay id="ldaprw_ab_overlay" 
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
@@ -10,7 +12,6 @@
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaptoab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaprw_ab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldapsource.js"/> 
-  <script type="application/x-javascript" src="chrome://ldaprw/content/overlay.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/sync.js"/>
   <script type="application/x-javascript" src="chrome://ldaprw/content/prefs.js"/>
 
@@ -19,5 +20,10 @@
     <menuitem id="ldaprw-pref" label="LdapRW Preferences" oncommand="ldaprw.onMenuPrefCommand();"/>
     <menuitem id="ldaprw-sync" label="LdapRW Sync" oncommand="ldapsync();"/>    
   </menupopup>
+  <!--
+  <vbox id="dirTreeBox">
+    <iframe id="ldapExplorer-content" src="chrome://ldaprw/content/ldapexplorer.xul" flex="1"/> 
+  </vbox>
+  -->
 </overlay>
 
