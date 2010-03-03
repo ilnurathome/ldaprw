@@ -20,7 +20,7 @@ onload="onLoad();">
      </sidebarheader>  
      <menulist id="ldapexplorer-servers" label="select server..." onselect="selectServer(this.selectedItem.label);"/>
      <spacer style="height: 10px" />
-  <textbox id="tbox" emptytext="search criteries" type="search" oncommand="onEnterInSearchBar(this.value);"/>
+  <textbox id="tbox" emptytext="search criteries" type="search" oncommand="ldapexplorer-onEnterInSearchBar(this.value);"/>
 
 <tree flex="1" id="ldapexplorer-cardlist" onselect="doselect();">
   <treecols>

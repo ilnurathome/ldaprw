@@ -164,10 +164,23 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
                      if (aMsg.errorCode == Components.interfaces.nsILDAPErrors.SUCCESS )  {
                        debugldapsource("binded\n");
                        caller.mBinded = 1;
-                     }                     
-                       caller.mFinished = 0;
-                       //debugldapsource("metod=" + metod +"\n");
                        metod(aMsg);
+                     } else {                    
+                       caller.mFinished = 0;
+                       if ( getpassword(aMsg) ){
+                         try {
+                           caller.mOperationBind.init(caller.mConnection, 
+                               caller.generateGetTargetsBoundCallback(caller, queryURL, getpassword, metod), null);
+                         
+                           caller.mOperationBind.simpleBind(getpassword());                                   
+                         } catch (e) {
+                           dumperrors("init error: " + e + "\n");
+                           alert("ldap init error: " + e + "\n");
+                           return;
+                         }
+                       }
+                     }
+                       //debugldapsource("metod=" + metod +"\n");
                    },
 
     onLDAPInit: function(aConn, aStatus) {

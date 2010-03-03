@@ -34,13 +34,43 @@ function ldapsync() {
   }
 }
 
-function gengetpassword(prePath, uri) {
-    return function() {
-      var passwordManager = Components.classes["@mozilla.org/login-manager;1"].
-                         getService(Components.interfaces.nsILoginManager);
-      var logins = passwordManager.findLogins( {}, prePath, null, uri); 
-      return logins[0].password;
-    };
+
+function gengetpassword(uri) {
+  var counter=0;
+  var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
+    return function getpassword(aMsg) {
+      dump("getpassword "+ counter + "\n");
+      if (aMsg != undefined){  
+        dump("getpassword " + counter + "\t" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) +"\n");
+        try{
+          var passwordManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+          var logins = passwordManager.findLogins( {}, queryURL.prePath, null, uri); 
+          if (logins.length>0) {
+            passwordManager.removeLogin(logins[0])
+              dump("old login removed");
+          }
+        }catch(e){
+          dump("getpassword:" + e + "\n");
+        }
+        counter++;
+        dump("getpassword counter changed"+ counter + "\n");
+        if (counter > 2) return false;
+        return true;
+      }
+
+      try{
+        var pw = { value: ""};
+        var authprompter = Components.classes["@mozilla.org/login-manager/prompter;1"] 
+                            .getService(Components.interfaces.nsIAuthPrompt);
+        var res = authprompter.promptPassword("Ldap Server Password Need", "Ldap Server Password Request\n" + uri , uri, Components.interfaces.nsIAuthPrompt.SAVE_PASSWORD_PERMANENTLY, pw);
+        if (!res) {
+          counter = 3;
+        }
+      }catch(e){
+        alert("getpassword: "+e);
+      }      
+      return pw.value;
+   }
 }
 
 function genLdapErrorsToStr() {
@@ -67,8 +97,6 @@ function syncpolitic2(pref){
   var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename ); 
 
   var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(pref.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
-
-  var getpassword = gengetpassword(queryURL.prePath, pref.uri);
 
   var mapper = new LdaptoAB();
   var mappertoldap = new ABtoLdap();
@@ -160,7 +188,7 @@ function syncpolitic2(pref){
 
         if (mods.length >0){             
           try { 
-            ldap.modify (queryURL, pref.binddn, getpassword, 
+            ldap.modify (queryURL, pref.binddn, gengetpassword(pref.uri), 
                          genmodquery( [ { dn: aMsg.dn, mods: mods} ] ) ); 
           } catch (e) {
             dumperrors("Error: " + e+ "\n"); 
@@ -197,7 +225,7 @@ function syncpolitic2(pref){
            }
           }
         }
-        debugsync("nothing to do\n")
+        debugsync("iteration nothing to do\n")
         return null;
     }
 
@@ -213,9 +241,11 @@ function syncpolitic2(pref){
               debugsync("getsearchquery new card\n");
               newcardtoldap(currentcard);
               return iteration();
+            } else {
+              alert (aMsg.type + "\n" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) + "\n" + aMsg.errorMessage);
             }
         }
-      debugsync("nothing to do\n");
+      debugsync("getsearchquery nothing to do\n");
       return null;  
    }
   }
@@ -237,7 +267,7 @@ function syncpolitic2(pref){
   try {
     queryURL.filter = "(objectclass=inetorgperson)"
 //    ldap.query(queryURL, binddn, "(objectclass=inetorgperson)", getpassword, getsearchquery, callbacksearchresult );
-    ldap.query(queryURL, pref.binddn, getpassword, gengetsearchquery(), callbacksearchresult );
+    ldap.query(queryURL, pref.binddn, gengetpassword(pref.uri), gengetsearchquery(), callbacksearchresult );
   } catch (e) {
     dumperrors ("Error: " + e + "\n" );
   }
@@ -250,7 +280,6 @@ function genaddtoldap(pref, ldapser) {
 
   var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename ); 
   var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(pref.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
-  var getpassword = gengetpassword(queryURL.prePath, pref.uri);
 
   var mapper = new LdaptoAB();
   var mappertoldap = new ABtoLdap();
@@ -268,7 +297,6 @@ function genaddtoldap(pref, ldapser) {
           debugsync("addquery aMsg= " + aMsg.errorCode + "\n");
         if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS) {
           debugsync("addquery Ldap can't add " + aMsg.errorCode + "\n");
-          throw "Error: Ldap can't add " + aMsg.errorCode;
           alert("Error: addquery " + aMsg.errorCode + "\n" 
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
                   + aMsg.errorMessage );
@@ -300,7 +328,7 @@ function genaddtoldap(pref, ldapser) {
       card.setProperty("dn", dn);
       
       try {
-        ldap.add(queryURL, pref.binddn, getpassword, genaddquery(card, [{dn: dn, mods: mods}]) );  
+        ldap.add(queryURL, pref.binddn, gengetpassword(pref.uri), genaddquery(card, [{dn: dn, mods: mods}]) );  
       } catch(e) {
         dumperrors("Error: " + e+"\n");
       }

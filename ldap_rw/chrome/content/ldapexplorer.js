@@ -56,7 +56,7 @@ function selectServer(label) {
 function Init(){
     queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(curpref.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
 
-    getpassword = gengetpassword(queryURL.prepath, curpref.uri);
+    getpassword = gengetpassword(curpref.uri);
 
     ldap = new LdapDataSource();
 
@@ -122,7 +122,7 @@ function gencallbacksearchresult(tree, attrs){
      }
 }
 
-   function onEnterInSearchBar(value){
+   function ldapexplorer-onEnterInSearchBar(value){
        document.getElementById('ldapexplorer-add').disabled=true;                     document.getElementById('ldapexplorer-morelabel').disabled=true;                     
 
         if ( ldap == null ){
