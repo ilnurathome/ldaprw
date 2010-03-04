@@ -140,6 +140,18 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
 
 
 LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, queryURL, getpassword, metod ){  
+  function binder() {
+    try {
+      caller.mOperationBind.init(caller.mConnection, 
+          caller.generateGetTargetsBoundCallback(caller, queryURL, getpassword, metod), null);
+      
+      caller.mOperationBind.simpleBind(getpassword());                                   
+    } catch (e) {
+      dumperrors("init error: " + e + "\n");
+      alert("init error: " + e + "\n");
+      return
+    }
+  }
   ////////////////////////////////////////////
   function getTargetsBoundCallback () {}
   getTargetsBoundCallback.prototype = { 
@@ -168,16 +180,7 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
                      } else {                    
                        caller.mFinished = 0;
                        if ( getpassword(aMsg) ){
-                         try {
-                           caller.mOperationBind.init(caller.mConnection, 
-                               caller.generateGetTargetsBoundCallback(caller, queryURL, getpassword, metod), null);
-                         
-                           caller.mOperationBind.simpleBind(getpassword());                                   
-                         } catch (e) {
-                           dumperrors("init error: " + e + "\n");
-                           alert("ldap init error: " + e + "\n");
-                           return;
-                         }
+                         binder();
                        }
                      }
                        //debugldapsource("metod=" + metod +"\n");
@@ -192,21 +195,7 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
 
                   //caller.mOperationBind = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
                   debugldapsource ("init oper\n");
-                  try {
-                    caller.mOperationBind.init(caller.mConnection, 
-                         caller.generateGetTargetsBoundCallback(caller, queryURL, getpassword, metod),
-                        null);
-//                              debugldapsource("caller.mOperationBind");
-//                              debugldapsource(caller.mOperationBind);
-//                              debugldapsource("\n");
-//                              debugldapsource(caller.mOperationBind.connection);
-                              
-                    caller.mOperationBind.simpleBind(getpassword());                                   
-                  } catch (e) {
-                      dumperrors("init error: " + e + "\n");
-                      alert("init error: " + e + "\n");
-                      return
-                  }
+                  binder();
                   debugldapsource ("created operation\n");
                   return;
                 }

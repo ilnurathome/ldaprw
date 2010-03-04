@@ -122,7 +122,7 @@ function gencallbacksearchresult(tree, attrs){
      }
 }
 
-   function ldapexplorer-onEnterInSearchBar(value){
+   function ldapexploreronEnterInSearchBar(value){
        document.getElementById('ldapexplorer-add').disabled=true;                     document.getElementById('ldapexplorer-morelabel').disabled=true;                     
 
         if ( ldap == null ){

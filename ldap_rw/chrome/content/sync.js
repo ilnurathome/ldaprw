@@ -3,8 +3,9 @@ function debugsync(str){
 }
 
 function dumperrors(str){
-   dump(str);
-}
+       dump(str);
+       alert(str);
+  }
 
 
 /*
@@ -38,7 +39,19 @@ function ldapsync() {
 function gengetpassword(uri) {
   var counter=0;
   var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
-    return function getpassword(aMsg) {
+
+  function pwdret(type, val){ 
+    this.type =type; 
+    this.val = val; 
+  }
+  pwdret.prototype = {
+    classDescription: "Pwd object",
+    type: -1,
+    value: "",
+
+  }
+
+  return function getpassword(aMsg) {
       dump("getpassword "+ counter + "\n");
       if (aMsg != undefined){  
         dump("getpassword " + counter + "\t" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) +"\n");
@@ -67,7 +80,7 @@ function gengetpassword(uri) {
           counter = 3;
         }
       }catch(e){
-        alert("getpassword: "+e);
+        dumperrors("getpassword: "+e);
       }      
       return pw.value;
    }
@@ -124,7 +137,7 @@ function syncpolitic2(pref){
      if (aMsg != undefined ){
           debugsync("modquery aMsg= " + aMsg.errorCode + "\n");
           if(aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS ){
-            alert("Error: modquery " + aMsg.errorCode + "\n" 
+            dumperrors("Error: modquery " + aMsg.errorCode + "\n" 
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
                   + aMsg.errorMessage );
           }
@@ -242,7 +255,7 @@ function syncpolitic2(pref){
               newcardtoldap(currentcard);
               return iteration();
             } else {
-              alert (aMsg.type + "\n" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) + "\n" + aMsg.errorMessage);
+              dumperrors (aMsg.type + "\n" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) + "\n" + aMsg.errorMessage);
             }
         }
       debugsync("getsearchquery nothing to do\n");
@@ -296,8 +309,7 @@ function genaddtoldap(pref, ldapser) {
       if (aMsg != undefined ){
           debugsync("addquery aMsg= " + aMsg.errorCode + "\n");
         if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS) {
-          debugsync("addquery Ldap can't add " + aMsg.errorCode + "\n");
-          alert("Error: addquery " + aMsg.errorCode + "\n" 
+          dumperrors("Error: addquery " + aMsg.errorCode + "\n" 
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
                   + aMsg.errorMessage );
           
