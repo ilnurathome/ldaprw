@@ -1,3 +1,8 @@
+function dumperrors(str){
+       dump(str+ "\n");
+       alert(str);
+}
+
 function getprefs(){
   var list = new Array();
   
@@ -11,24 +16,32 @@ function getprefs(){
     for (var c in mychilds){
       var key = mychilds[c].split('.')[0];
       if ( list[key] == undefined ) {
-        list[key] = {};
+//        list[key] = {};
         try {
           var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
-          list[key].binddn = myprefs.getCharPref(key + ".auth.dn");
-          list[key].uri = myprefs.getCharPref(key + ".uri");
-          list[key].attrRdn = myprefs.getCharPref(key + ".attrRdn");
-          list[key].objClasses = myprefs.getCharPref(key + ".objClasses");
-          list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
+          list[key] = {
+            binddn:     myprefs.getCharPref(key + ".auth.dn"),
+            uri:        myprefs.getCharPref(key + ".uri"),
+            attrRdn:    myprefs.getCharPref(key + ".attrRdn"),
+            objClasses: myprefs.getCharPref(key + ".objClasses"),
+            maxHits:    myprefs.getIntPref(key + ".maxHits"),
 
-          //list[key].queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(list[key].uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
+            objClassesAR: myprefs.getCharPref(key + ".objClasses").replace(/\s*/g, '').split(","),
+            get queryURL() { return Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(this.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL) },
           
           
-          list[key].bookname = key;
-          list[key].description = abprefs.getCharPref("description");
-          list[key].dirType = abprefs.getIntPref("dirType");
-          list[key].filename = abprefs.getCharPref("filename");
+            bookname:   key,
+            description: abprefs.getCharPref("description"),
+            dirType:    abprefs.getIntPref("dirType"),
+            filename:   abprefs.getCharPref("filename"),
+            get book() {
+              var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);              
+              return abManager.getDirectory( "moz-abmdbdirectory://" + this.filename );
+            }
+
+          }
         } catch(e) {
-          dump("Error getprefs");
+          dumperrors("Error getprefs " + e + "\n");
         }
       }
     }
@@ -36,17 +49,18 @@ function getprefs(){
   return list;
 }
 
-function setpref(bookname, newpref) {
+function setpref(newpref) {
 
   var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
   prefs = prefs.getBranch("extensions.ldaprw.");
-  prefs.setCharPref("ldap_2.servers." + bookname + ".auth.dn", newpref.binddn);
-  prefs.setCharPref("ldap_2.servers." + bookname + ".uri", newpref.uri);
+  var prefix = "ldap_2.servers." + newpref.bookname;
+  prefs.setCharPref( prefix + ".auth.dn", newpref.binddn);
+  prefs.setCharPref( prefix + ".uri", newpref.uri);
 
-  prefs.setCharPref("ldap_2.servers." + bookname + ".attrRdn", newpref.attrRdn);
-  prefs.setCharPref("ldap_2.servers." + bookname + ".objClasses", newpref.objClasses);
+  prefs.setCharPref( prefix + ".attrRdn", newpref.attrRdn);
+  prefs.setCharPref( prefix + ".objClasses", newpref.objClasses);
 
-  prefs.setIntPref("ldap_2.servers." + bookname + ".maxHits", newpref.maxHits);
+  prefs.setIntPref( prefix + ".maxHits", newpref.maxHits);
 }
 
 function delpref(bookname) {

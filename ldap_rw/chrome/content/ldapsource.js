@@ -3,7 +3,8 @@ function debugldapsource(str){
 }
 
 function dumperrors(str){
-   dump(str);
+   dump(str + "\n");
+   alert(str);
 }
 
 
@@ -55,6 +56,17 @@ function generateGetTargetsCallback (onLDAPInit, onLDAPMessage) {
                          Components.interfaces.nsILDAPMessageListener );
 }
 
+function genLdapErrorsToStr() {
+  var errors = [];
+  for ( var i in Components.interfaces.nsILDAPErrors) { 
+     errors[ errors.length ] = i;
+  }
+  return function(n) {
+    return errors[n];
+  }
+}
+
+var LdapErrorsToStr = genLdapErrorsToStr();
 
 /*
  * class definition
@@ -256,7 +268,7 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
                    try {
                      caller.mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
                      //mOperationSearch.searchExt(queryes[mFinished], queryURL.scope, filter, caller.kAttributes.length, caller.kAttributes, 0, -1);
-                     caller.mOperationSearch.searchExt(query, queryURL.scope, queryURL.filter, caller.kAttributes.length, caller.kAttributes, 0, caller.kMaxMess);
+                     caller.mOperationSearch.searchExt(query.dn, queryURL.scope, query.filter, caller.kAttributes.length, caller.kAttributes, 0, caller.kMaxMess);
                    } catch (e) {
                      dumperrors("init error: " + e + "\n");
                      return;

@@ -20,10 +20,6 @@
     <menuitem id="ldaprw-pref" label="LdapRW Preferences" oncommand="ldaprw.onMenuPrefCommand();"/>
     <menuitem id="ldaprw-sync" label="LdapRW Sync" oncommand="ldapsync();"/>    
   </menupopup>
-  <!--
-  <vbox id="dirTreeBox">
-    <iframe id="ldapExplorer-content" src="chrome://ldaprw/content/ldapexplorer.xul" flex="1"/> 
-  </vbox>
-  -->
+
 </overlay>
 

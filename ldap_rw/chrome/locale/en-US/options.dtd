@@ -7,8 +7,8 @@
 <!ENTITY stringpref.label "A String Preference">
 <!ENTITY stringpref.accesskey "S">
 
-<!ENTITY abdir.label "Address Book">
-<!ENTITY abdir.accesskey "A">
+<!ENTITY bookname.label "Address Book">
+<!ENTITY bookname.accesskey "A">
 <!ENTITY uri.label "URI">
 <!ENTITY uri.accesskey "U">
 <!ENTITY auth.dn.label "Auth DN">

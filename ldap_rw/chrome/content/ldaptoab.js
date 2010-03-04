@@ -4,6 +4,7 @@ function debugldaptoab(str){
 
 function dumperrors(str){
    dump(str + "\n");
+   alert(str);
 }
 
 

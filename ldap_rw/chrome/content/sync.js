@@ -1,11 +1,11 @@
 function debugsync(str){
-  dump("sync.js: " + str);
+  //dump("sync.js: " + str);
 }
 
 function dumperrors(str){
-       dump(str);
+       dump(str+ "\n");
        alert(str);
-  }
+}
 
 
 /*
@@ -52,9 +52,9 @@ function gengetpassword(uri) {
   }
 
   return function getpassword(aMsg) {
-      dump("getpassword "+ counter + "\n");
+      debugsync("getpassword "+ counter + "\n");
       if (aMsg != undefined){  
-        dump("getpassword " + counter + "\t" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) +"\n");
+        debugsync("getpassword " + counter + "\t" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) +"\n");
         try{
           var passwordManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
           var logins = passwordManager.findLogins( {}, queryURL.prePath, null, uri); 
@@ -63,10 +63,10 @@ function gengetpassword(uri) {
               dump("old login removed");
           }
         }catch(e){
-          dump("getpassword:" + e + "\n");
+          dumperrors("getpassword:" + e + "\n");
         }
         counter++;
-        dump("getpassword counter changed"+ counter + "\n");
+        debugsync("getpassword counter changed"+ counter + "\n");
         if (counter > 2) return false;
         return true;
       }
@@ -86,49 +86,23 @@ function gengetpassword(uri) {
    }
 }
 
-function genLdapErrorsToStr() {
-  var errors = [];
-  for ( var i in Components.interfaces.nsILDAPErrors) { 
-     errors[ errors.length ] = i;
-  }
-  return function(n) {
-    return errors[n];
-  }
-}
 
-var LdapErrorsToStr = genLdapErrorsToStr();
 
 /*
  * Experimental func
  * 
  */
 function syncpolitic2(pref){
-  var mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
+//  var mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
 
-  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+  var mybook = pref.book;
 
-  var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename ); 
-
-  var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(pref.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
+  var queryURL = pref.queryURL;
 
   var mapper = new LdaptoAB();
   var mappertoldap = new ABtoLdap();
 
-  /*
-   * Masking some function
-   */
-
-  /*
-  var masked = mapper.__proto__[pref.attrRdn];
-  var maskedfunction;
-  if ( masked != undefined ) {
-    maskedfunction = mappertoldap[masked];
-    mappertoldap[masked] = function(){};
-  }
-  */
-
   var newcards = new Array();  
-
 
   function genmodquery(querymods) {
     var modquerycount = 0;
@@ -187,16 +161,6 @@ function syncpolitic2(pref){
         mapper.map(aMsg, oldcard);
         var mods = CreateNSMutArray();
         
-//        try{
-//          var objclassexists = aMsg.getValues("objectClass", {});
-//          var objclassneeded = pref.objClasses.replace(/\s*/g, '').split(",");
-//          var objclassestmp;
-
-          //mods.appendElement( CreateLDAPMod( "objectClass", pref.objClasses.replace(/\s*/g, '').split(","), Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );        
-          //mods.appendElement( CreateLDAPMod( "objectClass", pref.objClasses.replace(/\s*/g, '').split(","), Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
-//        }catch(e){
-//          dumperrors("Errors: " + e + "\n");
-//        }
         mappertoldap.map(card, mods, oldcard);
 
         if (mods.length >0){             
@@ -213,8 +177,6 @@ function syncpolitic2(pref){
       }
     }
     
-
-//    ldapABcards[ldapABcards.length] = card;
   };
 
 
@@ -230,8 +192,9 @@ function syncpolitic2(pref){
           if ( currentcard instanceof Components.interfaces.nsIAbCard) {
             var dn = currentcard.getProperty("dn", null);
             debugsync("iter while dn=" + dn + "\n");
+            var filter = "(objectclass=inetorgperson)";
             if ( dn ){
-              return dn;
+              return {dn: dn, filter: filter};
             } else {
               debugsync("iteration new card new dn\n");
               newcardtoldap(currentcard);
@@ -278,8 +241,7 @@ function syncpolitic2(pref){
   ldap.init(attrs);
 
   try {
-    queryURL.filter = "(objectclass=inetorgperson)"
-//    ldap.query(queryURL, binddn, "(objectclass=inetorgperson)", getpassword, getsearchquery, callbacksearchresult );
+  //  queryURL.filter = "(objectclass=inetorgperson)"
     ldap.query(queryURL, pref.binddn, gengetpassword(pref.uri), gengetsearchquery(), callbacksearchresult );
   } catch (e) {
     dumperrors ("Error: " + e + "\n" );
@@ -288,11 +250,10 @@ function syncpolitic2(pref){
 }
 
 function genaddtoldap(pref, ldapser) {
-  
-  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
 
-  var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename ); 
-  var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(pref.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
+
+  var mybook = pref.book;
+  var queryURL = pref.queryURL;
 
   var mapper = new LdaptoAB();
   var mappertoldap = new ABtoLdap();
@@ -333,7 +294,7 @@ function genaddtoldap(pref, ldapser) {
       
       dn = pref.attrRdn + "=" + card.displayName + "," + queryURL.dn;
       debugsync("newcardtoldap dn=" + dn + "\n");
-      mods.appendElement( CreateLDAPMod( "objectClass", pref.objClasses.replace(/\s*/g, '').split(","), Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
+      mods.appendElement( CreateLDAPMod( "objectClass", pref.objClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
       
       mappertoldap.map(card, mods, oldcard);
 
@@ -349,14 +310,11 @@ function genaddtoldap(pref, ldapser) {
 }
 
 function addcardfromldap(book, aMsg, replace){
-//  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-//  var book = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename );
  
   var mapper = new LdaptoAB();
   var card = book.getCardFromProperty("dn", aMsg.dn, false);
   if ( card == undefined ) {
     var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard); 
-
 
     mapper.map(aMsg, card);
 

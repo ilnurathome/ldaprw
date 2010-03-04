@@ -59,8 +59,8 @@
 
 
     function modifyPref(){
-         abdir = document.getElementById('textboxabdir').value;
          var pref = {};
+         pref.bookname = document.getElementById('textboxabdir').value;
          pref.uri= document.getElementById('textboxuri').value;
          pref.binddn= document.getElementById('textboxauthdn').value;
          pref.attrRdn= document.getElementById('textboxrdn').value;
@@ -73,11 +73,11 @@
          //dump(pref.objClasses+ "\n" );
          //dump(pref.maxHits+ "\n" );
 
-         setpref(abdir, pref);   
+         setpref(pref);   
    }
 
     function delPref(){
-         var abdir = document.getElementById('textboxabdir').value;
+         var abdir = document.getElementById('textboxbookname').value;
          //dump("abdir = " + abdir + "\n" );
          delpref(abdir);   
    }
@@ -95,7 +95,7 @@
 
 
    <vbox> 
-    <label accesskey="&abdir.accesskey;" control="textboxabdir">&abdir.label;</label><textbox id="textboxabdir" preference="uri"/>
+    <label accesskey="&bookname.accesskey;" control="textboxbookname">&bookname.label;</label><textbox id="textboxbookname" preference="uri"/>
 
     <label accesskey="&uri.accesskey;" control="textboxuri">&uri.label;</label><textbox id="textboxuri" preference="uri"/>
 
