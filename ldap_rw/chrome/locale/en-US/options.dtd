@@ -9,14 +9,24 @@
 
 <!ENTITY bookname.label "Address Book">
 <!ENTITY bookname.accesskey "A">
+
 <!ENTITY uri.label "URI">
 <!ENTITY uri.accesskey "U">
+<!ENTITY uri.value "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(objectclass=*)">
+
 <!ENTITY auth.dn.label "Auth DN">
 <!ENTITY auth.dn.accesskey "D">
+<!ENTITY auth.dn.value "uid=ilnur,ou=people,dc=local">
+
 <!ENTITY maxHits.label "maxHits">
 <!ENTITY maxHits.accesskey "M">
+<!ENTITY maxHits.value "10">
+
 <!ENTITY attrRdn.label "Attribute for RDN">
 <!ENTITY attrRdn.accesskey "R">
-<!ENTITY objClasses.label "Object Classes">
+<!ENTITY attrRdn.value "cn">
+
+<!ENTITY objClasses.label "Object Classes for new ldap cards">
 <!ENTITY objClasses.accesskey "C">
+<!ENTITY objClasses.value "inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person">
 

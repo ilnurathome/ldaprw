@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE overlay [
-<!ENTITY % overlayDTD SYSTEM "chrome://ldaprw/locale/overlays.dtd"> %overlayDTD;
-]>
+<!DOCTYPE overlay SYSTEM "chrome://ldaprw/locale/overlays.dtd">
 
 <?xul-overlay href="chrome://ldaprw/content/ldapexplorer.xul"?>  
 
@@ -16,9 +14,8 @@
   <script type="application/x-javascript" src="chrome://ldaprw/content/prefs.js"/>
 
   <menupopup id="taskPopup">
-    <menuitem id="ldaprw-explorer" label="LdapRW Explorer" oncommand="ldaprw.onMenuExplorerCommand();"/>
-    <menuitem id="ldaprw-pref" label="LdapRW Preferences" oncommand="ldaprw.onMenuPrefCommand();"/>
-    <menuitem id="ldaprw-sync" label="LdapRW Sync" oncommand="ldapsync();"/>    
+    <menuitem id="ldaprw-pref" label="&ldaprw.pref.label;" oncommand="ldaprw.onMenuPrefCommand();"/>
+    <menuitem id="ldaprw-sync" label="&ldaprw.sync.label;" oncommand="ldapsync();"/>    
   </menupopup>
 
 </overlay>

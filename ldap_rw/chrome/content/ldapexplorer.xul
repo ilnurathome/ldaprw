@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<!DOCTYPE prefwindow SYSTEM "chrome://ldaprw/locale/options.dtd">              
+<!DOCTYPE overlay SYSTEM "chrome://ldaprw/locale/overlays.dtd">
+
 <overlay id="ldapexplorer" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 onload="onLoad();">
 
@@ -16,29 +17,29 @@ onload="onLoad();">
     <splitter id="ldapExplorer-splitter" collapse="before" persist="state" />
   <vbox flex="1">
     <sidebarheader id="ldapexplorerTreeHeader" align="center">   
-       <label id="ldapexplorerTreeHeader-title" value="Ldap Cards Explorer" control="dirTree"/> 
+       <label id="ldapexplorerTreeHeader-title" value="&ldapexplorer-title.value;" control="dirTree"/> 
      </sidebarheader>  
-     <menulist id="ldapexplorer-servers" label="select server..." onselect="selectServer(this.selectedItem.label);"/>
+     <menulist id="ldapexplorer-servers" label="&ldapexplorer-menu.label;" onselect="selectServer(this.selectedItem.label);"/>
      <spacer style="height: 10px" />
   <textbox id="tbox" emptytext="search criteries" type="search" oncommand="ldapexploreronEnterInSearchBar(this.value);"/>
 
 <tree flex="1" id="ldapexplorer-cardlist" onselect="doselect();">
   <treecols>
-    <treecol id="cn" label="DisplayName" flex="1"/>
+    <treecol id="cn" label="cn" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="mail" label="Mail" flex="1"/>
+    <treecol id="mail" label="mail" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="sn" label="Surname" flex="1"/>
+    <treecol id="sn" label="surname" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="givenName" label="Name" flex="1"/>
+    <treecol id="givenName" label="givenName" flex="1"/>
   </treecols>
   <treechildren/>
 </tree>
 
 <hbox>
-  <button id="ldapexplorer-add" label="Add" oncommand="doAdd();"/>
+  <button id="ldapexplorer-add" label="&ldapexplorer-add.label;" oncommand="doAdd();"/>
    <spacer style="height: 10px" flex="1"/>
-   <label id="ldapexplorer-morelabel" value="more..." disabled="true"/>
+   <label id="ldapexplorer-morelabel" value="&ldapexplorer-more.value;" disabled="true"/>
 </hbox>
 </vbox>
 </vbox>

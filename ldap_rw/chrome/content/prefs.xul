@@ -49,7 +49,7 @@
          document.getElementById('modify').disabled=false;
          document.getElementById('delete').disabled = false;
 
-         document.getElementById('textboxabdir').value = prefedit;
+         document.getElementById('textboxbookname').value = prefedit;
          document.getElementById('textboxuri').value = prefs[prefedit].uri;
          document.getElementById('textboxauthdn').value = prefs[prefedit].binddn;
          document.getElementById('textboxrdn').value = prefs[prefedit].attrRdn;
@@ -97,15 +97,15 @@
    <vbox> 
     <label accesskey="&bookname.accesskey;" control="textboxbookname">&bookname.label;</label><textbox id="textboxbookname" preference="uri"/>
 
-    <label accesskey="&uri.accesskey;" control="textboxuri">&uri.label;</label><textbox id="textboxuri" preference="uri"/>
+    <label accesskey="&uri.accesskey;" control="textboxuri">&uri.label;</label><textbox id="textboxuri" preference="uri" value="&uri.value;"/>
 
-    <label accesskey="&auth.dn.accesskey;" control="textboxauthdn">&auth.dn.label;</label><textbox id="textboxauthdn" preference="auth.dn"/>
+    <label accesskey="&auth.dn.accesskey;" control="textboxauthdn">&auth.dn.label;</label><textbox id="textboxauthdn" preference="auth.dn" value="&auth.dn.value;"/>
 
-    <label accesskey="&attrRdn.accesskey;" control="textboxrdn">&attrRdn.label;</label><textbox id="textboxrdn" preference="attrRdn"/>
+    <label accesskey="&attrRdn.accesskey;" control="textboxrdn">&attrRdn.label;</label><textbox id="textboxrdn" preference="attrRdn" value="&attrRdn.value;"/>
 
-    <label accesskey="&objClasses.accesskey;" control="textboxobjClasses">&objClasses.label;</label><textbox id="textboxobjClasses" preference="objClasses"/>
+    <label accesskey="&objClasses.accesskey;" control="textboxobjClasses">&objClasses.label;</label><textbox id="textboxobjClasses" preference="objClasses" value="&objClasses.value;"/>
 
-    <label accesskey="&maxHits.accesskey;" control="textboxmaxHits">&maxHits.label;</label><textbox id="textboxmaxHits" preference="maxHits" value="-1"/>
+    <label accesskey="&maxHits.accesskey;" control="textboxmaxHits">&maxHits.label;</label><textbox id="textboxmaxHits" preference="maxHits" value="&maxHits.value;"/>
 
     <hbox>
       <button id="new" label="New" oncommand="modifyPref();onLoad();"/>
