@@ -60,7 +60,7 @@ function gengetpassword(uri) {
           var logins = passwordManager.findLogins( {}, queryURL.prePath, null, uri); 
           if (logins.length>0) {
             passwordManager.removeLogin(logins[0])
-              dump("old login removed");
+              debugsync("old login removed");
           }
         }catch(e){
           dumperrors("getpassword:" + e + "\n");
@@ -117,7 +117,7 @@ function syncpolitic2(pref){
           }
       }
        if ( modquerycount < querymods.length ) {
-          dump( querymods[modquerycount].dn + " "
+          debugsync( querymods[modquerycount].dn + " "
               + querymods[modquerycount].mods+ "\n");
        
         return querymods[modquerycount++];
@@ -180,11 +180,42 @@ function syncpolitic2(pref){
   };
 
 
-  function gengetsearchquery(){
+  function gengetsearchquery(queryURL){
     var allcards = mybook.childCards;
     var currentcard;
 
     function iteration(){
+      var ncard=0;
+      var filter="";
+
+      while ( ncard <10 && allcards.hasMoreElements()  ) {
+          
+          var card = allcards.getNext();
+          if ( card instanceof Components.interfaces.nsIAbCard) {
+            var dn = card.getProperty("dn", "");
+
+            if ( dn ){
+              var rdn = dn.split(',')[0].replace(/^\s+|\s+$/g,''); 
+              debugsync("iter while dn=" + dn + "\n");
+              //var filter = "(objectclass=inetorgperson)";
+              if ( rdn.match(/^[^=]*=[^=]*$/g) ){
+                filter += "(" + rdn + ")";
+                ncard++;
+              }
+              //return {dn: dn, filter: filter};
+            } else {
+              debugsync("iteration new card new dn\n");
+              newcardtoldap(card);
+           }
+          }
+        }
+      debugsync(filter + "\t" + ncard + "\n");
+      if (ncard > 0) return {dn: queryURL.dn, filter: "(|" + filter + ")"}
+        debugsync("iteration nothing to do\n")
+        return null;
+    }
+
+    function iteration_old(){
       debugsync("iter \n");
         while ( allcards.hasMoreElements()  ) {
           
@@ -242,7 +273,7 @@ function syncpolitic2(pref){
 
   try {
   //  queryURL.filter = "(objectclass=inetorgperson)"
-    ldap.query(queryURL, pref.binddn, gengetpassword(pref.uri), gengetsearchquery(), callbacksearchresult );
+    ldap.query(queryURL, pref.binddn, gengetpassword(pref.uri), gengetsearchquery(pref.queryURL), callbacksearchresult );
   } catch (e) {
     dumperrors ("Error: " + e + "\n" );
   }
