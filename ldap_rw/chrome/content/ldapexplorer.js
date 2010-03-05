@@ -175,11 +175,12 @@ function ldapexploreronEnterInSearchBar(value){
   document.getElementById('ldapexplorer-morelabel').disabled=true;                     
 
   if ( ldap == null ){
-    debugexplorer("Choose Ldap server before\n");
+    dumperrors("Choose Ldap server before\n");
     return;
   }
   
   cardtreeView.treebox.rowCountChanged(0, -cardtreeView.treeData.length);
+//  cardtreeView.treebox.invalidate();
   cardtreeView.treeData = new Array();
   
   if (value == "") return;
@@ -242,26 +243,6 @@ function doOnselectedInTree(metod){
     var start = new Object();
     var end = new Object();
     var numRanges = tree.view.selection.getRangeCount();
-    var mybook = null;
-
-    var dirTree = document.getElementById("dirTree");
-    if (dirTree == null){
-       debugexplorer("add to default\n");
-       mybook = curpref.book; //abManager.getDirectory( "moz-abmdbdirectory://" + curpref.filename ); 
-       debugexplorer("add to default\n");
-    }else{
-        debugexplorer("add to selected\n");
-       if (dirTree.currentIndex < 0){
-          debugexplorer("nothing selected\n");
-          return null;
-       }
-        var selected = dirTree.builderView.getResourceAtIndex(dirTree.currentIndex);
-        var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        mybook = abManager.getDirectory( selected.Value ); 
-        debugexplorer("add to selected "+ selected.Value + "\t" + mybook + "\n");
-    }
-
-    debugexplorer("add to " + mybook + "\n");
 
   for (var t = 0; t < numRanges; t++){
     tree.view.selection.getRangeAt(t,start,end);
@@ -273,6 +254,27 @@ function doOnselectedInTree(metod){
 }
 
 function doAdd() {
+  var mybook = null;
+
+  var dirTree = document.getElementById("dirTree");
+  if (dirTree == null){
+    debugexplorer("add to default\n");
+    mybook = curpref.book;  
+    debugexplorer("add to default\n");
+  }else{
+    debugexplorer("add to selected\n");
+    if (dirTree.currentIndex < 0){
+      debugexplorer("nothing selected\n");
+      return null;
+    }
+    var selected = dirTree.builderView.getResourceAtIndex(dirTree.currentIndex);
+    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+    mybook = abManager.getDirectory( selected.Value ); 
+    debugexplorer("add to selected "+ selected.Value + "\t" + mybook + "\n");
+  }
+  
+  debugexplorer("add to " + mybook + "\n");
+
   doOnselectedInTree( function(v) {
       try{
         if ( addcardfromldap(mybook, cardtreeView.treeData[v].aMsg, true) ) {
@@ -280,9 +282,7 @@ function doAdd() {
         }
        }catch(e){
             dumperrors("Error:"+e+"\n");
-     }
-
-      } );
+     } } );
 }
 
 function gendelquery(queries) {
@@ -295,12 +295,14 @@ function gendelquery(queries) {
                 dumperrors("Errors: delquery " + aMsg.errorCode + "\n"
                     + LdapErrorsToStr(aMsg.errorCode) + "\n"
                     + aMsg.errorMessage );
+                return null;
               }
        }
        
        if ( querycount < queries.length ) {        
         return queries[querycount++];
        }
+      ldapexploreronEnterInSearchBar("");
       return null;
   }
 }
@@ -325,7 +327,7 @@ function doDel() {
 
   function collect(v) {
     dump("doDel: " + v + "\n");
-    queries[queries.length] = {dn: cardtreeView.treeData[v].aMsg.dn};
+    queries[queries.length] = {number: v, dn: cardtreeView.treeData[v].aMsg.dn};
   }
 
   doOnselectedInTree( collect );
@@ -340,7 +342,7 @@ function doDel() {
 
   if (result) {
     debugexplorer("call to del");
-    deleteonldap(v);
+    deleteonldap(queries);
   }
 }
 
