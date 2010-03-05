@@ -1,3 +1,39 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is LdapRW.
+ *
+ * The Initial Developer of the Original Code is
+ * Ilnur Kiyamov <ilnurathome@gmail.com>.
+ * Portions created by the Initial Developer are Copyright (C) 2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *  
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
 function debugldapsource(str){
 //  dump("ldapsource.js: " + str);
 }
@@ -8,7 +44,7 @@ function dumperrors(str){
 }
 
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+//Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 function getService(aContract, aInterface) {
   return Components.classes[aContract].getService(Components.interfaces[aInterface]);
@@ -34,28 +70,9 @@ function getProxyThread(aObject, aInterface) {
     // 5 == PROXY_ALWAYS | PROXY_SYNC
 }
 
-/*
- * Need to change generateGetTargetsBoundCallback and generateGetTargetsQueryCallback to single
- * generator function generateGetTargetsCallback (onLDAPInit, onLDAPMessage){ function getTargetsCallback() {}; getTargetsCallback.prototype = {}; }
- */
-
-function generateGetTargetsCallback (onLDAPInit, onLDAPMessage) {
-  function getTargetsCallback () {};
-  getTargetsCallback.prototype = {
-       QueryInterface: function QI(iid) {
-          if (iid.equals(Components.interfaces.nsISupports) ||
-              iid.equals(Components.interfaces.nsILDAPMessageListener))
-            return this;
-          
-          throw Components.results.NS_ERROR_NO_INTERFACE;
-          },
-       onLDAPInit: onLDAPInit,
-       onLDAPMessage: onLDAPMessage
-  }
-  return getProxyThread( new getTargetsCallback(),
-                         Components.interfaces.nsILDAPMessageListener );
-}
-
+/* 
+ * Generator of function for convert ldap errors code to string 
+ * */
 function genLdapErrorsToStr() {
   var errors = [];
   for ( var i in Components.interfaces.nsILDAPErrors) { 
@@ -68,10 +85,10 @@ function genLdapErrorsToStr() {
 
 var LdapErrorsToStr = genLdapErrorsToStr();
 
-/*
- * class definition
- */
 
+/*
+ *
+ * */
 //class constructor
 function LdapDataSource() {
 }
@@ -80,23 +97,23 @@ function LdapDataSource() {
 LdapDataSource.prototype = {
 
   // properties required for XPCOM registration:
-  classDescription: "My LdapDataSource XPCOM Component",
-  classID:          Components.ID("bb9bd3e8-11ec-4dae-9a38-c0278420e092"),
-  contractID:       "@ilnurathome.dyndns.org/LdapDataSource;1",
-  _xpcom_categories: [{ category: "app-startup", service: true }],
+ // classDescription: "My LdapDataSource XPCOM Component",
+ // classID:          Components.ID("bb9bd3e8-11ec-4dae-9a38-c0278420e092"),
+//  contractID:       "@ilnurathome.dyndns.org/LdapDataSource;1",
+ // _xpcom_categories: [{ category: "app-startup", service: true }],
 
 
-  QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsILdapDataSource]),
+ // QueryInterface:   XPCOMUtils.generateQI([Components.interfaces.nsILdapDataSource]),
   //QueryInterface:   XPCOMUtils.generateQI(),
   mIOSvc: {},
   mLDAPSvc: {},
   mLDAPDataSource: {},
 
   mConnection: {},
-  mOperationBind: {},
-  mOperationSearch: {},
-  mMessages: new Array(),
-  mMessagesEntry: new Array(),
+  mOperationBind: {}, // for debuging only
+  mOperationSearch: {}, // for debuging only
+  mMessages: new Array(), // for debuging only
+  mMessagesEntry: new Array(), // for debuging only
 
   mBinded:   0,
   mFinished: 0,
@@ -106,25 +123,6 @@ LdapDataSource.prototype = {
 
   kAttributes: new Array(),
 
-  /*function (iid) {
-       if (iid.equals(Components.interfaces.nsISupports) return this;
-       throw Components.results.NS_ERROR_NO_INTERFACE;
-  },*/
-  getMessages: function (count) {
-      count.value = this.mMessages.length;
-      return this.mMessages;
-  },
-  getMessagesEntry: function (count) {
-      count.value = this.mMessagesEntry.length;
-      return this.mMessagesEntry;
-  },
-
-  getMessagesEntryIndexBy: function(index) {
-      return this.mMessagesEntry[index];
-  },
-  getMessageEntryLength: function() {
-      return this.mMessagesEntry.length;
-  }
 };
 
 // ************** INIT *****************
@@ -151,13 +149,15 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
 };
 
 
-LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, queryURL, getpassword, metod ){  
-  function binder() {
+LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, queryURL, getpassword, metod ){ 
+  function binder(aMsg) {
     try {
       caller.mOperationBind.init(caller.mConnection, 
           caller.generateGetTargetsBoundCallback(caller, queryURL, getpassword, metod), null);
       
-      caller.mOperationBind.simpleBind(getpassword());                                   
+      var pw = getpassword(queryURL, aMsg);
+      if ( pw == null ) return;
+      caller.mOperationBind.simpleBind(pw);
     } catch (e) {
       dumperrors("init error: " + e + "\n");
       alert("init error: " + e + "\n");
@@ -191,9 +191,7 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
                        metod(aMsg);
                      } else {                    
                        caller.mFinished = 0;
-                       if ( getpassword(aMsg) ){
-                         binder();
-                       }
+                       binder(aMsg);                       
                      }
                        //debugldapsource("metod=" + metod +"\n");
                    },
@@ -410,9 +408,61 @@ LdapDataSource.prototype.modify = function (queryURL, aBindName, getpassword, ge
             }
 };
 
-var components = [LdapDataSource];
 
-var NSGetModule = XPCOMUtils.generateNSGetModule(components);
+LdapDataSource.prototype.deleteext = function (queryURL, aBindName, getpassword, getquery, callback) {
+
+           /*
+            *
+            */
+            function callmetod(aMsg){
+               if (!( getquery == undefined )) {
+                 var query = getquery(aMsg);
+                 if ( query ){
+                   var mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"]
+                                             .createInstance(Components.interfaces.nsILDAPOperation);
+                   try {
+                     mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod), null);
+                     mOperationSearch.deleteExt(query.dn);
+                   } catch (e) {
+                     dumperrors("init error: " + e + "\n");
+                     return;
+                   }
+                 }
+                 return;
+               }
+               dumperrors("mod getquery undefined\n");
+               return;
+             
+           }
+
+           var caller = this;
+//            var queryURL;
+
+
+            if (caller.mBinded ){
+              debugldapsource("Already binded\n");
+              callmetod();
+              return;
+            }
+            
+            if (queryURL == undefined ) {
+              throw Error("queryURL is undefined");
+              return;
+            }         
+           
+            this.mConnection =  Components.classes["@mozilla.org/network/ldap-connection;1"].createInstance().QueryInterface(Components.interfaces.nsILDAPConnection);
+
+            try {
+              this.mConnection.init(queryURL, aBindName, this.generateGetTargetsBoundCallback(caller, queryURL, getpassword, callmetod), null, Components.interfaces.nsILDAPConnection.VERSION3 );
+            } catch (e) {
+              dumperrors ("Error:" + e + "\n");
+            }
+};
+
+
+//var components = [LdapDataSource];
+
+//var NSGetModule = XPCOMUtils.generateNSGetModule(components);
 
 
 /*

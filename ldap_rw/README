@@ -1,0 +1,48 @@
+WARNING: IT'S VERY EXPERIMENTAL EXTENSION, AS IS
+
+Tested with 389 directory server (389ds).
+
+Features:
+    Synchronizes the selected address book. If the card is not on the server that makes it there, if there are already modifies existing.
+    PrimaryEmail SecondEmail and stored in the multivalued attribute mail.
+    The servers OpenLdap and 389ds scheme used COSINE LDAP/X.500 Schema (rfc4524), where for the mail attribute by default, you can use the set of values (in ms AD only one).
+    Loads an user photo card from the attribute jpegPhoto and save it to one.
+
+How to install:
+   1 create or select existing address card book
+   2 Menu Tools/LdapRW Preferences
+     2.1 Address Book: name of selected book
+     2.2 Uri such as^ ldap://server.local/ou=addressbook,dc=local??sub?(objectclass=*)
+     2.3 Auth DN: uid=ilnur,ou=people,dc=local
+     2.4 Attribute RDN for new new ldap card: cn or uid
+     2.5 Object Classes for new ldap card: inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person
+     2.6 maxHits: 100
+
+How to use
+
+New ldap card
+   1 Create new contact card in selected book
+   2 Menu Tools/LdapRW Sync. Add to ldap server.
+Sync
+   1 Menu Tools/LdapRW Sync.
+
+Load from ldap server to book.
+   1. From ldap cards explorer select configured ldap server
+   2. Enter search string
+   3. Select cards from tree
+   4. Push button "Add to book" add cards to current selected book.
+
+Delete cards in ldap server
+   1. From ldap cards explorer select configured ldap server
+   2. Enter search string
+   3. Select cards from tree
+   4. Push button "Del" del cards
+
+NB! Deleting card from a synced book does not lead to delete it from ldap server
+
+TO DO
+   Move to use RDF for ldap server connection and operation and remove LdapDataSource.
+   Adapting mapping for MS Active Directory and MS Exchange. May be some refactor it
+
+PS 
+   There are many bugs, some gletch and code monkey

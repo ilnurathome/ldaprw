@@ -1,3 +1,39 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is LdapRW.
+ *
+ * The Initial Developer of the Original Code is
+ * Ilnur Kiyamov <ilnurathome@gmail.com>.
+ * Portions created by the Initial Developer are Copyright (C) 2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *  
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
 function debugsync(str){
   //dump("sync.js: " + str);
 }
@@ -6,6 +42,13 @@ function dumperrors(str){
        dump(str+ "\n");
        alert(str);
 }
+
+var QUEUESEARCHADD = 1;
+var QUEUESEARCHGET = 2;
+var QUEUEUPDATEADD = 3;
+var QUEUEUPDATEGET = 4;
+var QUEUEADDADD = 5;
+var QUEUEADDGET = 6;
 
 
 /*
@@ -27,37 +70,52 @@ var propers = card.properties; while ( propers.hasMoreElements() ) { var p = pro
 
  */
 
-function ldapsync() {
+/*
+ * Sync all books
+ * @backstatus callback function (type, msg)
+ *
+ * example:
+ * ldapsync( function() { 
+ *              switch(type){ 
+ *               case QUEUESEARCHADD: somecounter++; break; 
+ *               case QUEUESEARCHGET: anothercounter++; break
+ *              }} )
+ *
+ * */
+
+function ldapsync(backstatus) {
   debugsync("ldapsync\n");
   var prefs = getprefs();
   for ( var i in prefs) {
-    syncpolitic2(prefs[i]);
+    syncpolitic2(prefs[i],backstatus);
   }
 }
 
-
-function gengetpassword(uri) {
+/*
+ * Generator for password manager interface
+ * @uri 
+ * */
+function gengetpassword() {
   var counter=0;
-  var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
+//  var queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
 
-  function pwdret(type, val){ 
-    this.type =type; 
-    this.val = val; 
-  }
-  pwdret.prototype = {
-    classDescription: "Pwd object",
-    type: -1,
-    value: "",
-
-  }
-
-  return function getpassword(aMsg) {
+  /*
+   * function getpassword returns string password or null
+   * First call ask or get existing password and return it
+   * Second call and other clear existing password and ask it again
+   * When counter > 3 break with null
+   * @queryURL 
+   * @aMsg It's defined then password incorrect, clear it and ask again
+   * */
+  return function getpassword(queryURL, aMsg) {
       debugsync("getpassword "+ counter + "\n");
-      if (aMsg != undefined){  
-        debugsync("getpassword " + counter + "\t" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) +"\n");
+      if (queryURL == undefined) return null;
+      
+      if (counter > 0){  
+//        debugsync("getpassword " + counter + "\t" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) +"\n");
         try{
           var passwordManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-          var logins = passwordManager.findLogins( {}, queryURL.prePath, null, uri); 
+          var logins = passwordManager.findLogins( {}, queryURL.prePath, null, queryURL.spec); 
           if (logins.length>0) {
             passwordManager.removeLogin(logins[0])
               debugsync("old login removed");
@@ -65,23 +123,22 @@ function gengetpassword(uri) {
         }catch(e){
           dumperrors("getpassword:" + e + "\n");
         }
-        counter++;
         debugsync("getpassword counter changed"+ counter + "\n");
-        if (counter > 2) return false;
-        return true;
       }
+      if (counter++ > 2) return null;
 
-      try{
+      try {
         var pw = { value: ""};
         var authprompter = Components.classes["@mozilla.org/login-manager/prompter;1"] 
                             .getService(Components.interfaces.nsIAuthPrompt);
-        var res = authprompter.promptPassword("Ldap Server Password Need", "Ldap Server Password Request\n" + uri , uri, Components.interfaces.nsIAuthPrompt.SAVE_PASSWORD_PERMANENTLY, pw);
+        var res = authprompter.promptPassword("Ldap Server Password Need", "Ldap Server Password Request\n" + queryURL.host , queryURL.spec, Components.interfaces.nsIAuthPrompt.SAVE_PASSWORD_PERMANENTLY, pw);
         if (!res) {
-          counter = 3;
+          return null;
         }
       }catch(e){
         dumperrors("getpassword: "+e);
-      }      
+      } 
+
       return pw.value;
    }
 }
@@ -89,11 +146,14 @@ function gengetpassword(uri) {
 
 
 /*
- * Experimental func
- * 
- */
-function syncpolitic2(pref){
-//  var mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
+ * Second design of the sync function. The first function did send a request 
+ * to fetch all records from server and then compared cards.
+ *
+ * Primary concept of second design is to move to functional style
+ * @pref preferences
+ * @backstatus callback function (type, aMsg)
+ * */
+function syncpolitic2(pref,backstatus){
 
   var mybook = pref.book;
 
@@ -104,8 +164,17 @@ function syncpolitic2(pref){
 
   var newcards = new Array();  
 
+  /*
+   * Generator for callback function from ldap modify operations
+   * @querymods Array of query objects
+   *   for example [ { dn: aMsg.dn, mods: mods} ] 
+   * */
   function genmodquery(querymods) {
     var modquerycount = 0;
+    /*
+     * Callback function for modify operations
+     * @aMsg ldap messages
+     * */
     return function modquery(aMsg) {
       debugsync("modquery " + modquerycount + "\n");
      if (aMsg != undefined ){
@@ -115,6 +184,7 @@ function syncpolitic2(pref){
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
                   + aMsg.errorMessage );
           }
+          if (backstatus != undefined) backstatus(QUEUEUPDATEGET, aMsg.type);
       }
        if ( modquerycount < querymods.length ) {
           debugsync( querymods[modquerycount].dn + " "
@@ -127,6 +197,10 @@ function syncpolitic2(pref){
   }
 
 
+  /*
+   * Callback function for ldap search results operation
+   * @aMsg ldap messages
+   * */
   function callbacksearchresult(aMsg) {
 //    ldapcards[aMsg.dn] = aMsg;
 //    ldapcards[ldapcards.length] = aMsg;
@@ -134,12 +208,17 @@ function syncpolitic2(pref){
     var d = aMsg.getValues ("modifytimestamp", {}).toString();
     var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
 
+    /// Search card for dn if it not exists may be we get an "alien" card 
     var card = mybook.getCardFromProperty("dn", aMsg.dn, false);
     if ( card == undefined ) {
       debugsync("callbacksearchresult: can't find\n");
       return;
     }
     
+    /*
+     * Compare a card date with a ldap message
+     * need to move it to function
+     * */
 
     var carddate = new Date();
     var carddatestr = card.getProperty("LastModifiedDate", 0);
@@ -155,6 +234,7 @@ function syncpolitic2(pref){
         mapper.map(aMsg, card);
         debugsync("modify card in Book "+ aMsg.dn + "\n");
         var newcard= mybook.modifyCard(card);
+        if (backstatus != undefined) backstatus(QUEUESEARCHGET, aMsg.type);
       } else {
         debugsync("modify card in LDAP "+ aMsg.dn + "\n");
         var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard); 
@@ -165,31 +245,43 @@ function syncpolitic2(pref){
 
         if (mods.length >0){             
           try { 
-            ldap.modify (queryURL, pref.binddn, gengetpassword(pref.uri), 
+            ldap.modify (queryURL, pref.binddn, gengetpassword(), 
                          genmodquery( [ { dn: aMsg.dn, mods: mods} ] ) ); 
+            if (backstatus != undefined) backstatus(QUEUEUPDATEADD, 0);
           } catch (e) {
             dumperrors("Error: " + e+ "\n"); 
           }    
         }else{
           debugsync("modify card in LDAP nothing to modify\n");
+          if (backstatus != undefined) backstatus(QUEUESEARCHGET, aMsg.type);
         }
 
       }
+    } else {
+        if (backstatus != undefined) backstatus(QUEUESEARCHGET, aMsg.type);
     }
-    
+
   };
 
-
+  /*
+   * Generator for callback search queries
+   * @queryURL
+   * */
   function gengetsearchquery(queryURL){
     var allcards = mybook.childCards;
     var currentcard;
 
-    function iteration(){
+    /* new iteration for sync asynchronously and parallel
+     * but if cards have dn property and not exists on ldap server
+     * it did not sync
+     *
+     * */
+    function iteration_new(){
       var ncard=0;
       var filter="";
 
       while ( ncard <10 && allcards.hasMoreElements()  ) {
-          
+         
           var card = allcards.getNext();
           if ( card instanceof Components.interfaces.nsIAbCard) {
             var dn = card.getProperty("dn", "");
@@ -201,6 +293,9 @@ function syncpolitic2(pref){
               if ( rdn.match(/^[^=]*=[^=]*$/g) ){
                 filter += "(" + rdn + ")";
                 ncard++;
+                if (backstatus != undefined) backstatus(QUEUESEARCHADD, 0);
+              }else{
+                dumperrors("Error some card has wrong dn=" + dn + "\n");
               }
               //return {dn: dn, filter: filter};
             } else {
@@ -215,16 +310,19 @@ function syncpolitic2(pref){
         return null;
     }
 
-    function iteration_old(){
+    /*
+     * old "sync" card by card
+     * */
+    function iteration(){
       debugsync("iter \n");
-        while ( allcards.hasMoreElements()  ) {
-          
+        while ( allcards.hasMoreElements()  ) {          
           currentcard = allcards.getNext();
           if ( currentcard instanceof Components.interfaces.nsIAbCard) {
             var dn = currentcard.getProperty("dn", null);
             debugsync("iter while dn=" + dn + "\n");
             var filter = "(objectclass=inetorgperson)";
             if ( dn ){
+              if (backstatus != undefined) backstatus(QUEUESEARCHADD, 0);
               return {dn: dn, filter: filter};
             } else {
               debugsync("iteration new card new dn\n");
@@ -236,6 +334,9 @@ function syncpolitic2(pref){
         return null;
     }
 
+    /*
+     * Callback function for search operations
+     * */
     return function(aMsg){
       debugsync("getsearchquery\n");
       if ( aMsg == undefined ) return iteration();
@@ -261,8 +362,12 @@ function syncpolitic2(pref){
   
 
   var ldap = new LdapDataSource();
-  var newcardtoldap = genaddtoldap(pref, ldap);
+  var newcardtoldap = genaddtoldap(pref, ldap, backstatus);
+
   
+  // Prepare Array of  requested attributes for ldap search request
+  // need to refactor to use generator iterator from mapper or move to use
+  // callback function
   var attrs = new Array(); 
   attrs[attrs.length]="objectClass";
   for (var i in mapper.__proto__) { 
@@ -273,14 +378,18 @@ function syncpolitic2(pref){
 
   try {
   //  queryURL.filter = "(objectclass=inetorgperson)"
-    ldap.query(queryURL, pref.binddn, gengetpassword(pref.uri), gengetsearchquery(pref.queryURL), callbacksearchresult );
+    ldap.query(queryURL, pref.binddn, gengetpassword(), gengetsearchquery(pref.queryURL), callbacksearchresult );
   } catch (e) {
     dumperrors ("Error: " + e + "\n" );
   }
 
 }
 
-function genaddtoldap(pref, ldapser) {
+/*
+ * Generator of callback function for add operation
+ * */
+
+function genaddtoldap(pref, ldapser, backstatus) {
 
 
   var mybook = pref.book;
@@ -303,11 +412,12 @@ function genaddtoldap(pref, ldapser) {
         if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS) {
           dumperrors("Error: addquery " + aMsg.errorCode + "\n" 
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
-                  + aMsg.errorMessage );
-          
+                  + aMsg.errorMessage + "\n"
+                  + card.getProperty("dn", "") + "\n");
           return null;
         }else{
           var newcard= mybook.modifyCard(card);
+          if (backstatus != undefined) backstatus(QUEUEADDGET, aMsg.type);          
         }
       }
       if ( addquerycount < addqueries.length ) {
@@ -332,7 +442,8 @@ function genaddtoldap(pref, ldapser) {
       card.setProperty("dn", dn);
       
       try {
-        ldap.add(queryURL, pref.binddn, gengetpassword(pref.uri), genaddquery(card, [{dn: dn, mods: mods}]) );  
+        ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods}]) );
+        if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
       } catch(e) {
         dumperrors("Error: " + e+"\n");
       }
@@ -340,6 +451,9 @@ function genaddtoldap(pref, ldapser) {
     }
 }
 
+/*
+ * Add new card to address book from ldap or modify existing card
+ * */
 function addcardfromldap(book, aMsg, replace){
  
   var mapper = new LdaptoAB();
@@ -369,4 +483,5 @@ function addcardfromldap(book, aMsg, replace){
   }
   return 1;
 }
+
 

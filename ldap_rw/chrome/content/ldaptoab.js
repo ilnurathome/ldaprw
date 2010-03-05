@@ -1,3 +1,40 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is LdapRW.
+ *
+ * The Initial Developer of the Original Code is
+ * Ilnur Kiyamov <ilnurathome@gmail.com>.
+ * Portions created by the Initial Developer are Copyright (C) 2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *  
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+
 function debugldaptoab(str){
   //dump("ldaptoab.js: " + str);
 }
@@ -31,12 +68,27 @@ function LdaptoAB() {
 
   for (var met in this.__proto__) { 
     if (this.__proto__[met] instanceof Array){ 
-//      this.__proto__[met]=   genfun(met, this.__proto__[met] ); 
       this[met]=   genfun(met, this.__proto__[met] ); 
     } 
   } 
 
-    // example
+  this.getattrs = function(){
+    var attrs = new Array();
+    for (var i in this.__proto__) {
+      if ( i == "dn" ) continue;
+      attrs[attrs.length] = i;
+    };
+    return attrs;
+  }
+
+  // yield not work? why?
+  // this.attriter = function(){
+  //   for( var i in this.__proto__){
+  //     yield i;
+  //   }
+  // }
+
+  // example
   // var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"]
   //                      .createInstance(Components.interfaces.nsIAbCard);
   // var mapper = new LdaptoAB();
@@ -229,59 +281,4 @@ LdaptoAB.prototype = {
   }
 
 }
-
-/*
-
-   try{ 
-     window.openDialog("chrome://messenger/content/addressbook/abEditCardDialog.xul", "", "chrome,resizable=no,modal,titlebar,centerscreen", {card:card}); 
-     } catch(e){ 
-       dumperrors(e+"\n"); 
-    }
-
- */
-
-
-/*
-// default mapping of addressbook properties to ldap attributes
-pref("ldap_2.servers.default.attrmap.FirstName", "givenName");
-pref("ldap_2.servers.default.attrmap.LastName", "sn,surname");
-pref("ldap_2.servers.default.attrmap.DisplayName", "cn,commonname");
-pref("ldap_2.servers.default.attrmap.NickName", "mozillaNickname,xmozillanickname");
-pref("ldap_2.servers.default.attrmap.PrimaryEmail", "mail");
-pref("ldap_2.servers.default.attrmap.SecondEmail", "mozillaSecondEmail,xmozillasecondemail");
-pref("ldap_2.servers.default.attrmap.WorkPhone", "telephoneNumber");
-pref("ldap_2.servers.default.attrmap.HomePhone", "homePhone");
-pref("ldap_2.servers.default.attrmap.FaxNumber", "facsimiletelephonenumber,fax");
-pref("ldap_2.servers.default.attrmap.PagerNumber", "pager,pagerphone");
-pref("ldap_2.servers.default.attrmap.CellularNumber", "mobile,cellphone,carphone");
-pref("ldap_2.servers.default.attrmap.WorkAddress", "street,streetaddress,postOfficeBox");
-pref("ldap_2.servers.default.attrmap.HomeAddress", "mozillaHomeStreet");
-pref("ldap_2.servers.default.attrmap.WorkAddress2", "mozillaWorkStreet2");
-pref("ldap_2.servers.default.attrmap.HomeAddress2", "mozillaHomeStreet2");
-pref("ldap_2.servers.default.attrmap.WorkCity", "l,locality");
-pref("ldap_2.servers.default.attrmap.HomeCity", "mozillaHomeLocalityName");
-pref("ldap_2.servers.default.attrmap.WorkState", "st,region");
-pref("ldap_2.servers.default.attrmap.HomeState", "mozillaHomeState");
-pref("ldap_2.servers.default.attrmap.WorkZipCode", "postalCode,zip");
-pref("ldap_2.servers.default.attrmap.HomeZipCode", "mozillaHomePostalCode");
-pref("ldap_2.servers.default.attrmap.WorkCountry", "c,countryname");
-pref("ldap_2.servers.default.attrmap.HomeCountry", "mozillaHomeCountryName");
-pref("ldap_2.servers.default.attrmap.JobTitle", "title");
-pref("ldap_2.servers.default.attrmap.Department", "ou,department,departmentnumber,orgunit");
-pref("ldap_2.servers.default.attrmap.Company", "o,company");
-pref("ldap_2.servers.default.attrmap._AimScreenName", "nsAIMid,nscpaimscreenname");
-pref("ldap_2.servers.default.attrmap.WebPage1", "mozillaWorkUrl,workurl,labeledURI");
-pref("ldap_2.servers.default.attrmap.WebPage2", "mozillaHomeUrl,homeurl");
-pref("ldap_2.servers.default.attrmap.BirthYear", "birthyear");
-pref("ldap_2.servers.default.attrmap.BirthMonth", "birthmonth");
-pref("ldap_2.servers.default.attrmap.BirthDay", "birthday");
-pref("ldap_2.servers.default.attrmap.Custom1", "mozillaCustom1,custom1");
-pref("ldap_2.servers.default.attrmap.Custom2", "mozillaCustom2,custom2");
-pref("ldap_2.servers.default.attrmap.Custom3", "mozillaCustom3,custom3");
-pref("ldap_2.servers.default.attrmap.Custom4", "mozillaCustom4,custom4");
-pref("ldap_2.servers.default.attrmap.Notes", "description,notes");
-pref("ldap_2.servers.default.attrmap.PreferMailFormat", "mozillaUseHtmlMail,xmozillausehtmlmail");
-pref("ldap_2.servers.default.attrmap.LastModifiedDate", "modifytimestamp");
-
-*/
 

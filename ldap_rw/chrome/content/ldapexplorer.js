@@ -1,5 +1,40 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is LdapRW.
+ *
+ * The Initial Developer of the Original Code is
+ * Ilnur Kiyamov <ilnurathome@gmail.com>.
+ * Portions created by the Initial Developer are Copyright (C) 2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *  
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 function debugexplorer(str){
-  //dump("sync.js: " + str);
+//  dump("explorer.js: " + str);
 }
 
 function dumperrors(str){
@@ -11,7 +46,7 @@ function dumperrors(str){
 var prefs=null;
 var curpref=null;
 var ldap=null;
-var getpassword=null;
+//var getpassword=null;
 var mapper=null;
 var gQueryURIFormat = null;    
 var attrs=null;               
@@ -42,6 +77,8 @@ function onLoad() {
                 
     mapper = new LdaptoAB();
 
+  // need to refactor to use generator iterator from mapper or move to use
+  // callback function
     searchformat = "(|";
     attrs = new Array(); 
     for (var i in mapper.__proto__) { 
@@ -53,7 +90,9 @@ function onLoad() {
 
    //debugexplorer("searchformat=" + searchformat + "\n");
 
-    document.getElementById('ldapexplorer-add').disabled=true;                     document.getElementById('ldapexplorer-morelabel').disabled=true;                     
+    document.getElementById('ldapexplorer-add').disabled=true;
+    document.getElementById('ldapexplorer-del').disabled=true;
+    document.getElementById('ldapexplorer-morelabel').disabled=true;                     
     var tree = document.getElementById('ldapexplorer-cardlist');
     tree.view = cardtreeView;   
 }
@@ -64,23 +103,18 @@ function selectServer(label) {
 }
 
 function Init(){
-    queryURL = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(curpref.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL);
-
-    getpassword = gengetpassword(curpref.uri);
+    queryURL = curpref.queryURL;
 
     ldap = new LdapDataSource();
 
     ldap.init(attrs, curpref.maxHits);
-//    dumperrors (searchformat);
-//    dumperrors (searchformat.replace(/@V/g, "string") );
+    document.getElementById('ldapexplorer-morelabel').disabled=true;                        
 
-   document.getElementById('ldapexplorer-morelabel').disabled=true;                        
-
-    var searchformattmp = "" ;
-    var classes = curpref.objClassesAR;
-    for (var i in classes) { 
-      searchformattmp += "(objectClass=" + classes[i] + ")";
-    };
+//    var searchformattmp = "" ;
+//    var classes = curpref.objClassesAR;
+//    for (var i in classes) { 
+//      searchformattmp += "(objectClass=" + classes[i] + ")";
+//    };
 //    searchformat = "(&" + searchformattmp + searchformat + ")";
 //     debugexplorer(searchformat);
 }
@@ -135,35 +169,35 @@ function gencallbacksearchresult(tree, attrs){
      }
 }
 
-   function ldapexploreronEnterInSearchBar(value){
-       document.getElementById('ldapexplorer-add').disabled=true;                     document.getElementById('ldapexplorer-morelabel').disabled=true;                     
 
-        if ( ldap == null ){
-             debugexplorer("Choose Ldap server before\n");
-             return;
-       }
+function ldapexploreronEnterInSearchBar(value){
+  document.getElementById('ldapexplorer-add').disabled=true;
+  document.getElementById('ldapexplorer-morelabel').disabled=true;                     
 
-        cardtreeView.treebox.rowCountChanged(0, -cardtreeView.treeData.length);
-        cardtreeView.treeData = new Array();
-
-         if (value == "") return;
-
-           var filter = searchformat.replace(/@V/g, value);
-        try {
-          //  queryURL.filter = filter;
-            ldap.query(queryURL, curpref.binddn, getpassword, 
-                                 gensearchquery(queryURL.dn, filter),  
-                                 gencallbacksearchresult(cardtreeView, 
-                                                            ["cn","mail", "sn", "givenName"] ));
-        } catch (e) {
-            dumperrors ("Error: " + e + "\n" );
-        } 
-   }
+  if ( ldap == null ){
+    debugexplorer("Choose Ldap server before\n");
+    return;
+  }
+  
+  cardtreeView.treebox.rowCountChanged(0, -cardtreeView.treeData.length);
+  cardtreeView.treeData = new Array();
+  
+  if (value == "") return;
+  
+  var filter = searchformat.replace(/@V/g, value);
+  try {
+    ldap.query(queryURL, curpref.binddn, gengetpassword(), 
+                         gensearchquery(queryURL.dn, filter),  
+                         gencallbacksearchresult(cardtreeView, 
+                                      ["cn","mail", "sn", "givenName"] ));
+  } catch (e) {
+    dumperrors ("Error: " + e + "\n" );
+  } 
+}
 
 var cardtreeView = {
        treeData: [],
        get rowCount() { return this.treeData.length;},
-      //rowCount: 1,
 
       treeBox: null,  
 
@@ -185,6 +219,7 @@ var cardtreeView = {
 
 function doselect(){
     document.getElementById('ldapexplorer-add').disabled=false;
+    document.getElementById('ldapexplorer-del').disabled=false;
     var tree = document.getElementById('ldapexplorer-cardlist');
     if (tree.currentIndex < 0){
        debugexplorer("do select nothing selected\n");
@@ -193,15 +228,17 @@ function doselect(){
 
   try{
     var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);     
-    var mapper = new LdaptoAB();                                                   mapper.map(cardtreeView.treeData[tree.currentIndex].aMsg, card);               DisplayCardViewPane(card);
+    var mapper = new LdaptoAB();        
+    mapper.map(cardtreeView.treeData[tree.currentIndex].aMsg, card);       
+    if (DisplayCardViewPane != undefined) DisplayCardViewPane(card);
   }catch(e){
     dumperrors("Error: " + e + "\n");
   }
 }
 
-function doAdd() {
+function doOnselectedInTree(metod){
     var tree = document.getElementById('ldapexplorer-cardlist');
-    debugexplorer("doAdd:" + tree.tagName + "\n");
+    debugexplorer("doOnselected:" + tree.tagName + "\n");
     var start = new Object();
     var end = new Object();
     var numRanges = tree.view.selection.getRangeCount();
@@ -230,18 +267,80 @@ function doAdd() {
     tree.view.selection.getRangeAt(t,start,end);
     for (var v = start.value; v <= end.value; v++){
       debugexplorer("Item " + v + " is selected.\t" + cardtreeView.treeData[v].dn+"\n");
-      try{
-           if ( addcardfromldap(mybook, cardtreeView.treeData[v].aMsg, true) ) {
-            debugexplorer("card allready exists, sync it.");
-            }
-       }catch(e){
-            dumperrors("Error:"+e+"\n");
-     }
+      metod(v);
   }
  }
 }
 
-function doAddAll() {
-    
+function doAdd() {
+  doOnselectedInTree( function(v) {
+      try{
+        if ( addcardfromldap(mybook, cardtreeView.treeData[v].aMsg, true) ) {
+        debugexplorer("card allready exists, sync it.");
+        }
+       }catch(e){
+            dumperrors("Error:"+e+"\n");
+     }
+
+      } );
+}
+
+function gendelquery(queries) {
+  var querycount = 0;
+  return function (aMsg) {
+       debugexplorer("delquery:" + queries + "\t" + querycount + "\n")
+       if (aMsg != undefined ){
+              debugexplorer("aMsg.errorCode:"+aMsg.errorCode + "\n");
+              if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS){
+                dumperrors("Errors: delquery " + aMsg.errorCode + "\n"
+                    + LdapErrorsToStr(aMsg.errorCode) + "\n"
+                    + aMsg.errorMessage );
+              }
+       }
+       
+       if ( querycount < queries.length ) {        
+        return queries[querycount++];
+       }
+      return null;
+  }
+}
+
+function deleteonldap(v) {
+  if ( ldap == null ){
+    debugexplorer("Choose Ldap server before\n");
+    return;
+  }
+
+  try {
+    ldap.deleteext(queryURL, curpref.binddn, gengetpassword(), 
+        gendelquery(v) );
+  } catch (e) {
+    dumperrors ("Error: " + e + "\n" );
+  } 
+}
+
+function doDel() {
+
+  var queries = [];
+
+  function collect(v) {
+    dump("doDel: " + v + "\n");
+    queries[queries.length] = {dn: cardtreeView.treeData[v].aMsg.dn};
+  }
+
+  doOnselectedInTree( collect );
+  for( var i in queries ) {
+    dump("collected:" + i + "\t" + queries[i].dn + "\n");
+  }
+  
+  var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                        .getService(Components.interfaces.nsIPromptService);
+
+  var result = prompts.confirm(null, "Delete from LDAP Server", "Are you sure?");
+
+  if (result) {
+    debugexplorer("call to del");
+    deleteonldap(v);
+  }
 }
 

@@ -60,7 +60,7 @@
 
     function modifyPref(){
          var pref = {};
-         pref.bookname = document.getElementById('textboxabdir').value;
+         pref.bookname = document.getElementById('textboxbookname').value;
          pref.uri= document.getElementById('textboxuri').value;
          pref.binddn= document.getElementById('textboxauthdn').value;
          pref.attrRdn= document.getElementById('textboxrdn').value;

@@ -1,0 +1,10 @@
+<!ENTITY ldaprw.pref.label "LdapRW Preferences">
+<!ENTITY ldaprw.sync.label "LdapRW Sync">
+
+<!ENTITY ldapexplorer-title.value "Ldap Cards Explorer">
+<!ENTITY ldapexplorer-menu.label "Ldap Cards Explorer">
+
+<!ENTITY ldapexplorer-add.label "Add To Book">
+<!ENTITY ldapexplorer-del.label "Delete">
+<!ENTITY ldapexplorer-more.value "more...">
+

@@ -2,8 +2,7 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://ldaprw/locale/overlays.dtd">
 
-<overlay id="ldapexplorer" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-onload="onLoad();">
+<overlay id="ldapexplorer" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript" src="chrome://ldaprw/content/abtoldap.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaptoab.js"/> 
@@ -38,6 +37,7 @@ onload="onLoad();">
 
 <hbox>
   <button id="ldapexplorer-add" label="&ldapexplorer-add.label;" oncommand="doAdd();"/>
+  <button id="ldapexplorer-del" label="&ldapexplorer-del.label;" oncommand="doDel();"/>  
    <spacer style="height: 10px" flex="1"/>
    <label id="ldapexplorer-morelabel" value="&ldapexplorer-more.value;" disabled="true"/>
 </hbox>
