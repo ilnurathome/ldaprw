@@ -1,0 +1,10 @@
+<!ENTITY ldaprw.pref.label "LdapRW Настройки">
+<!ENTITY ldaprw.sync.label "LdapRW Синхронизировать">
+
+<!ENTITY ldapexplorer-title.value "Ldap Cards Explorer">
+<!ENTITY ldapexplorer-menu.label "Ldap Cards Explorer">
+
+<!ENTITY ldapexplorer-add.label "Добавить в книгу">
+<!ENTITY ldapexplorer-del.label "Удалить">
+<!ENTITY ldapexplorer-more.value "больше...">
+

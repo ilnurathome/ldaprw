@@ -17,9 +17,7 @@ function getprefs(){
       var key = mychilds[c].split('.')[0];
       if ( list[key] == undefined ) {
 //        list[key] = {};
-        try {
-          var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
-          list[key] = {
+         list[key] = {
             binddn:     myprefs.getCharPref(key + ".auth.dn"),
             uri:        myprefs.getCharPref(key + ".uri"),
             attrRdn:    myprefs.getCharPref(key + ".attrRdn"),
@@ -31,17 +29,22 @@ function getprefs(){
           
           
             bookname:   key,
-            description: abprefs.getCharPref("description"),
-            dirType:    abprefs.getIntPref("dirType"),
-            filename:   abprefs.getCharPref("filename"),
             get book() {
               var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);              
               return abManager.getDirectory( "moz-abmdbdirectory://" + this.filename );
             }
-
           }
+
+        try {
+          var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
+          list[key].description= abprefs.getCharPref("description");
+          list[key].dirType=    abprefs.getIntPref("dirType");
+          list[key].filename=   abprefs.getCharPref("filename");          
         } catch(e) {
-          dumperrors("Error getprefs " + e + "\n");
+          dumperrors("Error getprefs " + e + "\n"
+                   + "Please check preferences");
+          if (window.location != "chrome://ldaprw/content/prefs.xul")
+            window.open("chrome://ldaprw/content/prefs.xul", "Preferences", "chrome");
         }
       }
     }

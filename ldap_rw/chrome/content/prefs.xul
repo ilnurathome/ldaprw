@@ -33,17 +33,34 @@
 
           item.setAttribute("label", i );
           preflist.appendChild(item); 
-      }  
+      } 
+
+      var abManager = Components.classes["@mozilla.org/abmanager;1"]
+                     .getService(Components.interfaces.nsIAbManager);
+      var enumbook = abManager.directories;
+
+      var booklist = document.getElementById('textboxbookname');
+      while (booklist.itemCount){
+           booklist.removeItemAt(0); 
+      }
+      
+      while(enumbook.hasMoreElements()){ 
+         var book = enumbook.getNext(); 
+
+         if (book instanceof Components.interfaces.nsIAbDirectory){
+            var prefar = book.dirPrefId.split('.');
+
+            dump(prefar[prefar.length-1] + "\n");
+
+            booklist.appendItem(book.dirName, prefar[prefar.length-1]);
+         }
+      }
+
     }
 
     prefedit = {};
 
     function doSelect(caller){
-    // dump(caller + "\n");
-    //   dump(caller.id + "\n");
-
-    //   dump(caller.selectedItem.tagName + "\n");
-    //   dump(caller.selectedItem.label + "\n"); 
          prefedit = caller.selectedItem.label;
 
          document.getElementById('modify').disabled=false;
@@ -95,7 +112,11 @@
 
 
    <vbox> 
-    <label accesskey="&bookname.accesskey;" control="textboxbookname">&bookname.label;</label><textbox id="textboxbookname" preference="uri"/>
+     <label accesskey="&bookname.accesskey;" control="textboxbookname">&bookname.label;</label>
+     <!--<textbox id="textboxbookname" preference="uri"/>-->
+     <menulist id="textboxbookname" editable="false" label="&booknamelist.label;" >
+          <menupopup/>
+     </menulist>
 
     <label accesskey="&uri.accesskey;" control="textboxuri">&uri.label;</label><textbox id="textboxuri" preference="uri" value="&uri.value;"/>
 
@@ -111,6 +132,7 @@
       <button id="new" label="New" oncommand="modifyPref();onLoad();"/>
       <button id="modify" label="Modify" disabled="true" oncommand="modifyPref(); onLoad();"/>
       <button id="delete" label="Delete" disabled="true" oncommand="delPref(); onLoad();"/>
+<!--      <button id="test" label="Test" oncommand="dump( document.getElementById('textboxbookname').value + '\n');"/> -->
     </hbox>
    </vbox>
   </hbox>
