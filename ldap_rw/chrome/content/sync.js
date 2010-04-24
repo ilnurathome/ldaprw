@@ -284,6 +284,9 @@ function syncpolitic2(pref,backstatus){
          
           var card = allcards.getNext();
           if ( card instanceof Components.interfaces.nsIAbCard) {
+
+            if ( card.isMailList ) continue;
+
             var dn = card.getProperty("dn", "");
 
             if ( dn ){
