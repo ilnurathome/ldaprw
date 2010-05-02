@@ -282,3 +282,178 @@ LdaptoAB.prototype = {
 
 }
 
+
+
+
+function MailList(){
+  this.card = null;
+  this.node = null;
+}
+
+MailList.prototype = {
+      card: null,
+      node: null
+}
+
+function CollectNodesMailLists(book){
+  var allnodes = book.childNodes;
+  var maillists = {};
+
+  while ( allnodes.hasMoreElements() ) {
+    var node = allnodes.getNext();
+    if ( node instanceof Components.interfaces.nsIAbDirectory) {
+      if (node.isMailList ){
+        if ( maillists[node.dirName] == undefined ){
+          maillists[node.dirName] = new MailList();
+        }
+        maillists[node.dirName]["node"] = node;
+      }
+    }
+  }
+  return maillists;
+}
+
+function LdaptoML() {
+
+  function genfun (from, to) {
+    return function(operation) {
+      debugldaptoab("from = " + from + " to = " + to + " " + this.LDAPMessage.getValues( from ,{} ) +"\n");
+      for (var prop in to) {
+        var value = this.LDAPMessage.getValues( from ,{} );
+        if ( value instanceof Array)
+           this.ml.card.setProperty( to[prop] , value[0] );
+      }
+    }    
+  }
+
+  for (var met in this.__proto__) { 
+    if (this.__proto__[met] instanceof Array){ 
+      this[met]=   genfun(met, this.__proto__[met] ); 
+    } 
+  } 
+
+  this.getattrs = function(){
+    var attrs = new Array();
+    for (var i in this.__proto__) {
+      if ( i == "dn" ) continue;
+      attrs[attrs.length] = i;
+    };
+    return attrs;
+  }
+
+  // yield not work? why?
+  // this.attriter = function(){
+  //   for( var i in this.__proto__){
+  //     yield i;
+  //   }
+  // }
+
+  /* example
+   var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+
+var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename );
+mybook instanceof Components.interfaces.nsIAbDirectory;
+
+   var allcards = mybook.childCards;
+   var allnodes = mybook.childNodes;
+   var maillists = {};
+   while ( allcards.hasMoreElements() ) {
+      var card = allcards.getNext();
+      if ( card instanceof Components.interfaces.nsIAbCard) {
+         if (card.isMailList ){
+            if ( maillists[card.displayName] == undefined ) maillists[card.displayName] = new MailList();
+            maillists[card.displayName]["card"] = card;
+         }
+      }
+   }
+   while ( allnodes.hasMoreElements() ) {
+      var node = allnodes.getNext();
+      if ( node instanceof Components.interfaces.nsIAbDirectory) {
+         if (node.isMailList ){
+           if ( maillists[node.dirName] == undefined ) maillists[node.dirName] = new MailList();
+           maillists[node.dirName]["node"] = node;
+         }
+      }
+   }
+   
+   var mapper = new LdaptoML();
+   mapper.map(ldapmessage, maillist['Some list']);
+   maillist['Some list'].node.editMailListToDatabase(null);
+   
+  */
+  this.map = function(LDAPMessage, maillist) {
+    this.LDAPMessage = LDAPMessage;
+    this.ml = maillist;
+
+    this.dn();
+
+    var attrs = this.LDAPMessage.getAttributes({});
+    for (var i in attrs) {
+      if ( !attrs.hasOwnProperty(i) ) continue;
+      if ( this[attrs[i]]==undefined ) continue;
+      this[attrs[i]]();
+    }
+  }
+
+}
+
+LdaptoML.prototype = {
+
+  dn: function() {
+        this.ml.card.setProperty("dn", this.LDAPMessage.dn );
+      },
+
+  //cn: ["DisplayName"], 
+  cn: function() {
+     var val = this.LDAPMessage.getValues( "cn",{} );
+     this.ml.card.displayName = val;
+     this.ml.node.dirName = val;
+  },
+  //commonname: ["DisplayName"], 
+  commonname: function() {
+     var val = this.LDAPMessage.getValues( "commonname",{} );
+     this.ml.card.displayName = val;
+     this.ml.node.dirName = val;
+  },
+
+  member: function() {
+     var vals = this.LDAPMessage.getValues( "member", {} );
+     this.ml.node.clear();
+     
+     for (var i=0; i<vals.length; i++){
+       var reg = /cn=([^,]*),\s*mail=([\w-+]+(?:\.[\w-+]+)*@(?:[\w-]+\.)+[a-zA-Z]{2,7})/;
+       var matchgroups = vals[i].match(reg);
+       if ( matchgroups != null ){
+         var card = this.ml.node.cardForEmailAddress( matchgroups[2] );
+         if (card != null) {     
+           this.ml.node.appendElement( card, false );
+         }
+       } else {
+         var card = this.ml.node.getCardFromProperty("dn", aMsg.dn, false);
+       }
+     }
+  },
+
+  ou: ["Department"],
+
+  o: ["Company"],
+
+
+    // Other > Notes
+  description: function() {
+    var val =  this.LDAPMessage.getValues( "description",{} );
+    this.ml.node.description = val;
+    this.ml.card.setProperty("Notes", val);
+  },
+
+  mozillaNickname: ["NickName"],
+
+  modifytimestamp: function() {
+    var d = this.LDAPMessage.getValues("modifytimestamp", {} ).toString();
+    var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
+
+    this.AbCard.setProperty("LastModifiedDate", ldapdate.getTime().toString().substring(0,10));
+  }
+
+}
+

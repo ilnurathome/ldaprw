@@ -18,33 +18,36 @@ function getprefs(){
       if ( list[key] == undefined ) {
 //        list[key] = {};
          list[key] = {
-            binddn:     myprefs.getCharPref(key + ".auth.dn"),
-            uri:        myprefs.getCharPref(key + ".uri"),
-            attrRdn:    myprefs.getCharPref(key + ".attrRdn"),
-            objClasses: myprefs.getCharPref(key + ".objClasses"),
-            maxHits:    myprefs.getIntPref(key + ".maxHits"),
-
-            objClassesAR: myprefs.getCharPref(key + ".objClasses").replace(/\s*/g, '').split(","),
-            get queryURL() { return Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(this.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL) },
-          
-          
-            bookname:   key,
-            get book() {
+           get queryURL() { 
+             return Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(this.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL) },
+           get book() {
               var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);              
               return abManager.getDirectory( "moz-abmdbdirectory://" + this.filename );
             }
-          }
+         };
 
-        try {
+        try{
+         list[key].bookname = key;
+         list[key].binddn = myprefs.getCharPref(key + ".auth.dn");
+         list[key].uri = myprefs.getCharPref(key + ".uri");
+         list[key].attrRdn = myprefs.getCharPref(key + ".attrRdn");
+         list[key].objClasses = myprefs.getCharPref(key + ".objClasses");
+         list[key].maillistClasses = myprefs.getCharPref(key + ".maillistClasses");
+         list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
+
+         list[key].objClassesAR = myprefs.getCharPref(key + ".objClasses").replace(/\s*/g, '').split(",");
+         list[key].maillistClassesAR = myprefs.getCharPref(key + ".maillistClasses").replace(/\s*/g, '').split(",");                     
+
           var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
           list[key].description= abprefs.getCharPref("description");
           list[key].dirType=    abprefs.getIntPref("dirType");
           list[key].filename=   abprefs.getCharPref("filename");          
         } catch(e) {
-          dumperrors("Error getprefs " + e + "\n"
+          if (window.location != "chrome://ldaprw/content/prefs.xul"){
+            dumperrors("Error getprefs " + e + "\n"
                    + "Please check preferences");
-          if (window.location != "chrome://ldaprw/content/prefs.xul")
             window.open("chrome://ldaprw/content/prefs.xul", "Preferences", "chrome");
+          }
         }
       }
     }
@@ -62,6 +65,7 @@ function setpref(newpref) {
 
   prefs.setCharPref( prefix + ".attrRdn", newpref.attrRdn);
   prefs.setCharPref( prefix + ".objClasses", newpref.objClasses);
+  prefs.setCharPref( prefix + ".maillistClasses", newpref.maillistClasses);
 
   prefs.setIntPref( prefix + ".maxHits", newpref.maxHits);
 }

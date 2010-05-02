@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 function debugsync(str){
-  //dump("sync.js: " + str);
+  dump("sync.js: " + str);
 }
 
 function dumperrors(str){
@@ -50,6 +50,8 @@ var QUEUEUPDATEGET = 4;
 var QUEUEADDADD = 5;
 var QUEUEADDGET = 6;
 
+var alldn = [];
+var allmsg = [];
 
 /*
 load("chrome://ldaprw/content/abtoldap.js"); 
@@ -63,15 +65,16 @@ load("chrome://ldaprw/content/prefs.js");
   var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
 
 var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename );
+mybook instanceof Components.interfaces.nsIAbDirectory;
  var cards = mybook.childCards;
  var card = cards.getNext()
 card instanceof Components.interfaces.nsIAbCard
-var propers = card.properties; while ( propers.hasMoreElements() ) { var p = propers.getNext(); if ( p instanceof Components.interfaces.nsIProperty ){ dump(p.name + "\t" + p.value + "\n"); } }
+var propers = card.properties; while ( propers.hasMoreElements() ) { var p = propers.getNext(); if ( p instanceof Components.interfaces.nsIProperty ){ print(p.name + "\t" + p.value + "\n"); } }
 
  */
 
 /*
- * Sync all books
+ * Sync all book
  * @backstatus callback function (type, msg)
  *
  * example:
@@ -155,6 +158,7 @@ function gengetpassword() {
  * */
 function syncpolitic2(pref,backstatus){
 
+  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
   var mybook = pref.book;
 
   var queryURL = pref.queryURL;
@@ -163,6 +167,8 @@ function syncpolitic2(pref,backstatus){
   var mappertoldap = new ABtoLdap();
 
   var newcards = new Array();  
+
+//  var maillists = CollectNodesMailLists(mybook);
 
   /*
    * Generator for callback function from ldap modify operations
@@ -285,14 +291,16 @@ function syncpolitic2(pref,backstatus){
           var card = allcards.getNext();
           if ( card instanceof Components.interfaces.nsIAbCard) {
 
-            if ( card.isMailList ) continue;
+            if ( card.isMailList ) {
+              maillists[card.displayName].card = card;
+              continue;
+            }
 
             var dn = card.getProperty("dn", "");
 
             if ( dn ){
               var rdn = dn.split(',')[0].replace(/^\s+|\s+$/g,''); 
               debugsync("iter while dn=" + dn + "\n");
-              //var filter = "(objectclass=inetorgperson)";
               if ( rdn.match(/^[^=]*=[^=]*$/g) ){
                 filter += "(" + rdn + ")";
                 ncard++;
@@ -318,19 +326,36 @@ function syncpolitic2(pref,backstatus){
      * */
     function iteration(){
       debugsync("iter \n");
-        while ( allcards.hasMoreElements()  ) {          
+        while ( allcards.hasMoreElements()  ) {
           currentcard = allcards.getNext();
           if ( currentcard instanceof Components.interfaces.nsIAbCard) {
             var dn = currentcard.getProperty("dn", null);
             debugsync("iter while dn=" + dn + "\n");
-            var filter = "(objectclass=inetorgperson)";
             if ( dn ){
               if (backstatus != undefined) backstatus(QUEUESEARCHADD, 0);
-              return {dn: dn, filter: filter};
+              
+              if ( currentcard.isMailList ) {
+                // !!! never true because card component of mailing list can not containnig "dn"
+                maillists[currentcard.displayName].card = currentcard;
+//                maillists[currentcard.displayName].node = abManager.getDirectory(currentcard.mailListURI);
+              // "(objectclass=groupOfNames)"
+                return {dn: dn, filter: "(objectclass=" + pref.maillistClassesAR[0]  + ")"};
+//                continue;
+              } else {
+                // "(objectclass=inetorgperson)"
+                return {dn: dn, filter: "(objectclass=" + pref.objClassesAR[0] + ")"};
+              }
             } else {
-              debugsync("iteration new card new dn\n");
-              newcardtoldap(currentcard);
-           }
+              if ( currentcard.isMailList ) {
+                maillists[currentcard.displayName].card = currentcard;
+//                search mailing list on ldap server
+                return {dn: gendnML(pref, currentcard), filter: "(objectclass=" + pref.maillistClassesAR[0]  + ")"};
+//                newmaillisttoldap(currentcard);
+              } else {
+                debugsync("iteration new card new dn\n");
+                newcardtoldap(currentcard);
+              }
+            }
           }
         }
         debugsync("iteration nothing to do\n")
@@ -340,17 +365,47 @@ function syncpolitic2(pref,backstatus){
     /*
      * Callback function for search operations
      * */
-    return function(aMsg){
+    return function(aMsg, mydn){
       debugsync("getsearchquery\n");
       if ( aMsg == undefined ) return iteration();
       else
         if ( aMsg instanceof Components.interfaces.nsILDAPMessage) {
+
+          //// debuging infos
+          allmsg[allmsg.length] = aMsg;
+          if ( mydn != undefined ) {
+            alldn[alldn.length] = { msg: aMsg, mydn: mydn };
+            debugsync("getsearchquery mydn=" + mydn.dn + "\n");
+          }
+          ////////////////////////
+
           if ( aMsg.errorCode == Components.interfaces.nsILDAPErrors.SUCCESS ){
             return iteration();
           }else 
             if ( aMsg.errorCode == Components.interfaces.nsILDAPErrors.NO_SUCH_OBJECT){
-              debugsync("getsearchquery new card\n");
-              newcardtoldap(currentcard);
+              var dumpstr = "getsearchquery new card ";
+              try {
+                if (aMsg.errorCode != undefined) {
+                  dumpstr+="errcode=" + aMsg.errorCode;
+                }
+                if (aMsg.matchedDn != undefined ) {
+                  dumpstr+= " matchedDn=" + aMsg.matchedDn;
+                }
+              } catch(e) {
+                debugsync(e);
+              } finally {
+                debugsync(dumpstr + "\n");
+              }
+              if (currentcard.isMailList ){
+                newmaillisttoldap(currentcard);
+              } else {
+                if (mydn != undefined ) {
+                  var card = mybook.getCardFromProperty("dn", mydn.dn, false);
+                  if ( card != undefined ) {
+                    newcardtoldap(card);
+                  }
+                }
+              }
               return iteration();
             } else {
               dumperrors (aMsg.type + "\n" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) + "\n" + aMsg.errorMessage);
@@ -386,6 +441,14 @@ function syncpolitic2(pref,backstatus){
     dumperrors ("Error: " + e + "\n" );
   }
 
+}
+
+function genrdnML(pref, card) {
+  return pref.attrRdn + "=" + card.displayName;
+}
+
+function gendnML(pref,card) {
+  return genrdnML(pref, card) + ',' + pref.queryURL.dn;
 }
 
 /*

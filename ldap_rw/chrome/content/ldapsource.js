@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 function debugldapsource(str){
-//  dump("ldapsource.js: " + str);
+  dump("ldapsource.js: " + str);
 }
 
 function dumperrors(str){
@@ -145,6 +145,7 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
 
       this.mBinded =   0;
       this.mFinished = 0;
+      this.mdn = {};
       if (maxmess != undefined) this.kMaxMess = maxmess;
 };
 
@@ -260,13 +261,22 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
             var callmetod = function(aMsg) {
 //               debugldapsource("callmetod query\t" + getquery + "\n");
                if (!( getquery == undefined )) {
-                 var query = getquery(aMsg);
+                 var query = null;
+                 if ( aMsg == undefined || aMsg.operation == undefined ) 
+                     query = getquery(aMsg, null);
+                 else {
+                     query = getquery(aMsg, caller.mdn[aMsg.operation.messageID] );
+                     delete caller.mdn[aMsg.operation.messageID];
+                 }
                  if ( query ){
                    caller.mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
                    try {
                      caller.mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
                      //mOperationSearch.searchExt(queryes[mFinished], queryURL.scope, filter, caller.kAttributes.length, caller.kAttributes, 0, -1);
+                     debugldapsource( "operation search init messageID=" + caller.mOperationSearch.messageID + "\n" );
                      caller.mOperationSearch.searchExt(query.dn, queryURL.scope, query.filter, caller.kAttributes.length, caller.kAttributes, 0, caller.kMaxMess);
+                     debugldapsource( "operation search call messageID=" + caller.mOperationSearch.messageID + "\n" );
+                     caller.mdn[caller.mOperationSearch.messageID] = {mid: caller.mOperationSearch.messageID, dn: query.dn};
                    } catch (e) {
                      dumperrors("init error: " + e + "\n");
                      return;

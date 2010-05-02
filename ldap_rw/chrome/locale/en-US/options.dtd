@@ -31,3 +31,6 @@
 <!ENTITY objClasses.accesskey "C">
 <!ENTITY objClasses.value "inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person">
 
+<!ENTITY objClasses.label "Object Classes for new ldap mailing lists">
+<!ENTITY objClasses.accesskey "M">
+<!ENTITY objClasses.value "groupOfNames">
