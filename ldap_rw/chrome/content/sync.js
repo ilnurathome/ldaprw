@@ -277,50 +277,6 @@ function syncpolitic2(pref,backstatus){
     var allcards = mybook.childCards;
     var currentcard;
 
-    /* new iteration for sync asynchronously and parallel
-     * but if cards have dn property and not exists on ldap server
-     * it did not sync
-     *
-     * */
-    function iteration_new(){
-      var ncard=0;
-      var filter="";
-
-      while ( ncard <10 && allcards.hasMoreElements()  ) {
-         
-          var card = allcards.getNext();
-          if ( card instanceof Components.interfaces.nsIAbCard) {
-
-            if ( card.isMailList ) {
-              maillists[card.displayName].card = card;
-              continue;
-            }
-
-            var dn = card.getProperty("dn", "");
-
-            if ( dn ){
-              var rdn = dn.split(',')[0].replace(/^\s+|\s+$/g,''); 
-              debugsync("iter while dn=" + dn + "\n");
-              if ( rdn.match(/^[^=]*=[^=]*$/g) ){
-                filter += "(" + rdn + ")";
-                ncard++;
-                if (backstatus != undefined) backstatus(QUEUESEARCHADD, 0);
-              }else{
-                dumperrors("Error some card has wrong dn=" + dn + "\n");
-              }
-              //return {dn: dn, filter: filter};
-            } else {
-              debugsync("iteration new card new dn\n");
-              newcardtoldap(card);
-           }
-          }
-        }
-      debugsync(filter + "\t" + ncard + "\n");
-      if (ncard > 0) return {dn: queryURL.dn, filter: "(|" + filter + ")"}
-        debugsync("iteration nothing to do\n")
-        return null;
-    }
-
     /*
      * old "sync" card by card
      * */
