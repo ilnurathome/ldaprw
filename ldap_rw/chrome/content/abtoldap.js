@@ -36,7 +36,7 @@
 
 
 function debugabtoldap(str){
-//  dump("abtoldap.js: " + str);
+  dump("abtoldap.js: " + str);
 }
 
 /*
@@ -269,5 +269,117 @@ ABtoLdap.prototype = {
                    }
                };
              }
+}
+
+
+
+function MLtoLdap() {
+
+  function genfun (from, to) {
+    return function(operation) {
+      //      debugabtoldap("from = " + from + " to = " + to + "\n");
+      for (var i in to) {
+        this.LdapModifications.appendElement( CreateLDAPMod( to[i], [this.ml.card.getProperty( from, "")], operation ), false  );
+      }
+    }
+  }
+
+  for (var i in this.__proto__) { 
+    if (this.__proto__[i] instanceof Array){ 
+      this[i]=  genfun(i, this.__proto__[i] ); 
+    } 
+  } 
+
+  this.getattrs = function(){
+    var attrs = new Array();
+    for (var i in mapper.__proto__) {
+      attrs[attrs.length] = i;
+    };
+    return attrs;
+  }
+
+  this.map = function(ml, LdapModifications, oldmaillist) {
+         debugabtoldap("mailing list map begin\n");
+         this.LdapModifications = LdapModifications;
+         this.ml = ml;
+
+
+         if (ml.card == undefined ){
+           throw "MLtoLdap.map ml.card does not exists";
+         }
+         if (! (ml.card instanceof Components.interfaces.nsIAbCard) ){
+           throw "MLtoLdap.map ml.card does not nsIAbCard";
+         }
+
+         var props = this.ml.card.properties;
+
+         while ( props.hasMoreElements() ){
+           var attr = props.getNext();
+           if (attr instanceof Components.interfaces.nsIProperty){
+             //if (attr.value){
+               if( this[attr.name]==undefined ) continue;
+               if( oldmaillist == undefined ) {
+                 this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+               } else {
+                 var oldprop = oldmaillist.card.getProperty(attr.name, null);
+                 if ( oldprop != null ){
+                   if ( oldprop != attr.value ){
+                     this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                    debugabtoldap("mod attr=" + attr.name + "\n" ); // + attr.value + "\n");                    
+                   }
+                 }else {
+                   this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                   debugabtoldap("add attr=" + attr.name + "\n"); // + "\t" + attr.value + "\n");
+                 }
+               }
+             //}
+           }
+         }
+
+ 
+         /*
+          * Temprorary variant
+          * What to fill the member attribute???
+          * cn=test test, mail=test@test
+          * or
+          * full dn to card entry
+          * cn=test test, ou=addressbook, dc=domain, dc=local
+          * ???
+          * */
+         if (ml.node == undefined ) {
+           throw "MLtoLdap.map ml.node does not exists";
+         }
+         if ( !(ml.node instanceof Components.interfaces.nsIAbDirectory) ) {
+           throw "MLtoLdap.map ml.node does not nsIAbDirectory";
+         }
+        var addresslistenum = ml.node.addressLists.enumerate();
+         var members = new Array();
+         while( addresslistenum.hasMoreElements() ){
+           var card = addresslistenum.getNext();
+           if ( card instanceof Components.interfaces.nsIAbCard ){
+             members[members.length] = "cn=" + card.displayName + ",mail=" + card.primaryEmail;
+           }          
+         }
+
+         debugabtoldap("mailing list map processing\n");
+
+         if ( oldmaillist == undefined ) {
+           var operation = Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES;
+           this.LdapModifications.appendElement( CreateLDAPMod( "member", members, operation ), false  );
+         } else {
+           throw "MLtoLdap.map Not implemented";
+         }
+         return ;
+       }
+}
+
+MLtoLdap.prototype = {
+
+  DisplayName: ["cn"], //["commonname"],
+  NickName: ["mozillaNickname"], //["xmozillanickname"],
+  Department: ["ou"], //["department", "departmentnumber", "orgunit"],
+  Company: ["o"], //["company"],
+  Notes:   ["description"],//["notes"], //
+  description:   ["description"],//["notes"], //
 }
 

@@ -50,8 +50,12 @@ var QUEUEUPDATEGET = 4;
 var QUEUEADDADD = 5;
 var QUEUEADDGET = 6;
 
+
+// debug info
 var alldn = [];
 var allmsg = [];
+var maillists = {};
+
 
 /*
 load("chrome://ldaprw/content/abtoldap.js"); 
@@ -291,11 +295,13 @@ function syncpolitic2(pref,backstatus){
               if (backstatus != undefined) backstatus(QUEUESEARCHADD, 0);
               
               if ( currentcard.isMailList ) {
-                // !!! never true because card component of mailing list can not containnig "dn"
+                // !!! never true
+                // because card component of mailing list can't containnig "dn"
+                debugsync( "iter mailng list contains dn! dn=" + dn + "\n")
                 maillists[currentcard.displayName].card = currentcard;
 //                maillists[currentcard.displayName].node = abManager.getDirectory(currentcard.mailListURI);
               // "(objectclass=groupOfNames)"
-                return {dn: dn, filter: "(objectclass=" + pref.maillistClassesAR[0]  + ")"};
+                return {dn: gendnML(pref, currentcard), filter: "(objectclass=" + pref.maillistClassesAR[0]  + ")"};
 //                continue;
               } else {
                 // "(objectclass=inetorgperson)"
@@ -303,8 +309,10 @@ function syncpolitic2(pref,backstatus){
               }
             } else {
               if ( currentcard.isMailList ) {
-                maillists[currentcard.displayName].card = currentcard;
+                debugsync("iteration maillist\n");
+                maillists[currentcard.displayName] = {card: currentcard};
 //                search mailing list on ldap server
+//                may be need to remove 'dn' from cards and create gendn function for all type card
                 return {dn: gendnML(pref, currentcard), filter: "(objectclass=" + pref.maillistClassesAR[0]  + ")"};
 //                newmaillisttoldap(currentcard);
               } else {
@@ -339,6 +347,8 @@ function syncpolitic2(pref,backstatus){
             return iteration();
           }else 
             if ( aMsg.errorCode == Components.interfaces.nsILDAPErrors.NO_SUCH_OBJECT){
+
+              //// debug
               var dumpstr = "getsearchquery new card ";
               try {
                 if (aMsg.errorCode != undefined) {
@@ -347,21 +357,32 @@ function syncpolitic2(pref,backstatus){
                 if (aMsg.matchedDn != undefined ) {
                   dumpstr+= " matchedDn=" + aMsg.matchedDn;
                 }
+                if (mydn != undefined ) {
+                  dumpstr+= " dn=" + mydn.dn;
+                }
               } catch(e) {
                 debugsync(e);
               } finally {
                 debugsync(dumpstr + "\n");
               }
-              if (currentcard.isMailList ){
-                newmaillisttoldap(currentcard);
-              } else {
+              /////////////////////////////////////
+
+//              if (currentcard.isMailList ){
+//                newmaillisttoldap(currentcard);
+//              } else {
                 if (mydn != undefined ) {
                   var card = mybook.getCardFromProperty("dn", mydn.dn, false);
                   if ( card != undefined ) {
                     newcardtoldap(card);
+                  } else {
+                    var rdnval = mydn.dn.split(',')[0].split('=')[1].replace(/^\s+|\s+$/g,'');
+                    var ml = maillists[rdnval];
+                    debugsync(ml.card.displayName + "\n");
+                    newmltoldap(ml.card);                    
                   }
                 }
-              }
+             // }
+
               return iteration();
             } else {
               dumperrors (aMsg.type + "\n" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) + "\n" + aMsg.errorMessage);
@@ -377,6 +398,7 @@ function syncpolitic2(pref,backstatus){
 
   var ldap = new LdapDataSource();
   var newcardtoldap = genaddtoldap(pref, ldap, backstatus);
+  var newmltoldap = genaddtoldapML(pref, ldap, backstatus);
 
   
   // Prepare Array of  requested attributes for ldap search request
@@ -468,10 +490,84 @@ function genaddtoldap(pref, ldapser, backstatus) {
         if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
       } catch(e) {
         dumperrors("Error: " + e+"\n");
-      }
-      
+      }      
     }
 }
+
+
+/*
+ * Generator of callback function for add operation, mailing list
+ * */
+
+function genaddtoldapML(pref, ldapser, backstatus) {
+
+  var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+
+  var mybook = pref.book;
+  var queryURL = pref.queryURL;
+
+  var mapper = new LdaptoML();
+  var mappertoldap = new MLtoLdap();
+
+  var ldap = ldapser;
+  if (ldap == undefined) {    
+    var ldap = new LdapDataSource();
+  }
+
+  function genaddquery(card, addqueries) {
+    var addquerycount = 0;
+    return function addquery(aMsg) {
+      debugsync("addquery " + addquerycount + "\n");
+      if (aMsg != undefined ){
+          debugsync("addquery aMsg= " + aMsg.errorCode + "\n");
+        if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS) {
+          dumperrors("Error: addquery " + aMsg.errorCode + "\n" 
+                  + LdapErrorsToStr(aMsg.errorCode) + "\n"
+                  + aMsg.errorMessage + "\n"
+                  + card.getProperty("dn", "") + "\n");
+          return null;
+        }else{
+//          var newcard= mybook.modifyCard(card);
+          if (backstatus != undefined) backstatus(QUEUEADDGET, aMsg.type);          
+        }
+      }
+      if ( addquerycount < addqueries.length ) {
+        return addqueries[addquerycount++];
+      }
+      return null;
+    }
+  }
+
+
+    return function(card){
+      debugsync("New mailing list to ldap\n");
+     // var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"] .createInstance(Components.interfaces.nsIAbCard);
+
+      var node = abManager.getDirectory(card.mailListURI);
+      var ml = { card: card, node: node}; 
+
+      var mods = CreateNSMutArray();
+      
+      dn = gendnML(pref, card);
+      debugsync("new ml to ldap dn=" + dn + "\n");
+      mods.appendElement( CreateLDAPMod( "objectClass", pref.maillistClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
+      debugsync("new ml to ldap mods.length=" + mods.length + "\n");
+      
+      mappertoldap.map(ml, mods);
+
+      //// Thunderbird can't store 'dn' in mailing list nsAbCard
+      //card.setProperty("dn", dn);
+      debugsync("new ml to ldap mods.length=" + mods.length + "\n");
+      
+      try {
+        ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods}]) );
+        if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
+      } catch(e) {
+        dumperrors("Error: " + e+"\n");
+      }      
+    }
+}
+
 
 /*
  * Add new card to address book from ldap or modify existing card

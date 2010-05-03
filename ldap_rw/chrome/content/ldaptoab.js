@@ -400,7 +400,8 @@ mybook instanceof Components.interfaces.nsIAbDirectory;
 LdaptoML.prototype = {
 
   dn: function() {
-        this.ml.card.setProperty("dn", this.LDAPMessage.dn );
+        //// We can't store 'dn' in mailing list nsAbCard 
+        //this.ml.card.setProperty("dn", this.LDAPMessage.dn );
       },
 
   //cn: ["DisplayName"], 
