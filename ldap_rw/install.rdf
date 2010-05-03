@@ -4,7 +4,7 @@
     <em:id>{dc6df62a-7051-46f3-b602-d53b56d707e0}</em:id>
     <em:type>2</em:type>
     <em:name>LDAP Read Write</em:name>
-    <em:version>0.3.201005031455</em:version>
+    <em:version>0.4.201005031501</em:version>
     <em:creator>Ilnur Kiyamov</em:creator>
     <em:contributor></em:contributor>
     <em:description>LDAP Read Write Sync</em:description>

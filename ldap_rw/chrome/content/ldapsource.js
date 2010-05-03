@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 function debugldapsource(str){
-  dump("ldapsource.js: " + str);
+//  dump("ldapsource.js: " + str);
 }
 
 function dumperrors(str){
