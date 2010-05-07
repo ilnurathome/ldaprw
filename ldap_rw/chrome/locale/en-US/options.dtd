@@ -34,3 +34,7 @@
 <!ENTITY objClasses.label "Object Classes for new ldap mailing lists">
 <!ENTITY objClasses.accesskey "M">
 <!ENTITY objClasses.value "groupOfNames">
+
+<!ENTITY maillistClasses.label "Object Classes for new ldap mailing lists">
+<!ENTITY maillistClasses.accesskey "M">
+<!ENTITY maillistClasses.value "groupOfNames">
