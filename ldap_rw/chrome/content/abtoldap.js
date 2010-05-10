@@ -190,6 +190,17 @@ ABtoLdap.prototype = {
     }
     this.mail++;
   },
+  
+  PreferMailFormat: function(operation){
+   var mailformat = this.AbCard.getProperty( "PreferMailFormat", 0);
+   if (mailformat == 2) {   
+     this.LdapModifications.appendElement( CreateLDAPMod("mozillaUseHtmlMail", ["TRUE"], operation ), false  );
+   } else if (mailformat == 1) {
+     this.LdapModifications.appendElement( CreateLDAPMod("mozillaUseHtmlMail", ["FALSE"], operation ), false  );
+   } else if (mailformat == 0) {
+     this.LdapModifications.appendElement( CreateLDAPMod("mozillaUseHtmlMail", ["FALSE"], Components.interfaces.nsILDAPModification.MOD_DELETE ), false  );
+   }
+  },
 
           // Contact > Phones
   WorkPhone: ["telephoneNumber"],

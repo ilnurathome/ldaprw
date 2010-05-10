@@ -1,5 +1,6 @@
 <!ENTITY ldaprw.pref.label "LdapRW Настройки">
 <!ENTITY ldaprw.sync.label "LdapRW Синхронизировать">
+<!ENTITY ldaprw.abort.label "LdapRW Аборт Синхронизации">
 
 <!ENTITY ldapexplorer-title.value "Ldap Cards Explorer">
 <!ENTITY ldapexplorer-menu.label "Ldap Cards Explorer">
@@ -8,3 +9,11 @@
 <!ENTITY ldapexplorer-del.label "Удалить">
 <!ENTITY ldapexplorer-more.value "больше...">
 
+<!ENTITY LdapRW_card.LdapRWTab.tab "LdapRW">
+<!ENTITY LdapRW_card.LdapRWTab.accesskey "a">
+
+<!ENTITY LdapRW_card.attr "Имя Аттрибута">
+<!ENTITY LdapRW_card.attr.value "Значение Аттрибута">
+
+<!ENTITY dn.label "dn">
+<!ENTITY dn.accesskey "d">

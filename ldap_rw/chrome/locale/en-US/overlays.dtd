@@ -1,5 +1,6 @@
 <!ENTITY ldaprw.pref.label "LdapRW Preferences">
 <!ENTITY ldaprw.sync.label "LdapRW Sync">
+<!ENTITY ldaprw.abort.label "LdapRW Abort Sync">
 
 <!ENTITY ldapexplorer-title.value "Ldap Cards Explorer">
 <!ENTITY ldapexplorer-menu.label "Ldap Cards Explorer">
@@ -7,4 +8,13 @@
 <!ENTITY ldapexplorer-add.label "Add To Book">
 <!ENTITY ldapexplorer-del.label "Delete">
 <!ENTITY ldapexplorer-more.value "more...">
+
+<!ENTITY LdapRW_card.LdapRWTab.tab "LdapRW">
+<!ENTITY LdapRW_card.LdapRWTab.accesskey "a">
+
+<!ENTITY LdapRW_card.attr "Attribute Name">
+<!ENTITY LdapRW_card.attr.value "Attribute Value">
+
+<!ENTITY dn.label "dn">
+<!ENTITY dn.accesskey "d">
 

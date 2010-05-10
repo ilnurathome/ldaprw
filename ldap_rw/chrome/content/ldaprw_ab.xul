@@ -16,7 +16,15 @@
   <menupopup id="taskPopup">
     <menuitem id="ldaprw-pref" label="&ldaprw.pref.label;" oncommand="ldaprw.onMenuPrefCommand();"/>
     <menuitem id="ldaprw-sync" label="&ldaprw.sync.label;" oncommand="ldapsync();"/>    
+    <menuitem id="ldaprw-abort" label="&ldaprw.abort.label;" oncommand="ldapsyncabort();"/>
   </menupopup>
+
+  <!--  -->
+  <popup id="abResultsTreeContext">
+    <menuitem id="ldaprw-sync"
+      label="&ldaprw.sync.label;"
+      command="dump('not implemented yet')"/>
+  </popup>
 
 </overlay>
 

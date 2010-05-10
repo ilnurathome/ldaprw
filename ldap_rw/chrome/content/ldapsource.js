@@ -145,7 +145,7 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
 
       this.mBinded =   0;
       this.mFinished = 0;
-      this.mdn = {};
+      this.mOperations = {};
       if (maxmess != undefined) this.kMaxMess = maxmess;
 };
 
@@ -265,18 +265,17 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
                  if ( aMsg == undefined || aMsg.operation == undefined ) 
                      query = getquery(aMsg, null);
                  else {
-                     query = getquery(aMsg, caller.mdn[aMsg.operation.messageID] );
-                     delete caller.mdn[aMsg.operation.messageID];
+                     query = getquery(aMsg, caller.mOperations[aMsg.operation.messageID] );
+                     delete caller.mOperations[aMsg.operation.messageID];
                  }
                  if ( query ){
                    caller.mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
                    try {
                      caller.mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
-                     //mOperationSearch.searchExt(queryes[mFinished], queryURL.scope, filter, caller.kAttributes.length, caller.kAttributes, 0, -1);
                      debugldapsource( "operation search init messageID=" + caller.mOperationSearch.messageID + "\n" );
                      caller.mOperationSearch.searchExt(query.dn, queryURL.scope, query.filter, caller.kAttributes.length, caller.kAttributes, 0, caller.kMaxMess);
                      debugldapsource( "operation search call messageID=" + caller.mOperationSearch.messageID + "\n" );
-                     caller.mdn[caller.mOperationSearch.messageID] = {mid: caller.mOperationSearch.messageID, dn: query.dn};
+                     caller.mOperations[caller.mOperationSearch.messageID] = {mid: caller.mOperationSearch.messageID, dn: query.dn, mop: caller.mOperationSearch};
                    } catch (e) {
                      dumperrors("init error: " + e + "\n");
                      return;
@@ -313,8 +312,6 @@ LdapDataSource.prototype.query = function (queryURL, aBindName, getpassword, get
             }
 };
 
-
-
 LdapDataSource.prototype.add = function (queryURL, aBindName, getpassword, getquery, callback) {
 
            /*
@@ -323,13 +320,21 @@ LdapDataSource.prototype.add = function (queryURL, aBindName, getpassword, getqu
            function callmetod(aMsg) {
 //             debugldapsource("callmetod add = "+ mFinished + "\t" + queryes + "\n");
              if (!( getquery == undefined )) {
-               var query = getquery(aMsg);
+               var query = null;//getquery(aMsg);
+                 if ( aMsg == undefined || aMsg.operation == undefined ) 
+                     query = getquery(aMsg, null);
+                 else {
+                     query = getquery(aMsg, caller.mOperations[aMsg.operation.messageID] );
+                     delete caller.mOperations[aMsg.operation.messageID];
+                 }
+               
                if ( query ){
-                 var mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"]
+                 var mOperation = Components.classes["@mozilla.org/network/ldap-operation;1"]
                    .createInstance(Components.interfaces.nsILDAPOperation);
                  try {
-                   mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
-                   mOperationSearch.addExt(query.dn, query.mods);
+                   mOperation.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
+                   mOperation.addExt(query.dn, query.mods);
+                   caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation};
                  } catch (e) {
                    dumperrors("init error: " + e + "\n");
                    return;
@@ -353,7 +358,7 @@ LdapDataSource.prototype.add = function (queryURL, aBindName, getpassword, getqu
             if (queryURL == undefined ) {
               throw Error("queryURL is undefined");
               return;
-            }         
+            }
            
      
 
@@ -375,13 +380,21 @@ LdapDataSource.prototype.modify = function (queryURL, aBindName, getpassword, ge
             */
             function callmetod(aMsg){
                if (!( getquery == undefined )) {
-                 var query = getquery(aMsg);
+                 var query = null; //getquery(aMsg);                 
+                 if ( aMsg == undefined || aMsg.operation == undefined ) 
+                     query = getquery(aMsg, null);
+                 else {
+                     query = getquery(aMsg, caller.mOperations[aMsg.operation.messageID] );
+                     delete caller.mOperations[aMsg.operation.messageID];
+                 }
+            
                  if ( query ){
-                   var mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"]
-                                             .createInstance(Components.interfaces.nsILDAPOperation);
+                   var mOperation = Components.classes["@mozilla.org/network/ldap-operation;1"]
+                    .createInstance(Components.interfaces.nsILDAPOperation);
                    try {
-                     mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod), null);
-                     mOperationSearch.modifyExt(query.dn, query.mods);
+                     mOperation.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod), null);
+                     mOperation.modifyExt(query.dn, query.mods);
+                     caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation};                     
                    } catch (e) {
                      dumperrors("init error: " + e + "\n");
                      return;
@@ -390,8 +403,7 @@ LdapDataSource.prototype.modify = function (queryURL, aBindName, getpassword, ge
                  return;
                }
                dumperrors("mod getquery undefined\n");
-               return;
-             
+               return;             
            }
 
            var caller = this;
@@ -426,13 +438,21 @@ LdapDataSource.prototype.deleteext = function (queryURL, aBindName, getpassword,
             */
             function callmetod(aMsg){
                if (!( getquery == undefined )) {
-                 var query = getquery(aMsg);
+                 var query = null;//getquery(aMsg);
+                 if ( aMsg == undefined || aMsg.operation == undefined ) 
+                     query = getquery(aMsg, null);
+                 else {
+                     query = getquery(aMsg, caller.mOperations[aMsg.operation.messageID] );
+                     delete caller.mOperations[aMsg.operation.messageID];
+                 }
+
                  if ( query ){
-                   var mOperationSearch = Components.classes["@mozilla.org/network/ldap-operation;1"]
-                                             .createInstance(Components.interfaces.nsILDAPOperation);
+                   var mOperation = Components.classes["@mozilla.org/network/ldap-operation;1"]
+                          .createInstance(Components.interfaces.nsILDAPOperation);
                    try {
-                     mOperationSearch.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod), null);
-                     mOperationSearch.deleteExt(query.dn);
+                     mOperation.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod), null);
+                     mOperation.deleteExt(query.dn);
+                     caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation};                     
                    } catch (e) {
                      dumperrors("init error: " + e + "\n");
                      return;
@@ -469,15 +489,10 @@ LdapDataSource.prototype.deleteext = function (queryURL, aBindName, getpassword,
             }
 };
 
-
-//var components = [LdapDataSource];
-
-//var NSGetModule = XPCOMUtils.generateNSGetModule(components);
-
-
-/*
-var ldapmodif = Components.classes["@mozilla.org/network/ldap-modification;1"].createInstance(Components.interfaces.nsILDAPModification);
-
- */
+LdapDataSource.prototype.abortall = function() {
+  for ( var k in this.mOperations ){
+    this.mOperations[k].mop.abandonExt();
+  }
+}
 
 

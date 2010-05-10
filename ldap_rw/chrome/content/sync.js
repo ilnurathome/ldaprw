@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 function debugsync(str){
-//  dump("sync.js: " + str);
+  dump("sync.js: " + str);
 }
 
 function dumperrors(str){
@@ -50,12 +50,17 @@ var QUEUEUPDATEGET = 4;
 var QUEUEADDADD = 5;
 var QUEUEADDGET = 6;
 
+var ldaprw_sync_abort = false;
+function ldapsyncabort() {
+  debugsync("ldapsyncabort\n");
+  ldaprw_sync_abort = true;
+}
 
 // debug info
 var alldn = [];
 var allmsg = [];
 var maillists = {};
-
+/////////////////
 
 /*
 load("chrome://ldaprw/content/abtoldap.js"); 
@@ -91,9 +96,11 @@ var propers = card.properties; while ( propers.hasMoreElements() ) { var p = pro
  * */
 
 function ldapsync(backstatus) {
+  ldaprw_sync_abort = false;
   debugsync("ldapsync\n");
   var prefs = getprefs();
   for ( var i in prefs) {
+    if (ldaprw_sync_abort) {break;}
     syncpolitic2(prefs[i],backstatus);
   }
 }
@@ -185,8 +192,13 @@ function syncpolitic2(pref,backstatus){
      * Callback function for modify operations
      * @aMsg ldap messages
      * */
-    return function modquery(aMsg) {
+    return function modquery(aMsg, mdn) {
       debugsync("modquery " + modquerycount + "\n");
+      if (ldaprw_sync_abort ) {
+        debugsync("modequery abortall\n");
+        ldap.abortall();
+        return null;
+      }
      if (aMsg != undefined ){
           debugsync("modquery aMsg= " + aMsg.errorCode + "\n");
           if(aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS ){
@@ -215,6 +227,11 @@ function syncpolitic2(pref,backstatus){
 //    ldapcards[aMsg.dn] = aMsg;
 //    ldapcards[ldapcards.length] = aMsg;
    debugsync("callbacksearchresult " + aMsg.type +"\n");
+      if (ldaprw_sync_abort ) {
+        debugsync("callbacksearchresult abortall\n");
+        ldap.abortall();
+        return;
+      }
     var d = aMsg.getValues ("modifytimestamp", {}).toString();
     var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
 
@@ -287,6 +304,11 @@ function syncpolitic2(pref,backstatus){
     function iteration(){
       debugsync("iter \n");
         while ( allcards.hasMoreElements()  ) {
+          if (ldaprw_sync_abort ) {
+            debugsync("modequery abortall\n");
+            ldap.abortall();
+            return null;
+          }
           currentcard = allcards.getNext();
           if ( currentcard instanceof Components.interfaces.nsIAbCard) {
             var dn = currentcard.getProperty("dn", null);
@@ -296,7 +318,7 @@ function syncpolitic2(pref,backstatus){
               
               if ( currentcard.isMailList ) {
                 // !!! never true
-                // because card component of mailing list can't containnig "dn"
+                // because card component of mailing list can't containing "dn"
                 debugsync( "iter mailng list contains dn! dn=" + dn + "\n")
                 maillists[currentcard.displayName].card = currentcard;
 //                maillists[currentcard.displayName].node = abManager.getDirectory(currentcard.mailListURI);
@@ -331,6 +353,11 @@ function syncpolitic2(pref,backstatus){
      * */
     return function(aMsg, mydn){
       debugsync("getsearchquery\n");
+      if (ldaprw_sync_abort ) {
+        debugsync("getsearchquery abortall\n");
+        ldap.abortall();
+        return null;
+      }
       if ( aMsg == undefined ) return iteration();
       else
         if ( aMsg instanceof Components.interfaces.nsILDAPMessage) {
@@ -449,8 +476,13 @@ function genaddtoldap(pref, ldapser, backstatus) {
 
   function genaddquery(card, addqueries) {
     var addquerycount = 0;
-    return function addquery(aMsg) {
+    return function addquery(aMsg, mdn) {
       debugsync("addquery " + addquerycount + "\n");
+      if (ldaprw_sync_abort ) {
+        debugsync("addquery abortall\n");
+        ldap.abortall();
+        return null;
+      }
       if (aMsg != undefined ){
           debugsync("addquery aMsg= " + aMsg.errorCode + "\n");
         if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS) {
@@ -516,8 +548,13 @@ function genaddtoldapML(pref, ldapser, backstatus) {
 
   function genaddquery(card, addqueries) {
     var addquerycount = 0;
-    return function addquery(aMsg) {
+    return function addquery(aMsg, mdn) {
       debugsync("addquery " + addquerycount + "\n");
+      if (ldaprw_sync_abort ) {
+        debugsync("addquery abortall\n");
+        ldap.abortall();
+        return null;
+      }
       if (aMsg != undefined ){
           debugsync("addquery aMsg= " + aMsg.errorCode + "\n");
         if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS) {

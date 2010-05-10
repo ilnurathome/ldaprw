@@ -1,5 +1,5 @@
 <!ENTITY prefwindow.title "LDAP Read Write preferences">
-<!ENTITY pane1.title "LDAP Read Write preferences">
+<!ENTITY panel.title "LDAP Read Write preferences">
 <!ENTITY checkboolpref.label "A Boolean Preference">
 <!ENTITY checkboolpref.accesskey "B">
 <!ENTITY intpref.label "An Integer Preference">

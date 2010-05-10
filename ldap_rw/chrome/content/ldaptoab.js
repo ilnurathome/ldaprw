@@ -155,6 +155,14 @@ LdaptoAB.prototype = {
         },
   mozillaSecondEmail: ["SecondEmail"],
   xmozillasecondemail: ["SecondEmail"],
+  mozillaUseHtmlMail: function(){
+      var usehtml = this.LDAPMessage.getValues( "mozillaUseHtmlMail",{} );
+      if (usehtml[0] == "TRUE"){
+         this.AbCard.setProperty("PreferMailFormat", 2 );
+      } else if (usehtml[0] == "FALSE"){
+         this.AbCard.setProperty("PreferMailFormat", 1 );
+      }
+  },
   nsAIMid: ["_AimScreenName"], 
 
   // Contact > Phones
