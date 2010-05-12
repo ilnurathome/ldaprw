@@ -169,7 +169,7 @@ LdaptoAB.prototype = {
   telephoneNumber: ["WorkPhone"], 
   homePhone: ["HomePhone"],  
   fax: ["FaxNumber"],  
-  facsimiletelephonenumber: ["FaxNumber"],
+  facsimileTelephoneNumber: ["FaxNumber"],
 
   pager: ["PagerNumber"],
   pagerphone: ["PagerNumber"],

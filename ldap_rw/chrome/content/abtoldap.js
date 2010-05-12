@@ -205,7 +205,7 @@ ABtoLdap.prototype = {
           // Contact > Phones
   WorkPhone: ["telephoneNumber"],
   HomePhone: ["homePhone"],
-  FaxNumber: ["facsimiletelephonenumber"], // ["fax"], //
+  FaxNumber: ["facsimileTelephoneNumber"], // ["fax"], //
   PagerNumber: ["pager"],
   CellularNumber: ["mobile"], //["cellphone", "carphone"],
   _AimScreenName: ["nsAIMid"],
