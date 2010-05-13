@@ -4,6 +4,13 @@ function dumperrors(str){
 }
 
 function getprefs(){
+  function MygetCharPref(pref, key, unexists){ 
+    try {
+      return pref.getCharPref(key);
+    }catch(e) {
+      return unexists;
+    }
+  }
   var list = new Array();
   
   var prefs = Components.classes["@mozilla.org/preferences-service;1"] .getService(Components.interfaces.nsIPrefService);
@@ -30,13 +37,13 @@ function getprefs(){
          list[key].bookname = key;
          list[key].binddn = myprefs.getCharPref(key + ".auth.dn");
          list[key].uri = myprefs.getCharPref(key + ".uri");
-         list[key].attrRdn = myprefs.getCharPref(key + ".attrRdn");
-         list[key].objClasses = myprefs.getCharPref(key + ".objClasses");
-         list[key].maillistClasses = myprefs.getCharPref(key + ".maillistClasses");
+         list[key].attrRdn = MygetCharPref(myprefs, key + ".attrRdn", "cn");
+         list[key].objClasses = MygetCharPref(myprefs,key + ".objClasses", "inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person");
+         list[key].maillistClasses = MygetCharPref(myprefs,key + ".maillistClasses", "groupOfNames");
          list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
 
-         list[key].objClassesAR = myprefs.getCharPref(key + ".objClasses").replace(/\s*/g, '').split(",");
-         list[key].maillistClassesAR = myprefs.getCharPref(key + ".maillistClasses").replace(/\s*/g, '').split(",");                     
+         list[key].objClassesAR = list[key].objClasses.replace(/\s*/g, '').split(",");
+         list[key].maillistClassesAR = list[key].maillistClasses.replace(/\s*/g, '').split(",");                     
 
           var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
           list[key].description= abprefs.getCharPref("description");

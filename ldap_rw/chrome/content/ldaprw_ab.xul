@@ -6,16 +6,16 @@
 <overlay id="ldaprw_ab_overlay" 
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+  <script type="application/x-javascript" src="chrome://ldaprw/content/sync.js"/>
   <script type="application/x-javascript" src="chrome://ldaprw/content/abtoldap.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaptoab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaprw_ab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldapsource.js"/> 
-  <script type="application/x-javascript" src="chrome://ldaprw/content/sync.js"/>
   <script type="application/x-javascript" src="chrome://ldaprw/content/prefs.js"/>
 
   <menupopup id="taskPopup">
     <menuitem id="ldaprw-pref" label="&ldaprw.pref.label;" oncommand="ldaprw.onMenuPrefCommand();"/>
-    <menuitem id="ldaprw-sync" label="&ldaprw.sync.label;" oncommand="ldapsync();"/>    
+    <menuitem id="ldaprw-sync" label="&ldaprw.sync.label;" oncommand="ldaprw.onMenuSyncCommand();"/>    
     <menuitem id="ldaprw-abort" label="&ldaprw.abort.label;" oncommand="ldapsyncabort();"/>
   </menupopup>
 
@@ -25,6 +25,10 @@
       label="&ldaprw.sync.label;"
       command="dump('not implemented yet')"/>
   </popup>
+
+  <statusbar id="status-bar">
+    <statusbarpanel id="ldaprwstatus" label="ldaprw debug"/>
+  </statusbar>
 
 </overlay>
 
