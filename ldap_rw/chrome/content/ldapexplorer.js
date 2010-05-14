@@ -34,7 +34,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 function debugexplorer(str){
-//  dump("explorer.js: " + str);
+  dump("explorer.js: " + str);
 }
 
 function dumperrors(str){
@@ -321,10 +321,6 @@ function deleteonldap(v) {
   } 
 }
 
-function doEdit() {
-
-}
-
 function doDel() {
 
   var queries = [];
@@ -350,11 +346,102 @@ function doDel() {
   }
 }
 
-
+  /*
+   * Generator for callback function from ldap modify operations
+   * @querymods Array of query objects
+   *   for example [ { dn: aMsg.dn, mods: mods} ] 
+   * */
+  function genmodquery(querymods, backstatus) {
+    var modquerycount = 0;
+    /*
+     * Callback function for modify operations
+     * @aMsg ldap messages
+     * */
+    return function modquery(aMsg, mdn) {
+      debugexplorer("modquery " + modquerycount + "\n");
+      if (ldaprw_sync_abort ) {
+        debugexplorer("modequery abortall\n");
+        ldap.abortall();
+        return null;
+      }
+     if (aMsg != undefined ){
+          debugexplorer("modquery aMsg= " + aMsg.errorCode + "\n");
+          if(aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS ){
+            dumperrors("Error: modquery " + aMsg.errorCode + "\n" 
+                  + LdapErrorsToStr(aMsg.errorCode) + "\n"
+                  + aMsg.errorMessage );
+          }
+          if (backstatus != undefined) backstatus(QUEUEUPDATEGET, aMsg.type);
+      }
+       if ( modquerycount < querymods.length ) {
+          debugexplorer( querymods[modquerycount].dn + " "
+              + querymods[modquerycount].mods+ "\n");
+       
+        return querymods[modquerycount++];
+      }
+      return null;
+    }
+  }
 /*
+function modifyonldap(card) {
+  if ( ldap == null ){
+    debugexplorer("Choose Ldap server before\n");
+    return;
+  }
 
-var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard); 
-card.displayName = "testCard";
+  try {
+    ldap.modify(queryURL, curpref.binddn, gengetpassword(), 
+        genmodquery( [ { dn: aMsg.dn, mods: mods} ] ) );
+  } catch (e) {
+    dumperrors ("Error: " + e + "\n" );
+  } 
+}
+*/
+
+function doEdit() {
+    var tree = document.getElementById('ldapexplorer-cardlist');
+    if (tree.currentIndex < 0){
+       debugexplorer("do select nothing selected\n");
+       return null;
+    }
+
+    var aMsg = cardtreeView.treeData[tree.currentIndex].aMsg;
+    debugexplorer("doEdit: aMsg.dn=" + aMsg.dn + "\n");
+
+    try{
+      // temprorary wrong method
+      var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);     
+      var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);     
+      var mapper = new LdaptoAB();    
+      var mappertoldap = new ABtoLdap();
+      
+      // temprorary wrong method. Goog method to clone card needed.!!!!
+      mapper.map(aMsg, oldcard); 
+      mapper.map(aMsg, card); 
+
+      debugexplorer("oldcard.primaryEmail=" + oldcard.primaryEmail + "\n");
+      debugexplorer("card.primaryEmail=" + card.primaryEmail + "\n");
+
+      goEditCardDialog(null, card);
+
+      debugexplorer("oldcard.primaryEmail=" + oldcard.primaryEmail + "\n");
+      debugexplorer("card.primaryEmail=" + card.primaryEmail + "\n");
+
+      var mods = CreateNSMutArray();
+      
+      mappertoldap.map(card, mods, oldcard);
+
+      if (mods.length >0){
+        debugexplorer("doEdit: mods.length=" + mods.length + ", aMsg.dn=" + aMsg.dn + "\n");        
+        ldap.modify (queryURL, curpref.binddn, gengetpassword(), 
+            genmodquery( [ { dn: aMsg.dn, mods: mods} ]) ); 
+      }else{
+        debugexplorer("modify card in LDAP nothing to modify\n");
+      }      
+    }catch(e){
+      dumperrors("Error: " + e + "\n");
+    }
+}
 
 function goEditCardDialog(abURI, card) {
    window.openDialog("chrome://ldaprw/content/myabEditCardDialog.xul",  
@@ -362,6 +449,12 @@ function goEditCardDialog(abURI, card) {
                      "chrome,resizable=no,modal,titlebar,centerscreen",  
                      {abURI:null, card:card});
 }
+
+
+/*
+
+var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard); 
+card.displayName = "testCard";
 
 goEditCardDialog(null, card);
 

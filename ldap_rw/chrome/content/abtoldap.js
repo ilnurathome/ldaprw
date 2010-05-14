@@ -36,7 +36,7 @@
 
 
 function debugabtoldap(str){
-//  dump("abtoldap.js: " + str);
+  dump("abtoldap.js: " + str);
 }
 
 /*
@@ -57,6 +57,8 @@ function CreateLdapBerVal() {
 }
 
 function CreateLDAPMod (type, vals, operation) {
+  if (!vals) return null;
+  if (vals.length=0) return null;
   var mod = CreateLDAPModification();
   debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
   mod.type = type;
@@ -66,16 +68,24 @@ function CreateLDAPMod (type, vals, operation) {
   if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
     debugabtoldap( "CreateLDAPMod: vals=" + vals + "\n" );   
     for (var i in vals) {
+      if(vals[i] == null) {
+        debugabtoldap("CreateLDAPMod: vals[" + i + "] is null\n");
+        continue;
+      }else{
       var val = CreateLdapBerVal();
 //      debugabtoldap( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
       val.setFromUTF8(vals[i], false);
       mod.values.appendElement(val, false);
+      }
     }
   }
+  if(mod.values.length = 0) return null;
   return mod;
 }
 
 function CreateLDAPModBin (type, vals, operation) {
+  if (!vals) return null;
+  if (vals.length=0) return null;
   var mod = CreateLDAPModification();
   debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
   mod.type = type;
@@ -85,12 +95,14 @@ function CreateLDAPModBin (type, vals, operation) {
   if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
     debugabtoldap( "CreateLDAPMod: vals=" + vals + "\n" );   
     for (var i in vals) {
+      if(!vals[i]) continue;
       var val = CreateLdapBerVal();
       debugabtoldap( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
       val.set( vals[i].length , vals[i]);
       mod.values.appendElement(val, false);
     }
   }
+  if(mod.values.length = 0) return null;  
   return mod;
 }
 
@@ -104,7 +116,9 @@ function ABtoLdap() {
     return function(operation) {
       //      debugabtoldap("from = " + from + " to = " + to + "\n");
       for (var i in to) {
-        this.LdapModifications.appendElement( CreateLDAPMod( to[i], [this.AbCard.getProperty( from, "")], operation ), false  );
+        var mods =  CreateLDAPMod( to[i], [this.AbCard.getProperty( from, "")], operation );
+        if (mods)
+          this.LdapModifications.appendElement( mods, false  );
       }
     }
   }
@@ -179,27 +193,34 @@ ABtoLdap.prototype = {
           // Contact > Internet
   PrimaryEmail: function(operation){ //["mail"],
     if (!this.mail){
-      this.LdapModifications.appendElement( CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation ), false  );
+      var mods = CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation );
+      if (mods)
+        this.LdapModifications.appendElement( mods , false  );
     }
     this.mail++;
   },
 
   SecondEmail: function(operation){ //["mail"],
     if (!this.mail){
-      this.LdapModifications.appendElement( CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation ), false  );
+      var mods = CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation );
+      if (mods)
+        this.LdapModifications.appendElement( mods , false  );
     }
     this.mail++;
   },
   
   PreferMailFormat: function(operation){
+   var mods;
    var mailformat = this.AbCard.getProperty( "PreferMailFormat", 0);
    if (mailformat == 2) {   
-     this.LdapModifications.appendElement( CreateLDAPMod("mozillaUseHtmlMail", ["TRUE"], operation ), false  );
+     mods = CreateLDAPMod("mozillaUseHtmlMail", ["TRUE"], operation );
    } else if (mailformat == 1) {
-     this.LdapModifications.appendElement( CreateLDAPMod("mozillaUseHtmlMail", ["FALSE"], operation ), false  );
+     mods = CreateLDAPMod("mozillaUseHtmlMail", ["FALSE"], operation );
    } else if (mailformat == 0) {
-     this.LdapModifications.appendElement( CreateLDAPMod("mozillaUseHtmlMail", ["FALSE"], Components.interfaces.nsILDAPModification.MOD_DELETE ), false  );
+     mods = CreateLDAPMod("mozillaUseHtmlMail", ["FALSE"], Components.interfaces.nsILDAPModification.MOD_DELETE );
    }
+   if (mods)
+     this.LdapModifications.appendElement( mods, false  );     
   },
 
           // Contact > Phones
@@ -262,19 +283,16 @@ ABtoLdap.prototype = {
 
                    } catch (e) {}
                    if (pfile) {
-                     //var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-                     //file.initWithFile(pfile);  
                      var file = pfile;
                      var fileStream = Components.classes['@mozilla.org/network/file-input-stream;1'].createInstance(Components.interfaces.nsIFileInputStream);
                      fileStream.init(file, -1, -1, false);  
                      var binaryStream = Components.classes['@mozilla.org/binaryinputstream;1'].createInstance(Components.interfaces.nsIBinaryInputStream);  
                      binaryStream.setInputStream(fileStream);  
                      var array = binaryStream.readByteArray(fileStream.available());  
-//                     var bytes = binaryStream.readBytes(fileStream.available());  
 
-                     this.LdapModifications.appendElement( CreateLDAPModBin("jpegPhoto", [array], operation),false);
-//                     this.LdapModifications.appendElement( CreateLDAPModBin("jpegPhoto", [bytes], operation),false);
-
+                     var mods = CreateLDAPModBin("jpegPhoto", [array], operation);
+                     if (mods)
+                       this.LdapModifications.appendElement( mods,false);
                      binaryStream.close();  
                      fileStream.close();  
                    }
@@ -290,7 +308,9 @@ function MLtoLdap() {
     return function(operation) {
       //      debugabtoldap("from = " + from + " to = " + to + "\n");
       for (var i in to) {
-        this.LdapModifications.appendElement( CreateLDAPMod( to[i], [this.ml.card.getProperty( from, "")], operation ), false  );
+        var mods =  CreateLDAPMod( to[i], [this.ml.card.getProperty( from, "")], operation );
+        if (mods)
+          this.LdapModifications.appendElement( mods, false  );
       }
     }
   }
@@ -376,7 +396,9 @@ function MLtoLdap() {
 
          if ( oldmaillist == undefined ) {
            var operation = Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES;
-           this.LdapModifications.appendElement( CreateLDAPMod( "member", members, operation ), false  );
+           var mods = CreateLDAPMod( "member", members, operation );
+           if (mods)
+             this.LdapModifications.appendElement( mods, false  );
          } else {
            throw "MLtoLdap.map Not implemented";
          }
