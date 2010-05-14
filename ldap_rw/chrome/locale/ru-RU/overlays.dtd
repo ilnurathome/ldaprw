@@ -6,6 +6,7 @@
 <!ENTITY ldapexplorer-menu.label "Ldap Cards Explorer">
 
 <!ENTITY ldapexplorer-add.label "Добавить в книгу">
+<!ENTITY ldapexplorer-edit.label "Редактировать">^M
 <!ENTITY ldapexplorer-del.label "Удалить">
 <!ENTITY ldapexplorer-more.value "больше...">
 

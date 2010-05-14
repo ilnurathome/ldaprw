@@ -456,6 +456,14 @@ function gendnML(pref,card) {
   return genrdnML(pref, card) + ',' + pref.queryURL.dn;
 }
 
+function genrdn(pref, card) {
+  return pref.attrRdn + "=" + card.displayName;  
+}
+
+function gendn(pref,card) {
+  return genrdn(pref, card) + ',' + pref.queryURL.dn;
+}
+
 /*
  * Generator of callback function for add operation
  * */
@@ -508,8 +516,12 @@ function genaddtoldap(pref, ldapser, backstatus) {
       debugsync("New card\n");
       var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"] .createInstance(Components.interfaces.nsIAbCard);
       var mods = CreateNSMutArray();
-      
-      dn = pref.attrRdn + "=" + card.displayName + "," + queryURL.dn;
+   
+      var dn = currentcard.getProperty("dn", null);
+      if ( !dn ){
+        //dn = pref.attrRdn + "=" + card.displayName + "," + queryURL.dn;
+        dn = gendn(pref, card);
+      }
       debugsync("newcardtoldap dn=" + dn + "\n");
       mods.appendElement( CreateLDAPMod( "objectClass", pref.objClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
       
@@ -585,7 +597,7 @@ function genaddtoldapML(pref, ldapser, backstatus) {
 
       var mods = CreateNSMutArray();
       
-      dn = gendnML(pref, card);
+      var dn = gendnML(pref, card);
       debugsync("new ml to ldap dn=" + dn + "\n");
       mods.appendElement( CreateLDAPMod( "objectClass", pref.maillistClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
       debugsync("new ml to ldap mods.length=" + mods.length + "\n");

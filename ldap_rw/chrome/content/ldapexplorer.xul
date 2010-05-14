@@ -37,8 +37,9 @@
 
 <hbox>
   <button id="ldapexplorer-add" label="&ldapexplorer-add.label;" oncommand="doAdd();"/>
+  <button id="ldapexplorer-edit" label="&ldapexplorer-edit.label;" oncommand="doEdit();"/>  
+  <spacer style="height: 10px" flex="1"/>
   <button id="ldapexplorer-del" label="&ldapexplorer-del.label;" oncommand="doDel();"/>  
-   <spacer style="height: 10px" flex="1"/>
    <label id="ldapexplorer-morelabel" value="&ldapexplorer-more.value;" disabled="true"/>
 </hbox>
 </vbox>

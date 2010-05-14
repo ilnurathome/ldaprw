@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>{dc6df62a-7051-46f3-b602-d53b56d707e0}</em:id>
     <em:type>2</em:type>
     <em:name>LDAP Read Write</em:name>
-    <em:version>0.4.201005131020</em:version>
+    <em:version>0.4.201005141748</em:version>
     <em:creator>Ilnur Kiyamov</em:creator>
     <em:contributor></em:contributor>
     <em:description>LDAP Read Write Sync</em:description>
@@ -18,6 +18,6 @@
         <em:maxVersion>3.2a1pre</em:maxVersion>
       </Description>
     </em:targetApplication>
-    <em:translator>Kenny __citymined.org</em:translator>
+    <em:translator>&quot;Kenny&quot; &lt;quenenni@bruxxel.org&gt;</em:translator>
   </Description>
 </RDF>

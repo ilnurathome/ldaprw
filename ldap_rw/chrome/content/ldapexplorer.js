@@ -321,6 +321,10 @@ function deleteonldap(v) {
   } 
 }
 
+function doEdit() {
+
+}
+
 function doDel() {
 
   var queries = [];
@@ -345,4 +349,21 @@ function doDel() {
     deleteonldap(queries);
   }
 }
+
+
+/*
+
+var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard); 
+card.displayName = "testCard";
+
+function goEditCardDialog(abURI, card) {
+   window.openDialog("chrome://ldaprw/content/myabEditCardDialog.xul",  
+                     "",  
+                     "chrome,resizable=no,modal,titlebar,centerscreen",  
+                     {abURI:null, card:card});
+}
+
+goEditCardDialog(null, card);
+
+ * */
 
