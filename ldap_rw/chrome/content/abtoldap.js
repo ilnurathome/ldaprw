@@ -58,7 +58,7 @@ function CreateLdapBerVal() {
 
 function CreateLDAPMod (type, vals, operation) {
   if (!vals) return null;
-  if (vals.length=0) return null;
+  if (vals.length==0) return null;
   var mod = CreateLDAPModification();
   debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
   mod.type = type;
@@ -72,20 +72,23 @@ function CreateLDAPMod (type, vals, operation) {
         debugabtoldap("CreateLDAPMod: vals[" + i + "] is null\n");
         continue;
       }else{
-      var val = CreateLdapBerVal();
+        var val = CreateLdapBerVal();
 //      debugabtoldap( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
-      val.setFromUTF8(vals[i], false);
-      mod.values.appendElement(val, false);
+        val.setFromUTF8(vals[i], false);
+        mod.values.appendElement(val, false);
       }
     }
   }
-  if(mod.values.length = 0) return null;
+  if(mod.values.length == 0){
+    debugabtoldap( "CreateLDAPMod: mod.values.length=0\n");
+    return null;
+  }
   return mod;
 }
 
 function CreateLDAPModBin (type, vals, operation) {
   if (!vals) return null;
-  if (vals.length=0) return null;
+  if (vals.length==0) return null;
   var mod = CreateLDAPModification();
   debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
   mod.type = type;
@@ -102,7 +105,9 @@ function CreateLDAPModBin (type, vals, operation) {
       mod.values.appendElement(val, false);
     }
   }
-  if(mod.values.length = 0) return null;  
+  if(mod.values.length == 0){
+    return null;  
+  }
   return mod;
 }
 
@@ -116,7 +121,8 @@ function ABtoLdap() {
     return function(operation) {
       //      debugabtoldap("from = " + from + " to = " + to + "\n");
       for (var i in to) {
-        var mods =  CreateLDAPMod( to[i], [this.AbCard.getProperty( from, "")], operation );
+        var vals = this.AbCard.getProperty( from, "");
+        var mods = CreateLDAPMod( to[i], [vals], operation );
         if (mods)
           this.LdapModifications.appendElement( mods, false  );
       }
@@ -154,16 +160,22 @@ function ABtoLdap() {
              //if (attr.value){
                if( this[attr.name]==undefined ) continue;
                if( OldCard == undefined ) {
-                 this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                 if (attr.value.length > 0) {               
+                   this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                 } 
                } else {
                  var oldprop = OldCard.getProperty(attr.name, null);
                  if ( oldprop != null ){
                    if ( oldprop != attr.value ){
-                     this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
-                    debugabtoldap("mod attr=" + attr.name + "\n" ); // + attr.value + "\n");                    
+                     if (attr.value.length > 0) {
+                       this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                     } 
+                     debugabtoldap("mod attr=" + attr.name + "\n" ); // + attr.value + "\n");                    
                    }
                  }else {
-                   this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                   if (attr.value.length > 0) {
+                     this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                   } 
                    debugabtoldap("add attr=" + attr.name + "\n"); // + "\t" + attr.value + "\n");
                  }
                }
@@ -193,7 +205,14 @@ ABtoLdap.prototype = {
           // Contact > Internet
   PrimaryEmail: function(operation){ //["mail"],
     if (!this.mail){
-      var mods = CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation );
+      var mail1 = this.AbCard.getProperty( "PrimaryEmail", "");
+      var mail2 = this.AbCard.getProperty( "SecondEmail", "");
+      var mods;
+      if ( mail1 == "" && mail2 == "" ){
+        mods = CreateLDAPMod( "mail", [ "" ], Components.interfaces.nsILDAPModification.MOD_DELETE );
+      } else {
+        mods = CreateLDAPMod( "mail", [ mail1, mail2 ], operation );
+      }
       if (mods)
         this.LdapModifications.appendElement( mods , false  );
     }
@@ -201,12 +220,15 @@ ABtoLdap.prototype = {
   },
 
   SecondEmail: function(operation){ //["mail"],
+    this.PrimaryEmail(operation);
+                 /*
     if (!this.mail){
       var mods = CreateLDAPMod( "mail", [ this.AbCard.getProperty( "PrimaryEmail", ""), this.AbCard.getProperty( "SecondEmail", "")], operation );
       if (mods)
         this.LdapModifications.appendElement( mods , false  );
     }
     this.mail++;
+    */
   },
   
   PreferMailFormat: function(operation){

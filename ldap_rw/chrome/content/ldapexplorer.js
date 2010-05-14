@@ -422,8 +422,16 @@ function doEdit() {
       debugexplorer("oldcard.primaryEmail=" + oldcard.primaryEmail + "\n");
       debugexplorer("card.primaryEmail=" + card.primaryEmail + "\n");
 
-      goEditCardDialog(null, card);
-
+      mygoEditCardDialog(null, card);
+/*
+      var newprops = card.properties;
+      while (newprops.hasMoreElements() ){
+        var newattr = newprops.getNext();
+        if (attr instanceof Components.interfaces.nsIProperty){
+          var oldprop = oldcard.getProperty(newattr.name, null);
+        }
+      }
+*/
       debugexplorer("oldcard.primaryEmail=" + oldcard.primaryEmail + "\n");
       debugexplorer("card.primaryEmail=" + card.primaryEmail + "\n");
 
@@ -443,7 +451,7 @@ function doEdit() {
     }
 }
 
-function goEditCardDialog(abURI, card) {
+function mygoEditCardDialog(abURI, card) {
    window.openDialog("chrome://ldaprw/content/myabEditCardDialog.xul",  
                      "",  
                      "chrome,resizable=no,modal,titlebar,centerscreen",  
