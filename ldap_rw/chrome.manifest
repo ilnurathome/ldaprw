@@ -2,8 +2,7 @@ content   ldaprw                 chrome/content/
 skin      ldaprw   classic/1.0   chrome/skin/
 locale    ldaprw   en-US         chrome/locale/en-US/
 locale    ldaprw   ru-RU         chrome/locale/ru-RU/
-locale	  ldaprw   fr_BE      	 chrome/locale/fr_BE/
-locale	  ldaprw   fr_FR      	 chrome/locale/fr_FR/
+locale	  ldaprw   fr-FR      	 chrome/locale/fr_FR/
 overlay chrome://messenger/content/addressbook/addressbook.xul  chrome://ldaprw/content/ldaprw_ab.xul
 overlay chrome://messenger/content/addressbook/abCardOverlay.xul  chrome://ldaprw/content/ldaprw_card.xul
 
