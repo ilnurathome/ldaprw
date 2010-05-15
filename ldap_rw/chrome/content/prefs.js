@@ -3,7 +3,15 @@ function dumperrors(str){
        alert(str);
 }
 
+var defaultpref = {
+  objClasses:  "inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person",
+  maillistClasses: "groupOfNames",
+  attrRdn: "cn",
+  basisRdn: "DisplayName"
+};
+
 function getprefs(){
+  // Used for resolve simple problems with preferences such as unexisten value
   function MygetCharPref(pref, key, unexists){ 
     try {
       return pref.getCharPref(key);
@@ -23,7 +31,6 @@ function getprefs(){
     for (var c in mychilds){
       var key = mychilds[c].split('.')[0];
       if ( list[key] == undefined ) {
-//        list[key] = {};
          list[key] = {
            get queryURL() { 
              return Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(this.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL) },
@@ -37,9 +44,10 @@ function getprefs(){
          list[key].bookname = key;
          list[key].binddn = myprefs.getCharPref(key + ".auth.dn");
          list[key].uri = myprefs.getCharPref(key + ".uri");
-         list[key].attrRdn = MygetCharPref(myprefs, key + ".attrRdn", "cn");
-         list[key].objClasses = MygetCharPref(myprefs,key + ".objClasses", "inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person");
-         list[key].maillistClasses = MygetCharPref(myprefs,key + ".maillistClasses", "groupOfNames");
+         list[key].attrRdn = MygetCharPref(myprefs, key + ".attrRdn", defaultpref.attrRdn);
+         list[key].basisRdn = MygetCharPref(myprefs, key + ".basisRdn", defaultpref.basisRdn);
+         list[key].objClasses = MygetCharPref(myprefs,key + ".objClasses", defaultpref.objClasses);
+         list[key].maillistClasses = MygetCharPref(myprefs,key + ".maillistClasses", defaultpref.maillistClasses);
          list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
 
          list[key].objClassesAR = list[key].objClasses.replace(/\s*/g, '').split(",");

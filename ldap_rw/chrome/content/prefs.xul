@@ -124,7 +124,10 @@
 
     <label accesskey="&auth.dn.accesskey;" control="textboxauthdn">&auth.dn.label;</label><textbox id="textboxauthdn" preference="auth.dn" value="&auth.dn.value;"/>
 
-    <label accesskey="&attrRdn.accesskey;" control="textboxrdn">&attrRdn.label;</label><textbox id="textboxrdn" preference="attrRdn" value="&attrRdn.value;"/>
+    <hbox>
+      <label accesskey="&attrRdn.accesskey;" control="textboxrdn">&attrRdn.label;</label><textbox id="textboxrdn" preference="attrRdn" value="&attrRdn.value;"/>
+      <label accesskey="&basisRdn.accesskey;" control="textboxrdn">&basisRdn.label;</label><textbox id="textboxrdn" preference="basisRdn" value="&basisRdn.value;"/>
+    </hbox>
 
     <label accesskey="&objClasses.accesskey;" control="textboxobjClasses">&objClasses.label;</label><textbox id="textboxobjClasses" preference="objClasses" value="&objClasses.value;"/>
 
@@ -136,7 +139,6 @@
       <button id="new" label="New" oncommand="modifyPref();onLoad();"/>
       <button id="modify" label="Modify" disabled="true" oncommand="modifyPref(); onLoad();"/>
       <button id="delete" label="Delete" disabled="true" oncommand="delPref(); onLoad();"/>
-<!--      <button id="test" label="Test" oncommand="dump( document.getElementById('textboxbookname').value + '\n');"/> -->
     </hbox>
    </vbox>
   </hbox>

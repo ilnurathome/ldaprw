@@ -236,6 +236,9 @@ LdaptoAB.prototype = {
   description: ["Notes"],
   notes: ["Notes"],
 
+  // service attributes
+  uid: ["uid"],
+
   jpegPhoto: function() {   
     var dir = Components.classes["@mozilla.org/file/directory_service;1"]
                         .getService(Components.interfaces.nsIProperties)

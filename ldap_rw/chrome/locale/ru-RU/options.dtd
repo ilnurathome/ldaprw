@@ -1,11 +1,5 @@
 <!ENTITY prefwindow.title "LDAP Read Write настройки">
 <!ENTITY panel.title "LDAP Read Write настройки">
-<!ENTITY checkboolpref.label "A Boolean Preference">
-<!ENTITY checkboolpref.accesskey "B">
-<!ENTITY intpref.label "An Integer Preference">
-<!ENTITY intpref.accesskey "I">
-<!ENTITY stringpref.label "A String Preference">
-<!ENTITY stringpref.accesskey "S">
 
 <!ENTITY bookname.label "Адресная книга">
 <!ENTITY bookname.accesskey "А">
@@ -23,9 +17,13 @@
 <!ENTITY maxHits.accesskey "M">
 <!ENTITY maxHits.value "10">
 
-<!ENTITY attrRdn.label "Attribute for RDN">
+<!ENTITY attrRdn.label "Атрибут для RDN">
 <!ENTITY attrRdn.accesskey "R">
 <!ENTITY attrRdn.value "cn">
+
+<!ENTITY basisRdn.label "Основа для RDN">
+<!ENTITY basisRdn.accesskey "B">
+<!ENTITY basisRdn.value "DisplayName">
 
 <!ENTITY objClasses.label "Object Classes для новых ldap карточек">
 <!ENTITY objClasses.accesskey "C">

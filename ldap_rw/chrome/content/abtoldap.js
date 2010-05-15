@@ -288,6 +288,9 @@ ABtoLdap.prototype = {
          // Other > Notes
   Notes:   ["description"],//["notes"], //
 
+  // service attributes
+  uid: ["uid"],
+
   PhotoName: function(operation) {
              },
   PhotoURI: function(operation) {

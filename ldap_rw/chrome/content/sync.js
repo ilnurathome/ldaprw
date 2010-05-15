@@ -449,7 +449,13 @@ function syncpolitic2(pref,backstatus){
 }
 
 function genrdnML(pref, card) {
-  return pref.attrRdn + "=" + card.displayName;
+  //return pref.attrRdn + "=" + card.displayName;
+  var basisRdn = card.getProperty(pref.basisRdn, "");
+  if ( basisRdn.length > 0 ) {
+    return pref.attrRdn + "=" + card.getProperty(pref.basisRdn);  
+  } else {
+    throw "genrdn: basisRdn.length = 0";
+  }
 }
 
 function gendnML(pref,card) {
@@ -457,11 +463,26 @@ function gendnML(pref,card) {
 }
 
 function genrdn(pref, card) {
-  return pref.attrRdn + "=" + card.displayName;  
+//  return pref.attrRdn + "=" + card.displayName; 
+  debugsync("genrdn: pref.basisRdn=" + pref.basisRdn + "\n");
+  var basisRdn = card.getProperty(pref.basisRdn, "");
+  debugsync("genrdn: card.getProperty=" + basisRdn + "\n");
+  debugsync("genrdn: card.displayName=" + card.displayName + "\n");
+  debugsync("genrdn: basisRdn.length=" + basisRdn.length + "\n");
+  if ( basisRdn.length > 0 ) {
+    debugsync("genrdn: return basisRdn\n");
+    return pref.attrRdn + "=" + basisRdn;
+  } else {
+    debugsync("genrdn: basisRdn.length=" + basisRdn.length + "\n");
+    throw "genrdn: basisRdn.length = 0";
+    return null;
+  }
 }
 
 function gendn(pref,card) {
-  return genrdn(pref, card) + ',' + pref.queryURL.dn;
+  var rdn = genrdn(pref, card);
+  debugsync("gendn: rdn="+rdn+"\n");
+  return rdn + ',' + pref.queryURL.dn;
 }
 
 /*
@@ -514,22 +535,22 @@ function genaddtoldap(pref, ldapser, backstatus) {
 
     return function(card){
       debugsync("New card\n");
-      var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"] .createInstance(Components.interfaces.nsIAbCard);
-      var mods = CreateNSMutArray();
-   
-      var dn = currentcard.getProperty("dn", null);
-      if ( !dn ){
-        //dn = pref.attrRdn + "=" + card.displayName + "," + queryURL.dn;
-        dn = gendn(pref, card);
-      }
-      debugsync("newcardtoldap dn=" + dn + "\n");
-      mods.appendElement( CreateLDAPMod( "objectClass", pref.objClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
-      
-      mappertoldap.map(card, mods, oldcard);
-
-      card.setProperty("dn", dn);
-      
       try {
+        var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"] .createInstance(Components.interfaces.nsIAbCard);
+        var mods = CreateNSMutArray();
+   
+        var dn = card.getProperty("dn", null);
+        if ( !dn ){
+          //dn = pref.attrRdn + "=" + card.displayName + "," + queryURL.dn;
+          dn = gendn(pref, card);
+        }
+        debugsync("newcardtoldap dn=" + dn + "\n");
+        mods.appendElement( CreateLDAPMod( "objectClass", pref.objClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
+      
+        mappertoldap.map(card, mods, oldcard);
+
+        card.setProperty("dn", dn);
+      
         ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods}]) );
         if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
       } catch(e) {
@@ -590,25 +611,23 @@ function genaddtoldapML(pref, ldapser, backstatus) {
 
     return function(card){
       debugsync("New mailing list to ldap\n");
-     // var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"] .createInstance(Components.interfaces.nsIAbCard);
-
-      var node = abManager.getDirectory(card.mailListURI);
-      var ml = { card: card, node: node}; 
-
-      var mods = CreateNSMutArray();
-      
-      var dn = gendnML(pref, card);
-      debugsync("new ml to ldap dn=" + dn + "\n");
-      mods.appendElement( CreateLDAPMod( "objectClass", pref.maillistClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
-      debugsync("new ml to ldap mods.length=" + mods.length + "\n");
-      
-      mappertoldap.map(ml, mods);
-
-      //// Thunderbird can't store 'dn' in mailing list nsAbCard
-      //card.setProperty("dn", dn);
-      debugsync("new ml to ldap mods.length=" + mods.length + "\n");
-      
       try {
+        var node = abManager.getDirectory(card.mailListURI);
+        var ml = { card: card, node: node}; 
+
+        var mods = CreateNSMutArray();
+      
+        var dn = gendnML(pref, card);
+        debugsync("new ml to ldap dn=" + dn + "\n");
+        mods.appendElement( CreateLDAPMod( "objectClass", pref.maillistClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
+        debugsync("new ml to ldap mods.length=" + mods.length + "\n");
+      
+        mappertoldap.map(ml, mods);
+
+        //// Thunderbird can't store 'dn' in mailing list nsAbCard
+        //card.setProperty("dn", dn);
+        debugsync("new ml to ldap mods.length=" + mods.length + "\n");
+      
         ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods}]) );
         if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
       } catch(e) {
