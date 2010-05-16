@@ -79,6 +79,7 @@ function setpref(newpref) {
   prefs.setCharPref( prefix + ".uri", newpref.uri);
 
   prefs.setCharPref( prefix + ".attrRdn", newpref.attrRdn);
+  prefs.setCharPref( prefix + ".basisRdn", newpref.basisRdn);
   prefs.setCharPref( prefix + ".objClasses", newpref.objClasses);
   prefs.setCharPref( prefix + ".maillistClasses", newpref.maillistClasses);
 

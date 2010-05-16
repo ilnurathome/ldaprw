@@ -70,6 +70,7 @@
          document.getElementById('textboxuri').value = prefs[prefedit].uri;
          document.getElementById('textboxauthdn').value = prefs[prefedit].binddn;
          document.getElementById('textboxrdn').value = prefs[prefedit].attrRdn;
+         document.getElementById('textboxbasisrdn').value = prefs[prefedit].basisRdn;
          document.getElementById('textboxobjClasses').value = prefs[prefedit].objClasses;
          document.getElementById('textboxmaillistClasses').value = prefs[prefedit].maillistClasses;
          document.getElementById('textboxmaxHits').value = prefs[prefedit].maxHits;
@@ -82,6 +83,7 @@
          pref.uri= document.getElementById('textboxuri').value;
          pref.binddn= document.getElementById('textboxauthdn').value;
          pref.attrRdn= document.getElementById('textboxrdn').value;
+         pref.basisRdn= document.getElementById('textboxbasisrdn').value;
          pref.objClasses= document.getElementById('textboxobjClasses').value;
          pref.maillistClasses= document.getElementById('textboxmaillistClasses').value;
          pref.maxHits= document.getElementById('textboxmaxHits').value;
@@ -126,7 +128,7 @@
 
     <hbox>
       <label accesskey="&attrRdn.accesskey;" control="textboxrdn">&attrRdn.label;</label><textbox id="textboxrdn" preference="attrRdn" value="&attrRdn.value;"/>
-      <label accesskey="&basisRdn.accesskey;" control="textboxrdn">&basisRdn.label;</label><textbox id="textboxrdn" preference="basisRdn" value="&basisRdn.value;"/>
+      <label accesskey="&basisRdn.accesskey;" control="textboxbasisrdn">&basisRdn.label;</label><textbox id="textboxbasisrdn" preference="basisRdn" value="&basisRdn.value;"/>
     </hbox>
 
     <label accesskey="&objClasses.accesskey;" control="textboxobjClasses">&objClasses.label;</label><textbox id="textboxobjClasses" preference="objClasses" value="&objClasses.value;"/>

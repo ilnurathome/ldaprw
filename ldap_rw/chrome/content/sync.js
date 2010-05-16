@@ -321,7 +321,6 @@ function syncpolitic2(pref,backstatus){
                 // because card component of mailing list can't containing "dn"
                 debugsync( "iter mailng list contains dn! dn=" + dn + "\n")
                 maillists[currentcard.displayName].card = currentcard;
-//                maillists[currentcard.displayName].node = abManager.getDirectory(currentcard.mailListURI);
               // "(objectclass=groupOfNames)"
                 return {dn: gendnML(pref, currentcard), filter: "(objectclass=" + pref.maillistClassesAR[0]  + ")"};
 //                continue;
