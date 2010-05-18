@@ -46,6 +46,7 @@ function getprefs(){
          list[key].uri = myprefs.getCharPref(key + ".uri");
          list[key].attrRdn = MygetCharPref(myprefs, key + ".attrRdn", defaultpref.attrRdn);
          list[key].basisRdn = MygetCharPref(myprefs, key + ".basisRdn", defaultpref.basisRdn);
+         list[key].genRdn = compiler(list[key].basisRdn);
          list[key].objClasses = MygetCharPref(myprefs,key + ".objClasses", defaultpref.objClasses);
          list[key].maillistClasses = MygetCharPref(myprefs,key + ".maillistClasses", defaultpref.maillistClasses);
          list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
@@ -100,4 +101,60 @@ function testsetpref() {
   prefs.setCharPref("ldap_2.servers.ldapsync.uri", "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(|(objectClass=person)(objectClass=inetOrgPerson))");
   prefs.setCharPref("ldap_2.servers.ldapsync.uri", "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(objectClass=*)");
 }
+
+
+// very very simple compiler
+function compiler(str){
+  // temprorary regexp
+  //var re = /(?:[A-z\d]+)|(?:\+)|(?:\'[^']+\')/g;
+  //var re = /[A-z\d]+|\+|\'[^']+\'/g;
+  //var re =  /(?:[A-z\d]+)|(?:\'[^']+\')/g;
+  //var re =  /[A-z\d]+|\'[^']+\'/g;
+  var re = /\s*\+\s*/;
+  var minrandom = 1000;
+  var maxrandom = 9999;
+
+  var env0 = {
+     systime: function() {return (new Date()).getTime();},
+     random:  function() {
+       return Math.floor(Math.random() * (maxrandom-minrandom+1) ) + minrandom;
+     }
+  }
+
+  //var strgr = str.match(re);
+  var strgr = str.split(re);
+  if (!strgr || strgr.length==0 || !strgr[0].match(/[A-z]+/)) throw "Syntax error";
+  var length = strgr.length;
+
+  var commands = []; //[{cmd:func, out:reg1, in: reg1}]
+//  var registres = [0];
+//  var registresL = registres.length;
+
+  for (var i=0; i<length; i++) {
+    var cmd = strgr[i];
+    if ( env0[cmd] ) {
+      commands[commands.length] = env0[cmd];
+      continue;
+    };
+    var cmdgr = cmd.match(/\'([^']+)\'/);
+    if (cmdgr) {
+      commands[commands.length] = function(str) { return function() {return str} }(cmdgr[1]);
+      continue;
+    };
+    commands[commands.length] = function(prop){ return function(card) { return card.getProperty(prop,"");} }(strgr[i]);
+  }
+
+  return function(card) {
+    //var res = [];
+//    commands.forEach( function(value){return res[res.length]=value(card); } );
+    var l = commands.length;
+    var res = "";
+    for (var i=0; i<l; i++){
+    //  res[res.length] = commands[i](card);
+       res +=  commands[i](card);
+    }
+    return res; //res.join('');
+  };
+}
+
 

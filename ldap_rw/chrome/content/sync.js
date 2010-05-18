@@ -463,13 +463,9 @@ function gendnML(pref,card) {
 
 function genrdn(pref, card) {
 //  return pref.attrRdn + "=" + card.displayName; 
-  debugsync("genrdn: pref.basisRdn=" + pref.basisRdn + "\n");
-  var basisRdn = card.getProperty(pref.basisRdn, "");
-  debugsync("genrdn: card.getProperty=" + basisRdn + "\n");
-  debugsync("genrdn: card.displayName=" + card.displayName + "\n");
-  debugsync("genrdn: basisRdn.length=" + basisRdn.length + "\n");
+//  var basisRdn = card.getProperty(pref.basisRdn, "");
+  var basisRdn = pref.genRdn(card);
   if ( basisRdn.length > 0 ) {
-    debugsync("genrdn: return basisRdn\n");
     return pref.attrRdn + "=" + basisRdn;
   } else {
     debugsync("genrdn: basisRdn.length=" + basisRdn.length + "\n");
