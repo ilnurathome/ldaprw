@@ -167,10 +167,10 @@ function gengetpassword() {
  * @pref preferences
  * @backstatus callback function (type, aMsg)
  * */
-function syncpolitic2(pref,backstatus){
+function syncpolitic2(pref,backstatus, mybook){
 
   var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-  var mybook = pref.book;
+  if (mybook == undefined ) mybook = pref.book;
 
   var queryURL = pref.queryURL;
 
@@ -644,6 +644,7 @@ function addcardfromldap(book, aMsg, replace){
 
     mapper.map(aMsg, card);
 
+    // NEED to change code to use onnsIAbCardPropsDo(card, func)
     var propers = card.properties; 
     while ( propers.hasMoreElements() ) { 
       var p = propers.getNext(); 

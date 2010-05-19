@@ -161,7 +161,6 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
       caller.mOperationBind.simpleBind(pw);
     } catch (e) {
       dumperrors("init error: " + e + "\n");
-      alert("init error: " + e + "\n");
       return
     }
   }

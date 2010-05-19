@@ -2,12 +2,19 @@ var ldaprw = {
   initialized: false,
   strings: null,
   statusbar: null,
+  abListener: null,
   onLoad: function() {
     // initialization code
     dump("ldaprw.onLoad\n");
     this.initialized = true;
     this.strings = document.getElementById("ldaprw-strings");
     this.statusbar = document.getElementById("ldaprwstatus");
+
+    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+
+    var abListener = new abL();
+    this.abListener = abListener;
+    abManager.addAddressBookListener( abListener, Components.interfaces.nsIAbListener.itemChanged);
   },
 
   onMenuExplorerCommand: function(e) {
@@ -47,6 +54,7 @@ var ldaprw = {
           case QUEUEADDADD:    qaa++; break;
           case QUEUEADDGET:    qag++; break;
         }
+        if ( ldaprw.statusbar ==null ) ldaprw.statusbar = document.getElementById("ldaprwstatus");
         ldaprw.statusbar.label = "ldaprw debug: QSA: " + qsa + " | "
           + "QSG: " + qsg + " | "
           + "QUA: " + qua + " | "
@@ -60,6 +68,23 @@ var ldaprw = {
           + "QUEUEADDADD: " + qaa + "\n"
           + "QUEUEADDGET: " + qag;     
       }
+  },
+  onContextMenuSync: function(){
+      function callbackDir(abDir, pref){
+        dump("callbackDir\n");
+        alert("not implemented yet abDir.URI=" + abDir.URI + ", abDir.dirName=" + abDir.dirName + "\n");
+        try {
+          var cards = GetSelectedAbCards();
+          var l = cards.length;
+          for(var i=0; i<l; i++) {
+            dump("cards["+i+".displayName=" + cards[i].displayName + "\n");
+          }
+          syncpolitic2(pref, ldaprw.genonStatusUpdate(), new dirWrapper(getSelectedDir(), cards ) );          
+        }catch(e){
+          dump(e);
+        }
+      }
+      onSelectedDirDo( callbackDir );
   }
 };
 

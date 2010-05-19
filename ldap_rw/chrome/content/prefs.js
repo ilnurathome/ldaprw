@@ -7,7 +7,7 @@ var defaultpref = {
   objClasses:  "inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person",
   maillistClasses: "groupOfNames",
   attrRdn: "cn",
-  basisRdn: "DisplayName"
+  basisRdn: "DisplayName",
 };
 
 function getprefs(){
@@ -15,6 +15,14 @@ function getprefs(){
   function MygetCharPref(pref, key, unexists){ 
     try {
       return pref.getCharPref(key);
+    }catch(e) {
+      return unexists;
+    }
+  }
+  // Used for resolve simple problems with preferences such as unexisten value
+  function MygetIntPref(pref, key, unexists){ 
+    try {
+      return pref.getIntPref(key);
     }catch(e) {
       return unexists;
     }
@@ -52,7 +60,10 @@ function getprefs(){
          list[key].maxHits = myprefs.getIntPref(key + ".maxHits");
 
          list[key].objClassesAR = list[key].objClasses.replace(/\s*/g, '').split(",");
-         list[key].maillistClassesAR = list[key].maillistClasses.replace(/\s*/g, '').split(",");                     
+         list[key].maillistClassesAR = list[key].maillistClasses.replace(/\s*/g, '').split(",");              
+
+         list[key].accepted = MygetIntPref(myprefs, key + ".accepted", 0);
+         list[key].duration = MygetIntPref(myprefs, key + ".duration", 0);
 
           var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
           list[key].description= abprefs.getCharPref("description");

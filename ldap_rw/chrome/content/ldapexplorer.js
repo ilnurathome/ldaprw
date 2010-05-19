@@ -34,7 +34,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 function debugexplorer(str){
-  dump("explorer.js: " + str);
+//  dump("explorer.js: " + str);
 }
 
 function dumperrors(str){
@@ -253,7 +253,24 @@ function doOnselectedInTree(metod){
  }
 }
 
+// NEED to move to utils.js
+function getSelectedDir() {
+  var mybook = null;
+  var dirTree = document.getElementById("dirTree");
+  if (dirTree == null){
+    throw "getSelectedDir: Can't find dirTree";
+  }else{
+    if (dirTree.currentIndex < 0){
+      return null;
+    }
+    var selected = dirTree.builderView.getResourceAtIndex(dirTree.currentIndex);
+    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+    return abManager.getDirectory( selected.Value ); 
+  }
+}
+
 function doAdd() {
+  /// NEED to change some code to call getSelectedDir();
   var mybook = null;
 
   var dirTree = document.getElementById("dirTree");
@@ -417,6 +434,7 @@ function doEdit() {
       
       // temprorary wrong method. Goog method to clone card needed.!!!!
       mapper.map(aMsg, oldcard); 
+      // oldcard.copy(card);
       mapper.map(aMsg, card); 
 
       debugexplorer("oldcard.primaryEmail=" + oldcard.primaryEmail + "\n");

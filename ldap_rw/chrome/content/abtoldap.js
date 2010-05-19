@@ -47,6 +47,7 @@ function CreateLDAPModification() {
   return Components.classes["@mozilla.org/network/ldap-modification;1"].createInstance(Components.interfaces.nsILDAPModification);
 }
 
+// NEED to move it to utils.js
 function CreateNSMutArray() {
   return Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
  ;
@@ -151,9 +152,8 @@ function ABtoLdap() {
 
          debugabtoldap("map begin\n");
 
+         // NEED to change code to use onnsIAbCardPropsDo(card, func)
          var props = this.AbCard.properties;
-
-
          while ( props.hasMoreElements() ){
            var attr = props.getNext();
            if (attr instanceof Components.interfaces.nsIProperty){
@@ -367,8 +367,8 @@ function MLtoLdap() {
            throw "MLtoLdap.map ml.card does not nsIAbCard";
          }
 
+	 // NEED to change code to use onnsIAbCardPropsDo(card, func)
          var props = this.ml.card.properties;
-
          while ( props.hasMoreElements() ){
            var attr = props.getNext();
            if (attr instanceof Components.interfaces.nsIProperty){
