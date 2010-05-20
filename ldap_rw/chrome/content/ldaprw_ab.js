@@ -14,7 +14,7 @@ var ldaprw = {
 
     var abListener = new abL();
     this.abListener = abListener;
-    abManager.addAddressBookListener( abListener, Components.interfaces.nsIAbListener.itemChanged);
+    abManager.addAddressBookListener( abListener, Components.interfaces.nsIAbListener.itemChanged | Components.interfaces.nsIAbListener.itemAdded );
   },
 
   onMenuExplorerCommand: function(e) {

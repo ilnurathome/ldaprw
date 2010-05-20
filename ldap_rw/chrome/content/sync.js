@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 function debugsync(str){
-  dump("sync.js: " + str);
+//  dump("sync.js: " + str);
 }
 
 function dumperrors(str){

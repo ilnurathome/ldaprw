@@ -36,7 +36,7 @@
 
 
 function debugabtoldap(str){
-  dump("abtoldap.js: " + str);
+//  dump("abtoldap.js: " + str);
 }
 
 /*
