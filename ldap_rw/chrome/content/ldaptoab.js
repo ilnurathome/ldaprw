@@ -299,8 +299,9 @@ LdaptoAB.prototype = {
     this.AbCard.setProperty("modifytimestamp", d);
     var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
 
-    this.AbCard.setProperty("LastModifiedDate", ldapdate.getTime().toString().substring(0,10));
-    this.AbCard.setProperty("LdapModifiedDate", ldapdate.getTime().toString().substring(0,10));
+    var str = ldapdate.getTime().toString().substring(0,10);
+    this.AbCard.setProperty("LastModifiedDate", str);
+    this.AbCard.setProperty("LdapModifiedDate", str);
   }
 
 }
