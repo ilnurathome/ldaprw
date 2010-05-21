@@ -333,7 +333,7 @@ LdapDataSource.prototype.add = function (queryURL, aBindName, getpassword, getqu
                  try {
                    mOperation.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
                    mOperation.addExt(query.dn, query.mods);
-                   caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation};
+                   caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation /*maybe need: , card:card*/};
                  } catch (e) {
                    dumperrors("init error: " + e + "\n");
                    return;
@@ -429,6 +429,64 @@ LdapDataSource.prototype.modify = function (queryURL, aBindName, getpassword, ge
             }
 };
 
+LdapDataSource.prototype.rename = function (queryURL, aBindName, getpassword, getquery, callback) {
+
+           /*
+            *
+            */
+            function callmetod(aMsg){
+               if (!( getquery == undefined )) {
+                 var query = null;//getquery(aMsg);
+                 if ( aMsg == undefined || aMsg.operation == undefined ) 
+                     query = getquery(aMsg, null);
+                 else {
+                     query = getquery(aMsg, caller.mOperations[aMsg.operation.messageID] );
+                     delete caller.mOperations[aMsg.operation.messageID];
+                 }
+
+                 if ( query ){
+                   var mOperation = Components.classes["@mozilla.org/network/ldap-operation;1"]
+                          .createInstance(Components.interfaces.nsILDAPOperation);
+                   try {
+                     mOperation.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod), null);
+                     mOperation.rename(query.dn, query.newrdn, query.ndn, query.delold);
+                     caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation};                     
+                   } catch (e) {
+                     dumperrors("init error: " + e + "\n");
+                     return;
+                   }
+                 }
+                 return;
+               }
+               dumperrors("mod getquery undefined\n");
+               return;
+             
+           }
+
+           var caller = this;
+//            var queryURL;
+
+
+            if (caller.mBinded ){
+              debugldapsource("Already binded\n");
+              callmetod();
+              return;
+            }
+            
+            if (queryURL == undefined ) {
+              throw Error("queryURL is undefined");
+              return;
+            }         
+           
+            this.mConnection =  Components.classes["@mozilla.org/network/ldap-connection;1"].createInstance().QueryInterface(Components.interfaces.nsILDAPConnection);
+
+            try {
+              this.mConnection.init(queryURL, aBindName, this.generateGetTargetsBoundCallback(caller, queryURL, getpassword, callmetod), null, Components.interfaces.nsILDAPConnection.VERSION3 );
+            } catch (e) {
+              dumperrors ("Error:" + e + "\n");
+            }
+};
+
 
 LdapDataSource.prototype.deleteext = function (queryURL, aBindName, getpassword, getquery, callback) {
 
@@ -490,7 +548,9 @@ LdapDataSource.prototype.deleteext = function (queryURL, aBindName, getpassword,
 
 LdapDataSource.prototype.abortall = function() {
   for ( var k in this.mOperations ){
+   try{
     this.mOperations[k].mop.abandonExt();
+   }catch(e){}
   }
 }
 

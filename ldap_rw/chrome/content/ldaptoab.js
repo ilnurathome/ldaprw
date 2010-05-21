@@ -118,25 +118,35 @@ LdaptoAB.prototype = {
   //  Contact > NamefirstName
   //givenName: ["FirstName"],
   givenName: function() {
-     this.AbCard.firstName = this.LDAPMessage.getValues( "givenName",{} );
+     value = this.LDAPMessage.getValues( "givenName",{} );
+     if ( value instanceof Array)
+        this.AbCard.firstName = value[0];
   },
   //sn: ["LastName"],
   sn: function() {
-     this.AbCard.lastName = this.LDAPMessage.getValues( "sn",{} );
+     value = this.LDAPMessage.getValues( "sn",{} );
+     if ( value instanceof Array)
+        this.AbCard.lastName = value[0];
   },
   //surname: ["LastName"],
   surname: function() {
-     this.AbCard.lastName = this.LDAPMessage.getValues( "surname",{} );
+     value = this.LDAPMessage.getValues( "sn",{} );
+     if ( value instanceof Array)
+        this.AbCard.lastName = value[0];
   },
 
   //cn: ["DisplayName"], 
   cn: function() {
-     this.AbCard.displayName = this.LDAPMessage.getValues( "cn",{} );
+     value = this.LDAPMessage.getValues( "cn",{} );
+     if ( value instanceof Array)
+        this.AbCard.displayName = value[0];
   },
   //commonname: ["DisplayName"], 
   commonname: function() {
-     this.AbCard.displayName = this.LDAPMessage.getValues( "commonname",{} );
-  },
+     value = this.LDAPMessage.getValues( "commonname",{} );
+     if ( value instanceof Array)
+        this.AbCard.displayName = value[0];
+   },
 
   mozillaNickname: ["NickName"],
   xmozillanickname: ["NickName"],
@@ -286,9 +296,11 @@ LdaptoAB.prototype = {
 
   modifytimestamp: function() {
     var d = this.LDAPMessage.getValues("modifytimestamp", {} ).toString();
+    this.AbCard.setProperty("modifytimestamp", d);
     var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
 
     this.AbCard.setProperty("LastModifiedDate", ldapdate.getTime().toString().substring(0,10));
+    this.AbCard.setProperty("LdapModifiedDate", ldapdate.getTime().toString().substring(0,10));
   }
 
 }
@@ -324,6 +336,9 @@ function CollectNodesMailLists(book){
   return maillists;
 }
 
+
+
+/// !!!!!!!!!!!!!!!unused yet!!!!!!!!!!!
 function LdaptoML() {
 
   function genfun (from, to) {
@@ -362,8 +377,7 @@ function LdaptoML() {
   /* example
    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
 
-var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename );
-mybook instanceof Components.interfaces.nsIAbDirectory;
+var mybook = pref.book; 
 
    var allcards = mybook.childCards;
    var allnodes = mybook.childNodes;
@@ -418,14 +432,20 @@ LdaptoML.prototype = {
   //cn: ["DisplayName"], 
   cn: function() {
      var val = this.LDAPMessage.getValues( "cn",{} );
-     this.ml.card.displayName = val;
-     this.ml.node.dirName = val;
+ 
+     if ( value instanceof Array) {
+       this.ml.card.displayName = val[0];
+       this.ml.node.dirName = val[0];
+     }
   },
   //commonname: ["DisplayName"], 
   commonname: function() {
      var val = this.LDAPMessage.getValues( "commonname",{} );
-     this.ml.card.displayName = val;
-     this.ml.node.dirName = val;
+
+     if ( value instanceof Array) {
+       this.ml.card.displayName = val[0];
+       this.ml.node.dirName = val[0];
+     }
   },
 
   member: function() {

@@ -3,18 +3,31 @@ var ldaprw = {
   strings: null,
   statusbar: null,
   abListener: null,
+  addListener: function(){
+    try{
+        var abListener = new abL();
+        var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        this.abListener = abListener;
+        abManager.addAddressBookListener( abListener, Components.interfaces.nsIAbListener.itemChanged | Components.interfaces.nsIAbListener.itemAdded );
+        dump("Listener added\n");
+    } catch(e) {
+        dump("addListener error:"+e+"\n");
+    }
+  },
+  rmListener: function(){
+    removeAddressBookListener (this.abListener);
+  },
   onLoad: function() {
     // initialization code
     dump("ldaprw.onLoad\n");
-    this.initialized = true;
-    this.strings = document.getElementById("ldaprw-strings");
-    this.statusbar = document.getElementById("ldaprwstatus");
-
-    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-
-    var abListener = new abL();
-    this.abListener = abListener;
-    abManager.addAddressBookListener( abListener, Components.interfaces.nsIAbListener.itemChanged | Components.interfaces.nsIAbListener.itemAdded );
+    try {
+    ldaprw.initialized = true;
+    ldaprw.strings = document.getElementById("ldaprw-strings");
+    ldaprw.statusbar = document.getElementById("ldaprwstatus");
+    ldaprw.addListener();
+    } catch(e){
+       dump("onLoad: " + e + "\n");
+    }
   },
 
   onMenuExplorerCommand: function(e) {
@@ -43,8 +56,9 @@ var ldaprw = {
       var qug = 0;
       var qaa = 0;
       var qag = 0;
+      var eg  = 0;
       return function(type, msg) {
-        dump ("onStatusUpdate type=" + type + "\n");
+//        dump ("onStatusUpdate type=" + type + "\n");
         count++;
         switch(type) {
           case QUEUESEARCHADD: qsa++; break;
@@ -53,6 +67,7 @@ var ldaprw = {
           case QUEUEUPDATEGET: qug++; break;
           case QUEUEADDADD:    qaa++; break;
           case QUEUEADDGET:    qag++; break;
+          case ERRGET:         eg++;  break;
         }
         if ( ldaprw.statusbar ==null ) ldaprw.statusbar = document.getElementById("ldaprwstatus");
         ldaprw.statusbar.label = "ldaprw debug: QSA: " + qsa + " | "
@@ -60,25 +75,27 @@ var ldaprw = {
           + "QUA: " + qua + " | "
           + "QUG: " + qug + " | "
           + "QAA: " + qaa + " | "
-          + "QAG: " + qag;
+          + "QAG: " + qag + " | "
+          + "EG: " + eg;
         ldaprw.statusbar.tooltipText = "ldaprw debug: QUEUESEARCHADD: " + qsa + "\n"
           + "QUEUESEARCHGET: " + qsg + "\n"
           + "QUEUEUPDATEADD: " + qua + "\n"
           + "QUEUEUPDATEGET: " + qug + "\n"
           + "QUEUEADDADD: " + qaa + "\n"
-          + "QUEUEADDGET: " + qag;     
+          + "QUEUEADDGET: " + qag + "\n"
+          + "ERRGET: " + eg;     
       }
   },
   onContextMenuSync: function(){
       function callbackDir(abDir, pref){
         dump("callbackDir\n");
-        alert("not implemented yet abDir.URI=" + abDir.URI + ", abDir.dirName=" + abDir.dirName + "\n");
         try {
           var cards = GetSelectedAbCards();
           var l = cards.length;
           for(var i=0; i<l; i++) {
             dump("cards["+i+".displayName=" + cards[i].displayName + "\n");
           }
+          ldaprw_sync_abort = false;
           syncpolitic2(pref, ldaprw.genonStatusUpdate(), new dirWrapper(getSelectedDir(), cards ) );          
         }catch(e){
           dump(e);

@@ -253,43 +253,9 @@ function doOnselectedInTree(metod){
  }
 }
 
-// NEED to move to utils.js
-function getSelectedDir() {
-  var mybook = null;
-  var dirTree = document.getElementById("dirTree");
-  if (dirTree == null){
-    throw "getSelectedDir: Can't find dirTree";
-  }else{
-    if (dirTree.currentIndex < 0){
-      return null;
-    }
-    var selected = dirTree.builderView.getResourceAtIndex(dirTree.currentIndex);
-    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-    return abManager.getDirectory( selected.Value ); 
-  }
-}
-
 function doAdd() {
   /// NEED to change some code to call getSelectedDir();
-  var mybook = null;
-
-  var dirTree = document.getElementById("dirTree");
-  if (dirTree == null){
-    debugexplorer("add to default\n");
-    mybook = curpref.book;  
-    debugexplorer("add to default\n");
-  }else{
-    debugexplorer("add to selected\n");
-    if (dirTree.currentIndex < 0){
-      debugexplorer("nothing selected\n");
-      return null;
-    }
-    var selected = dirTree.builderView.getResourceAtIndex(dirTree.currentIndex);
-    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-    mybook = abManager.getDirectory( selected.Value ); 
-    debugexplorer("add to selected "+ selected.Value + "\t" + mybook + "\n");
-  }
-  
+  var mybook = getSelectedDir();  
   debugexplorer("add to " + mybook + "\n");
 
   doOnselectedInTree( function(v) {

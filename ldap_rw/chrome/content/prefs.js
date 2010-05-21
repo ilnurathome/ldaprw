@@ -44,7 +44,7 @@ function getprefs(){
              return Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService).newURI(this.uri, null, null).QueryInterface(Components.interfaces.nsILDAPURL) },
            get book() {
               var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);              
-              return abManager.getDirectory( "moz-abmdbdirectory://" + this.filename );
+              return new dirWrapper(abManager.getDirectory( "moz-abmdbdirectory://" + this.filename ) );
             }
          };
 

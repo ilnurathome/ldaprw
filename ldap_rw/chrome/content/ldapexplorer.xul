@@ -5,6 +5,7 @@
 <overlay id="ldapexplorer" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript" src="chrome://ldaprw/content/abtoldap.js"/> 
+  <script type="application/x-javascript" src="chrome://ldaprw/content/utils.js"/>
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldaptoab.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/ldapsource.js"/> 
   <script type="application/x-javascript" src="chrome://ldaprw/content/sync.js"/>

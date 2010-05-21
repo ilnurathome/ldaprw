@@ -35,12 +35,33 @@
  * ***** END LICENSE BLOCK ***** */
 
 function debugsync(str){
-//  dump("sync.js: " + str);
+  dump("sync.js: " + str);
 }
 
 function dumperrors(str){
-       dump(str+ "\n");
-       alert(str);
+  ldapsyncabort();
+  dump(str+ "\n");
+  alert(str);
+}
+
+// error collector
+var errorstorage = {
+  data:[],
+  length: 0,
+  add: function(err) {
+    dump("");
+    data[length++] = err;
+  }
+};
+function queryerror(msg, dn, card) {
+  if (msg) this.msg = msg;
+  if (dn) this.dn = dn;
+  if (card) this.card = card;
+}
+queryerror.prototype = {
+  msg:  null,
+  dn:   null,
+  card: null
 }
 
 var QUEUESEARCHADD = 1;
@@ -49,6 +70,13 @@ var QUEUEUPDATEADD = 3;
 var QUEUEUPDATEGET = 4;
 var QUEUEADDADD = 5;
 var QUEUEADDGET = 6;
+var QUEUERENADD = 7;
+var QUEUERENGET = 8;
+var QUEUEDELADD = 9;
+var QUEUEDELGET = 10;
+var ERRGET = 11;
+var ERRSOL = 12;
+
 
 var ldaprw_sync_abort = false;
 function ldapsyncabort() {
@@ -73,8 +101,7 @@ load("chrome://ldaprw/content/prefs.js");
 /*
   var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
 
-var mybook = abManager.getDirectory( "moz-abmdbdirectory://" + pref.filename );
-mybook instanceof Components.interfaces.nsIAbDirectory;
+var mybook = pref.book;
  var cards = mybook.childCards;
  var card = cards.getNext()
 card instanceof Components.interfaces.nsIAbCard
@@ -202,6 +229,8 @@ function syncpolitic2(pref,backstatus, mybook){
      if (aMsg != undefined ){
           debugsync("modquery aMsg= " + aMsg.errorCode + "\n");
           if(aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS ){
+            if (backstatus != undefined) backstatus(ERRGET, 0);
+            
             dumperrors("Error: modquery " + aMsg.errorCode + "\n" 
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
                   + aMsg.errorMessage );
@@ -248,13 +277,17 @@ function syncpolitic2(pref,backstatus, mybook){
      * */
 
     var carddate = new Date();
-    var carddatestr = card.getProperty("LastModifiedDate", 0);
-    
+    var carddatestr = card.getProperty("LastModifiedDate", 0);   
     carddate.setTime( carddatestr + "000");
+
+    var oldldapdate = new Date();
+    var oldldapdatestr = card.getProperty("LdapModifiedDate", 0);
+    oldldapdate.setTime(oldldapdatestr + "000");
 
     debugsync("callbacksearchresult ldapdate=" 
         + ldapdate.getTime() + " carddate =" 
-        + carddate.getTime() + "\n" );
+        + carddate.getTime() + " oldldapdate = "
+        + oldldapdate.getTime() + "\n" );
     
     if ( ldapdate.getTime() != carddate.getTime() ){
       if (ldapdate.getTime() > carddate.getTime()) {
@@ -362,11 +395,11 @@ function syncpolitic2(pref,backstatus, mybook){
         if ( aMsg instanceof Components.interfaces.nsILDAPMessage) {
 
           //// debuging infos
-          allmsg[allmsg.length] = aMsg;
-          if ( mydn != undefined ) {
-            alldn[alldn.length] = { msg: aMsg, mydn: mydn };
-            debugsync("getsearchquery mydn=" + mydn.dn + "\n");
-          }
+//          allmsg[allmsg.length] = aMsg;
+//          if ( mydn != undefined ) {
+//            alldn[alldn.length] = { msg: aMsg, mydn: mydn };
+//            debugsync("getsearchquery mydn=" + mydn.dn + "\n");
+//          }
           ////////////////////////
 
           if ( aMsg.errorCode == Components.interfaces.nsILDAPErrors.SUCCESS ){
@@ -393,10 +426,7 @@ function syncpolitic2(pref,backstatus, mybook){
               }
               /////////////////////////////////////
 
-//              if (currentcard.isMailList ){
-//                newmaillisttoldap(currentcard);
-//              } else {
-                if (mydn != undefined ) {
+               if (mydn != undefined ) {
                   var card = mybook.getCardFromProperty("dn", mydn.dn, false);
                   if ( card != undefined ) {
                     newcardtoldap(card);
@@ -407,10 +437,12 @@ function syncpolitic2(pref,backstatus, mybook){
                     newmltoldap(ml.card);                    
                   }
                 }
-             // }
 
               return iteration();
             } else {
+              if (backstatus != undefined) backstatus(ERRGET, 0);
+              ldapsyncabort();              
+              ldap.abortall();
               dumperrors (aMsg.type + "\n" + aMsg.errorCode + "\t" + LdapErrorsToStr(aMsg.errorCode) + "\n" + aMsg.errorMessage);
             }
         }
@@ -496,6 +528,12 @@ function genaddtoldap(pref, ldapser, backstatus) {
   var ldap = ldapser;
   if (ldap == undefined) {    
     var ldap = new LdapDataSource();
+    var attrs = new Array(); 
+    attrs[attrs.length]="objectClass";
+    for (var i in mapper.__proto__) { 
+      attrs[attrs.length] = i; 
+    };
+    ldap.init(attrs);
   }
 
   function genaddquery(card, addqueries) {
@@ -503,19 +541,34 @@ function genaddtoldap(pref, ldapser, backstatus) {
     return function addquery(aMsg, mdn) {
       debugsync("addquery " + addquerycount + "\n");
       if (ldaprw_sync_abort ) {
-        debugsync("addquery abortall\n");
-        ldap.abortall();
+        try{
+          if (backstatus != undefined) backstatus(ERRGET, 0);
+          debugsync("addquery abortall\n");
+          ldap.abortall();
+        }catch(e){
+          dumperrors("addquery aborting failed: " + e + "\n");
+        }
         return null;
       }
       if (aMsg != undefined ){
           debugsync("addquery aMsg= " + aMsg.errorCode + "\n");
         if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS) {
+          try{
+            ldapsyncabort();
+            if (backstatus != undefined) backstatus(ERRGET, 0);
+            dump("addtoldap: aborting\n");
+            ldap.abortall();
+          }catch(e){
+            dumperrors("addquery aborting failed: " + e + "\n");
+          }
+
           dumperrors("Error: addquery " + aMsg.errorCode + "\n" 
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
                   + aMsg.errorMessage + "\n"
                   + card.getProperty("dn", "") + "\n");
           return null;
         }else{
+          card.setProperty("dn", mdn.dn);
           var newcard= mybook.modifyCard(card);
           if (backstatus != undefined) backstatus(QUEUEADDGET, aMsg.type);          
         }
@@ -543,10 +596,8 @@ function genaddtoldap(pref, ldapser, backstatus) {
         mods.appendElement( CreateLDAPMod( "objectClass", pref.objClassesAR, Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES ), false );
       
         mappertoldap.map(card, mods, oldcard);
-
-        card.setProperty("dn", dn);
       
-        ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods}]) );
+        ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods /* maybe need: , card:card */}]) );
         if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
       } catch(e) {
         dumperrors("Error: " + e+"\n");
