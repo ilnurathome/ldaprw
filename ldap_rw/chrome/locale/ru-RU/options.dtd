@@ -33,3 +33,9 @@
 <!ENTITY maillistClasses.accesskey "M">
 <!ENTITY maillistClasses.value "groupOfNames">
 
+<!ENTITY liveupdate.label "Use liveupdate">
+<!ENTITY liveupdate.accesskey "L">
+<!ENTITY liveupdate.never "Never">
+<!ENTITY liveupdate.prompt "Prompt">
+<!ENTITY liveupdate.always "Always">
+

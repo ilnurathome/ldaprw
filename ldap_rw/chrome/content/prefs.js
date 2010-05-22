@@ -64,8 +64,8 @@ function getprefs(){
          list[key].objClassesAR = list[key].objClasses.replace(/\s*/g, '').split(",");
          list[key].maillistClassesAR = list[key].maillistClasses.replace(/\s*/g, '').split(",");              
 
-         list[key].accepted = MygetIntPref(myprefs, key + ".accepted", 0);
-         list[key].duration = MygetIntPref(myprefs, key + ".duration", 0);
+         list[key].liveaccepted = MygetIntPref(myprefs, key + ".liveaccepted", 0);
+         list[key].liveduration = MygetIntPref(myprefs, key + ".liveduration", 0);
 
           var abprefs = prefs.getBranch("ldap_2.servers." + key + ".");
           list[key].description= abprefs.getCharPref("description");
@@ -98,6 +98,9 @@ function setpref(newpref) {
   prefs.setCharPref( prefix + ".maillistClasses", newpref.maillistClasses);
 
   prefs.setIntPref( prefix + ".maxHits", newpref.maxHits);
+
+  prefs.setIntPref( prefix + ".liveaccepted", newpref.liveaccepted);
+  prefs.setIntPref( prefix + ".liveduration", newpref.liveduration);
 }
 
 function delpref(bookname) {

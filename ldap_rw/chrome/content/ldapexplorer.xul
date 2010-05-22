@@ -25,13 +25,13 @@
 
 <tree flex="1" id="ldapexplorer-cardlist" onselect="doselect();">
   <treecols>
-    <treecol id="cn" label="cn" flex="1"/>
+    <treecol id="cn" label="&cn.label;" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="mail" label="mail" flex="1"/>
+    <treecol id="mail" label="&mail.label;" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="sn" label="surname" flex="1"/>
+    <treecol id="sn" label="&sn.label;" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="givenName" label="givenName" flex="1"/>
+    <treecol id="givenName" label="&givenName.label;" flex="1"/>
   </treecols>
   <treechildren/>
 </tree>

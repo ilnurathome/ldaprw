@@ -18,3 +18,9 @@
 
 <!ENTITY dn.label "dn">
 <!ENTITY dn.accesskey "d">
+
+<!ENTITY cn.label "cn">
+<!ENTITY mail.label "mail">
+<!ENTITY sn.label "sn">
+<!ENTITY givenName.label "givenName">
+
