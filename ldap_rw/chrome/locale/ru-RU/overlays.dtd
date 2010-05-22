@@ -19,8 +19,4 @@
 <!ENTITY dn.label "dn">
 <!ENTITY dn.accesskey "d">
 
-<!ENTITY cn.label "Полное Имя">
-<!ENTITY mail.label "Email">
-<!ENTITY sn.label "Фамилия">
-<!ENTITY givenName.label "Имя">
 

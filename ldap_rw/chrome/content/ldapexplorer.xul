@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<!DOCTYPE overlay SYSTEM "chrome://ldaprw/locale/overlays.dtd">
+<!DOCTYPE overlay [
+<!ENTITY % ldaprw SYSTEM  "chrome://ldaprw/locale/overlays.dtd">
+%ldaprw;
+<!ENTITY % abResultsPaneOverlayDTD SYSTEM "chrome://messenger/locale/addressbook/abResultsPaneOverlay.dtd">
+%abResultsPaneOverlayDTD;
+]>
 
 <overlay id="ldapexplorer" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
@@ -25,13 +30,19 @@
 
 <tree flex="1" id="ldapexplorer-cardlist" onselect="doselect();">
   <treecols>
-    <treecol id="cn" label="&cn.label;" flex="1"/>
+    <treecol id="cn" label="&GeneratedName.label;" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="mail" label="&mail.label;" flex="1"/>
+    <treecol id="mail" label="&PrimaryEmail.label;" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="sn" label="&sn.label;" flex="1" hidden="true"/>
+    <treecol id="o" label="&Company.label;" flex="1" hidden="true"/>
     <splitter class="tree-splitter"/>
-    <treecol id="givenName" label="&givenName.label;" flex="1" hidden="true"/>
+    <treecol id="department" label="&Department.label;" flex="1" hidden="true"/>
+    <splitter class="tree-splitter"/>
+    <treecol id="mobile" label="&CellularNumber.label;" flex="1" hidden="true"/>
+    <splitter class="tree-splitter"/>
+    <treecol id="homePhone" label="&HomePhone.label;" flex="1" hidden="true"/>
+    <splitter class="tree-splitter"/>
+    <treecol id="telephoneNumber" label="&WorkPhone.label;" flex="1" hidden="true"/>
   </treecols>
   <treechildren/>
 </tree>

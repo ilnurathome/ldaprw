@@ -34,7 +34,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 function debugexplorer(str){
-//  dump("explorer.js: " + str);
+// dump("explorer.js: " + str);
 }
 
 function dumperrors(str){
@@ -93,8 +93,8 @@ function onLoad() {
     document.getElementById('ldapexplorer-add').disabled=true;
     document.getElementById('ldapexplorer-del').disabled=true;
     document.getElementById('ldapexplorer-morelabel').disabled=true;
-    /*
     var tree = document.getElementById('ldapexplorer-cardlist');
+    /*
     var treecols = tree.firstChild;
 
     for (var key in LdaptoAB.prototype) {

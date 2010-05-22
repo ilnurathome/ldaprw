@@ -9,7 +9,7 @@ var ldaprw = {
         var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         this.abListener = abListener;
         abManager.addAddressBookListener( abListener, Components.interfaces.nsIAbListener.itemChanged | Components.interfaces.nsIAbListener.itemAdded );
-        dump("Listener added\n");
+      //  dump("Listener added\n");
     } catch(e) {
         dump("addListener error:"+e+"\n");
     }
@@ -19,7 +19,7 @@ var ldaprw = {
   },
   onLoad: function() {
     // initialization code
-    dump("ldaprw.onLoad\n");
+   // dump("ldaprw.onLoad\n");
     try {
     ldaprw.initialized = true;
     ldaprw.strings = document.getElementById("ldaprw-strings");
