@@ -88,12 +88,25 @@ function onLoad() {
     };
     searchformat += ")";    
 
-   //debugexplorer("searchformat=" + searchformat + "\n");
+  //debugexplorer("searchformat=" + searchformat + "\n");
 
     document.getElementById('ldapexplorer-add').disabled=true;
     document.getElementById('ldapexplorer-del').disabled=true;
-    document.getElementById('ldapexplorer-morelabel').disabled=true;                     
+    document.getElementById('ldapexplorer-morelabel').disabled=true;
+    /*
     var tree = document.getElementById('ldapexplorer-cardlist');
+    var treecols = tree.firstChild;
+
+    for (var key in LdaptoAB.prototype) {
+      var treecol = document.createElement('treecol');
+      treecol.id = key;
+      // need locale translator function
+      treecol.setAttribute('label', key);
+      treecol.flex = 1;
+      treecol.hidden = true;
+      treecols.appendChild(treecol);
+    }
+    */
     tree.view = cardtreeView;   
 }
 

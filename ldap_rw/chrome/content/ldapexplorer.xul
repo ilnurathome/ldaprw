@@ -29,9 +29,9 @@
     <splitter class="tree-splitter"/>
     <treecol id="mail" label="&mail.label;" flex="1"/>
     <splitter class="tree-splitter"/>
-    <treecol id="sn" label="&sn.label;" flex="1"/>
+    <treecol id="sn" label="&sn.label;" flex="1" hidden="true"/>
     <splitter class="tree-splitter"/>
-    <treecol id="givenName" label="&givenName.label;" flex="1"/>
+    <treecol id="givenName" label="&givenName.label;" flex="1" hidden="true"/>
   </treecols>
   <treechildren/>
 </tree>
