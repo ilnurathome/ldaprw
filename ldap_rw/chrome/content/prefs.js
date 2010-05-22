@@ -1,3 +1,5 @@
+var escapeRDNre = /([\\\",=<>#;+])/g;
+
 function dumperrors(str){
        dump(str+ "\n");
        alert(str);
@@ -114,6 +116,7 @@ function testsetpref() {
 }
 
 
+
 // very very simple compiler
 function compiler(str){
   // temprorary regexp
@@ -152,7 +155,7 @@ function compiler(str){
       commands[commands.length] = function(str) { return function() {return str} }(cmdgr[1]);
       continue;
     };
-    commands[commands.length] = function(prop){ return function(card) { return card.getProperty(prop,"");} }(strgr[i]);
+    commands[commands.length] = function(prop){ return function(card) { return card.getProperty(prop,"").replace(escapeRDNre, "\\$1");} }(strgr[i]);
   }
 
   return function(card) {
