@@ -54,7 +54,9 @@ function dirWrapper(dir, cards) {
   };
 
   this.modifyCard = function(card) {
-   this.dir.modifyCard(card);
+    var LastModifiedDate = card.getProperty ("LastModifiedDate", 0);
+    card.setProperty("cusLastModifiedDate", LastModifiedDate);
+    this.dir.modifyCard(card);
   };
 }
 
