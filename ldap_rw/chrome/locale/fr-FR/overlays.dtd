@@ -1,0 +1,22 @@
+<!ENTITY ldaprw.pref.label "Préférences LdapRW">
+<!ENTITY ldaprw.sync.label "Syncro LdapRW">
+<!ENTITY ldaprw.abort.label "Annuler la syncro LdapRW">
+
+<!ENTITY ldapexplorer-title.value "Explorateur carnets Ldap">
+<!ENTITY ldapexplorer-menu.label "(sélectionner un carnet)">
+
+<!ENTITY ldapexplorer-add.label "Ajouter au carnet">
+<!ENTITY ldapexplorer-edit.label "Editer">
+<!ENTITY ldapexplorer-del.label "Effacer">
+<!ENTITY ldapexplorer-more.value "plus..">
+
+<!ENTITY LdapRW_card.LdapRWTab.tab "LdapRW">
+<!ENTITY LdapRW_card.LdapRWTab.accesskey "a">
+
+<!ENTITY LdapRW_card.attr "Attribut">
+<!ENTITY LdapRW_card.attr.value "Valeur">
+
+<!ENTITY dn.label "dn (identifiant Ldap)">
+<!ENTITY dn.accesskey "d">
+
+

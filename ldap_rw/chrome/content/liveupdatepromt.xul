@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://ldaprw/locale/dialog.dtd">
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+
+<dialog id="myDialog" title="&liveupdateprompt.title;"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        onload="window.sizeToContent();"
+        buttons="accept,cancel"
+        buttonlabelaccept="&liveupdateprompt.button.accept;"
+        buttonaccesskeyaccept="S"
+        ondialogaccept="return doAccept();"
+        buttonlabelcancel="&liveupdateprompt.button.cancel;"
+        buttonaccesskeycancel="n"
+        ondialogcancel="return doCancel();">
+
+<script>
+function doAccept(){
+ //doSomething()
+  var selected = document.getElementById('duration').selectedIndex;
+  window.arguments[0](selected);
+  return true;
+}
+function doCancel(){
+  var selected = document.getElementById('duration').selectedIndex;
+  window.arguments[1](selected);
+  return true;
+}
+</script>
+
+<dialogheader title="&liveupdateprompt.title;" description="&liveupdateprompt.description;"/>
+<groupbox flex="1">
+  <caption label="&liveupdateprompt.caption.label;"/>
+  <radiogroup id="duration">
+     <radio id="now" selected="true" label="&liveupdateprompt.radio.now.label;"/>
+     <radio id="atsession" label="&liveupdateprompt.radio.atsession.label;"/>
+     <radio id="everytime" label="&liveupdateprompt.radio.everytime.label;"/>
+  </radiogroup>
+</groupbox>
+
+</dialog>
+

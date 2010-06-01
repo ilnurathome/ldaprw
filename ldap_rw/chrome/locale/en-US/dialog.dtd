@@ -1,0 +1,11 @@
+<!ENTITY liveupdateprompt.title "Live Update Prompt">
+<!ENTITY liveupdateprompt.description "Synchronize immediately">
+<!ENTITY liveupdateprompt.caption.label "Would you like to sync with ldap server?">
+
+<!ENTITY liveupdateprompt.button.accept "Accept">
+<!ENTITY liveupdateprompt.button.cancel "Cancel">
+
+<!ENTITY liveupdateprompt.radio.now.label "Now only">
+<!ENTITY liveupdateprompt.radio.atsession.label "At session">
+<!ENTITY liveupdateprompt.radio.everytime.label "Everytime">
+

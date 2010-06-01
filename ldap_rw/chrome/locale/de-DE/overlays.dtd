@@ -1,0 +1,22 @@
+<!ENTITY ldaprw.pref.label "LdapRW Einstellungen">
+<!ENTITY ldaprw.sync.label "LdapRW-Synchronisierung">
+<!ENTITY ldaprw.abort.label "LdapRW-Synchronisierung abbrechen">
+
+<!ENTITY ldapexplorer-title.value "Ldap-Adressbuch Browser">
+<!ENTITY ldapexplorer-menu.label "(Adressbuch auswählen)">
+
+<!ENTITY ldapexplorer-add.label "Zum Adressbuch hinzufügen">
+<!ENTITY ldapexplorer-edit.label "Bearbeiten">
+<!ENTITY ldapexplorer-del.label "Löschen">
+<!ENTITY ldapexplorer-more.value "mehr..">
+
+<!ENTITY LdapRW_card.LdapRWTab.tab "LdapRW">
+<!ENTITY LdapRW_card.LdapRWTab.accesskey "a">
+
+<!ENTITY LdapRW_card.attr "Attribut">
+<!ENTITY LdapRW_card.attr.value "Angabe">
+
+<!ENTITY dn.label "dn (Ldap Bezeichnung)">
+<!ENTITY dn.accesskey "d">
+
+

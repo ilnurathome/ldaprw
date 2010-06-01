@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!DOCTYPE overlay SYSTEM "chrome://ldaprw/locale/overlays.dtd">
+
+<overlay id="ldaprw_card_overlay" 
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script>
+    <![CDATA[
+    if (!kVcardFields) alert('no kVcardFields');
+    else kVcardFields[kVcardFields.length] = ["dn", "dn"];
+
+
+    var LdapRW_card_treeView = {
+        data: new Array(),
+        treeBox: null,
+        get rowCount() { return this.data.length; },
+        setTree: function(treeBox) {this.treeBox = treeBox; },
+        getCellText: function(row, column) {
+           if (column.id == "LdapRW_card.attr") 
+               return this.data[row][0];
+           if (column.id == "LdapRW_card.attr.value") 
+               return this.data[row][1];
+        },
+        isContainer: function(row){ return false; },  
+        isSeparator: function(row){ return false; },  
+        isSorted: function(){ return false; },  
+        getLevel: function(row){ return 0; },  
+        getImageSrc: function(row,col) { },  
+        getRowProperties: function(row, props){},  
+        getCellProperties: function(row,col,props){},  
+        getColumnProperties: function(colid,col,props){}  
+        }
+
+        function genOnLoadEditCard() {
+           var OnLoadEditCardOld = OnLoadEditCard;
+           return function(){   
+              //dump('call new OnLoadEditCard\n');
+            try{
+               OnLoadEditCardOld();
+            }catch(e){
+              dump("LdapRW_card: " + e + "\n");
+            }
+
+            try {
+              if(gEditCard.card){
+                // NEED to change code to use onnsIAbCardPropsDo(card, func)
+                var props = gEditCard.card.properties;
+                while ( props.hasMoreElements() ) {
+                    var attr = props.getNext();
+                    if (attr instanceof Components.interfaces.nsIProperty){                   
+                    var n = LdapRW_card_treeView.data.length;
+                    LdapRW_card_treeView.data[n] = [attr.name, attr.value];
+                    //dump('data=' + LdapRW_card_treeView.data[n][0] + '\n');
+                    }
+                }
+              }else{
+                 dump('gEditCard.card is null\n');
+              }
+            }catch(e) {
+              dump("LdapRW_card: " + e + "\n");
+            }
+
+              //dump('LdapRW_card_treeView.data.length='+LdapRW_card_treeView.data.length + '\n');
+              document.getElementById("LdapRW_card").view = LdapRW_card_treeView; 
+           }
+         }
+
+         if(OnLoadEditCard) OnLoadEditCard = genOnLoadEditCard();
+         else dump('OnLoadEditCard is null\n');
+    ]]>
+  </script>
+  
+  <tabs id="abTabs">
+    <tab id="LdapRWTabButton" label="&LdapRW_card.LdapRWTab.tab;" accesskey="&LdapRW_card.LdapRWTab.accesskey;" />
+  </tabs>
+
+  <tabpanels id="abTabPanels">
+    <vbox id="abLdapRWTab" style="overflow:auto">
+      <tree id="LdapRW_card" flex="1">
+        <treecols>
+          <treecol id="LdapRW_card.attr" label="&LdapRW_card.attr;" flex="1"/>
+          <splitter />
+          <treecol id="LdapRW_card.attr.value" label="&LdapRW_card.attr.value;" flex="2"/>
+        </treecols>
+        <treechildren />
+      </tree>
+    </vbox>
+  </tabpanels>
+  
+  <tabpanels id="abTabPanels">
+    <vbox id="abOtherTab">
+      <hbox flex="1" align="center">
+        <label control="DN" value="&dn.label;"
+          accesskey="&dn.accesskey;"/>
+        <textbox id="dn" wrap="virtual" flex="1" readonly="true"/>
+      </hbox>
+    </vbox>
+  </tabpanels>
+
+
+</overlay>
+
+

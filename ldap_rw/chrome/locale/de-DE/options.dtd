@@ -1,0 +1,41 @@
+<!ENTITY prefwindow.title "LDAP Read/Write-Einstellungen">
+<!ENTITY panel.title "LDAP Read/Write-Einstellungen">
+
+<!ENTITY bookname.label "Adressbuch">
+<!ENTITY bookname.accesskey "A">
+<!ENTITY booknamelist.label "Ein Adressbuch auswählen...">
+
+<!ENTITY uri.label "URI">
+<!ENTITY uri.accesskey "U">
+<!ENTITY uri.value "ldap://ilnurhp.local/ou=addressbook,dc=local??sub?(objectclass=*)">
+
+<!ENTITY auth.dn.label "authentifizierungs DN">
+<!ENTITY auth.dn.accesskey "D">
+<!ENTITY auth.dn.value "uid=ilnur,ou=people,dc=local">
+
+<!ENTITY maxHits.label "Maximale Ergebnissanzahl">
+<!ENTITY maxHits.accesskey "M">
+<!ENTITY maxHits.value "10">
+
+<!ENTITY attrRdn.label "RDN Attribut">
+<!ENTITY attrRdn.accesskey "R">
+<!ENTITY attrRdn.value "cn">
+
+<!ENTITY basisRdn.label "RDN Basis">
+<!ENTITY basisRdn.accesskey "B">
+<!ENTITY basisRdn.value "Displayname">
+
+<!ENTITY objClasses.label "Objektklassen für neue Ldap-Einträge">
+<!ENTITY objClasses.accesskey "C">
+<!ENTITY objClasses.value "inetorgperson, mozillaAbPersonAlpha, organizationalPerson,person">
+
+<!ENTITY maillistClasses.label "Objektklasse neuer Ldap-Listen">
+<!ENTITY maillistClasses.accesskey "M">
+<!ENTITY maillistClasses.value "groupOfNames">
+
+<!ENTITY liveupdate.label "Use liveupdate">
+<!ENTITY liveupdate.accesskey "L">
+<!ENTITY liveupdate.never "Never">
+<!ENTITY liveupdate.prompt "Prompt">
+<!ENTITY liveupdate.always "Always">
+
