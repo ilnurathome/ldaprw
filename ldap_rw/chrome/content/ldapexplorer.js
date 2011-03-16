@@ -42,7 +42,10 @@ function dumperrors(str){
        alert(str);
 }
 
-
+/*
+ * @todo move it to local variable spaces
+ * they stay global for debug only
+ */
 var prefs=null;
 var curpref=null;
 var ldap=null;
@@ -56,6 +59,9 @@ const numbermsg=10;
 
 debugexplorer("loading\n");
 
+/*
+ * register to on load event
+ */
 window.addEventListener("load", function(e) { onLoad(e); }, false); 
 
 var searchformat=""; 
@@ -115,6 +121,9 @@ function selectServer(label) {
     Init();
 }
 
+/*
+ * init
+ */
 function Init(){
     queryURL = curpref.queryURL;
 
@@ -132,12 +141,23 @@ function Init(){
 //     debugexplorer(searchformat);
 }
 
+/**
+ * Search query generator
+ * @param query
+ * @param filter
+ * @return Function
+ */
 function gensearchquery(query, filter) {
   var querycount = 0;
   return function (aMsg) {
        debugexplorer("searchquery:" + query + "\t" + querycount + "\n")
+       
+       /*
+        * change status of "more label"
+        */
        if (aMsg != undefined ){
               debugexplorer("aMsg.errorCode:"+aMsg.errorCode + "\n");
+              
               if (aMsg.errorCode == 4){
                     document.getElementById('ldapexplorer-morelabel').disabled=false;
               }else {
@@ -147,23 +167,41 @@ function gensearchquery(query, filter) {
        
        if ( querycount < 1 ) {        
          querycount++;
-        return {dn: query, filter: filter } ;
+         /*
+          * return query for ldap server
+          */
+         return {dn: query, filter: filter } ;
        }
       return null;
   }
 }
 
+/**
+ * Function generator for collect results
+ * @param tree cardtreeView
+ * @param attrs
+ */
 function gencallbacksearchresult(tree, attrs){
       return function(aMsg){           
            debugexplorer("callbacksearchresult:" + aMsg.dn + attrs + "\n");
+           
+           /*
+            * cell in tree structure
+            */
            var cell = new Array();
            cell["aMsg"] = aMsg;
            cell["dn"] = aMsg.dn;
+           
            debugexplorer("attrs:" + aMsg.getAttributes({}) + "\n" );
+           
            var cardattrs = aMsg.getAttributes({});
+           
            for (var i in cardattrs) {
               try{
                 debugexplorer("callbacksearchresult: attr=" + i + "\t"+ attrs[i]);
+                /*
+                 * fill cell with attributes from result from ldap server
+                 */
                 var val=aMsg.getValues ( cardattrs[i], {});
                 if ( val != null) {
                        cell[ cardattrs[i] ] = val.toString();
@@ -175,14 +213,23 @@ function gencallbacksearchresult(tree, attrs){
                     debugexplorer("\n");
               }
            } 
+           
            if ( tree == undefined) debugexplorer("Error\n");
+           
            debugexplorer("callbacksearchresult: tree.treeData.length= " + tree.treeData.length+  "\n");
+           
+           /*
+            * add cell to tree
+            */
            tree.treeData[tree.treeData.length] = cell;
            tree.treebox.rowCountChanged(0, 1);
      }
 }
 
-
+/**
+ * event function for pressing enter key in search bar
+ * @param value String
+ */
 function ldapexploreronEnterInSearchBar(value){
   document.getElementById('ldapexplorer-add').disabled=true;
   document.getElementById('ldapexplorer-morelabel').disabled=true;                     
@@ -198,6 +245,10 @@ function ldapexploreronEnterInSearchBar(value){
   
   if (value == "") return;
   
+  /*
+   * request ldap server
+   * looking for inputed value in search bar
+   */
   var filter = searchformat.replace(/@V/g, value);
   try {
     ldap.query(queryURL, curpref.binddn, gengetpassword(), 
@@ -209,11 +260,14 @@ function ldapexploreronEnterInSearchBar(value){
   } 
 }
 
+/*
+ * card tree in ldap explorer
+ */
 var cardtreeView = {
-       treeData: [],
+    treeData: [],
        get rowCount() { return this.treeData.length;},
 
-      treeBox: null,  
+    treeBox: null,  
 
     getCellText : function(row,column){
            return this.treeData[row][column.id];
@@ -230,26 +284,45 @@ var cardtreeView = {
     getColumnProperties: function(colid,col,props){}
 }
 
-
+/*
+ * function for event "select something in tree of ldap explorer"
+ */
 function doselect(){
     document.getElementById('ldapexplorer-add').disabled=false;
     document.getElementById('ldapexplorer-del').disabled=false;
+
     var tree = document.getElementById('ldapexplorer-cardlist');
     if (tree.currentIndex < 0){
-       debugexplorer("do select nothing selected\n");
+       debugexplorer("doselect: nothing selected\n");
        return null;
     }
-
-  try{
-    var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);     
-    var mapper = new LdaptoAB();        
-    mapper.map(cardtreeView.treeData[tree.currentIndex].aMsg, card);       
-    if (DisplayCardViewPane != undefined) DisplayCardViewPane(card);
-  }catch(e){
-    dumperrors("Error: " + e + "\n");
-  }
+    
+    /*
+     * show card in standart card viewer
+     */
+    try{
+        var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+        
+        /*
+         * map card from ldap to ab
+         */
+        var mapper = new LdaptoAB();        
+        mapper.map(cardtreeView.treeData[tree.currentIndex].aMsg, card);
+        
+        /*
+         * show card
+         */
+        if (DisplayCardViewPane != undefined) DisplayCardViewPane(card);
+      }catch(e){
+        dumperrors("Error: " + e + "\n");
+    }
 }
 
+/*
+ * function for do something on select cards in ldap explorer
+ * such as delete or add to local addressbook
+ * @param method Function
+ */
 function doOnselectedInTree(metod){
     var tree = document.getElementById('ldapexplorer-cardlist');
     debugexplorer("doOnselected:" + tree.tagName + "\n");
@@ -261,32 +334,55 @@ function doOnselectedInTree(metod){
     tree.view.selection.getRangeAt(t,start,end);
     for (var v = start.value; v <= end.value; v++){
       debugexplorer("Item " + v + " is selected.\t" + cardtreeView.treeData[v].dn+"\n");
+      /*
+       * call to method (add, delete etc)
+       */
       metod(v);
   }
  }
 }
 
+/*
+ * function for event pressed add button
+ * add card from ldap explorer to active local addressbook
+ */
 function doAdd() {
   /// NEED to change some code to call getSelectedDir();
   var mybook = getSelectedDir();  
   debugexplorer("add to " + mybook + "\n");
 
+  /*
+   * call with lambda function
+   */
   doOnselectedInTree( function(v) {
       try{
         if ( addcardfromldap(mybook, cardtreeView.treeData[v].aMsg, true) ) {
-        debugexplorer("card allready exists, sync it.");
+            debugexplorer("card allready exists, sync it.");
         }
        }catch(e){
             dumperrors("Error:"+e+"\n");
      } } );
 }
 
+/*
+ * function generator for delete cards on ldap server
+ * @param queries
+ * @return Function
+ */
 function gendelquery(queries) {
-  var querycount = 0;
-  return function (aMsg) {
+    var querycount = 0;
+    
+    /*
+     * callback function
+     * @param aMsg ldap message
+     * @return query
+     */
+    return function (aMsg) {
        debugexplorer("delquery:" + queries + "\t" + querycount + "\n")
+       
        if (aMsg != undefined ){
               debugexplorer("aMsg.errorCode:"+aMsg.errorCode + "\n");
+              
               if (aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS){
                 dumperrors("Errors: delquery " + aMsg.errorCode + "\n"
                     + LdapErrorsToStr(aMsg.errorCode) + "\n"
@@ -298,86 +394,120 @@ function gendelquery(queries) {
        if ( querycount < queries.length ) {        
         return queries[querycount++];
        }
-      ldapexploreronEnterInSearchBar("");
-      return null;
-  }
+       
+       /*
+        * clear string in search bar
+        */
+       ldapexploreronEnterInSearchBar("");
+       return null;
+    }
 }
 
+/*
+ * request ldap server for delete cards
+ * @param v queries
+ */
 function deleteonldap(v) {
-  if ( ldap == null ){
-    debugexplorer("Choose Ldap server before\n");
-    return;
-  }
+    if ( ldap == null ){
+        debugexplorer("Choose Ldap server before\n");
+        return;
+    }
 
-  try {
-    ldap.deleteext(queryURL, curpref.binddn, gengetpassword(), 
-        gendelquery(v) );
-  } catch (e) {
-    dumperrors ("Error: " + e + "\n" );
-  } 
+    try {
+        ldap.deleteext(queryURL, curpref.binddn, gengetpassword(), 
+            gendelquery(v) );
+    } catch (e) {
+        dumperrors ("Error: " + e + "\n" );
+    }
 }
 
+/*
+ * function for event pressed delete button
+ */
 function doDel() {
-
   var queries = [];
 
+  /*
+   * collect query callback function 
+   */
   function collect(v) {
-    dump("doDel: " + v + "\n");
+    debugexplorer("doDel: " + v + "\n");
+    
     queries[queries.length] = {number: v, dn: cardtreeView.treeData[v].aMsg.dn};
   }
 
+  /*
+   * collect selected cards
+   */
   doOnselectedInTree( collect );
+  
+  // debug
   for( var i in queries ) {
-    dump("collected:" + i + "\t" + queries[i].dn + "\n");
+    debugexplorer("collected:" + i + "\t" + queries[i].dn + "\n");
   }
   
+  /*
+   * prompt user
+   */
   var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                         .getService(Components.interfaces.nsIPromptService);
-
   var result = prompts.confirm(null, "Delete from LDAP Server", "Are you sure?");
 
   if (result) {
     debugexplorer("call to del");
+    
     deleteonldap(queries);
   }
 }
 
   /*
    * Generator for callback function from ldap modify operations
-   * @querymods Array of query objects
+   * @param querymods Array of query objects
    *   for example [ { dn: aMsg.dn, mods: mods} ] 
-   * */
+   */
   function genmodquery(querymods, backstatus) {
     var modquerycount = 0;
+    
     /*
      * Callback function for modify operations
-     * @aMsg ldap messages
-     * */
+     * @param aMsg ldap messages
+     * @param 
+     */
     return function modquery(aMsg, mdn) {
       debugexplorer("modquery " + modquerycount + "\n");
+      
+      /*
+       * abort when need to abort
+       */
       if (ldaprw_sync_abort ) {
         debugexplorer("modequery abortall\n");
         ldap.abortall();
         return null;
       }
+      
      if (aMsg != undefined ){
           debugexplorer("modquery aMsg= " + aMsg.errorCode + "\n");
+          
           if(aMsg.errorCode != Components.interfaces.nsILDAPErrors.SUCCESS ){
             dumperrors("Error: modquery " + aMsg.errorCode + "\n" 
                   + LdapErrorsToStr(aMsg.errorCode) + "\n"
                   + aMsg.errorMessage );
           }
+          
           if (backstatus != undefined) backstatus(QUEUEUPDATEGET, aMsg.type);
       }
-       if ( modquerycount < querymods.length ) {
+      
+      if ( modquerycount < querymods.length ) {
           debugexplorer( querymods[modquerycount].dn + " "
               + querymods[modquerycount].mods+ "\n");
        
-        return querymods[modquerycount++];
+          return querymods[modquerycount++];
       }
       return null;
     }
   }
+  
+
 /*
 function modifyonldap(card) {
   if ( ldap == null ){
@@ -394,6 +524,9 @@ function modifyonldap(card) {
 }
 */
 
+/*
+ * function for event pressed edit button
+ */
 function doEdit() {
     var tree = document.getElementById('ldapexplorer-cardlist');
     if (tree.currentIndex < 0){
@@ -408,6 +541,10 @@ function doEdit() {
       // temprorary wrong method
       var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);     
       var oldcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);     
+      
+      /*
+       * mappers
+       */
       var mapper = new LdaptoAB();    
       var mappertoldap = new ABtoLdap();
       
@@ -432,12 +569,18 @@ function doEdit() {
       debugexplorer("oldcard.primaryEmail=" + oldcard.primaryEmail + "\n");
       debugexplorer("card.primaryEmail=" + card.primaryEmail + "\n");
 
+      /*
+       * create modificators for query to ldap server
+       */
       var mods = CreateNSMutArray();
-      
       mappertoldap.map(card, mods, oldcard);
 
+      /*
+       * request to update cards on ldap server
+       */
       if (mods.length >0){
         debugexplorer("doEdit: mods.length=" + mods.length + ", aMsg.dn=" + aMsg.dn + "\n");        
+        
         ldap.modify (queryURL, curpref.binddn, gengetpassword(), 
             genmodquery( [ { dn: aMsg.dn, mods: mods} ]) ); 
       }else{
@@ -448,6 +591,11 @@ function doEdit() {
     }
 }
 
+/*
+ * open edit card window
+ * @param abURI
+ * @param card
+ */
 function mygoEditCardDialog(abURI, card) {
    window.openDialog("chrome://ldaprw/content/myabEditCardDialog.xul",  
                      "",  

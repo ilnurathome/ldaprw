@@ -52,7 +52,9 @@ function dumperrors(str){
  mapper.map(LDAPMessage, AbCard);
  */
 
-
+/*
+ * constructor mapper ldap query to addressbook card
+ */
 function LdaptoAB() {
 
   function genfun (from, to) {
@@ -109,201 +111,218 @@ function LdaptoAB() {
 
 }
 
+/*
+ * there are lambda functions
+ * constructor replace fields to lambda functions
+ */
 LdaptoAB.prototype = {
-
-  dn: function() {
+    dn: function() {
         this.AbCard.setProperty("dn", this.LDAPMessage.dn );
-      },
+    },
   
   //  Contact > NamefirstName
   //givenName: ["FirstName"],
-  givenName: function() {
-     value = this.LDAPMessage.getValues( "givenName",{} );
-     if ( value instanceof Array)
-        this.AbCard.firstName = value[0];
-  },
-  //sn: ["LastName"],
-  sn: function() {
+    givenName: function() {
+        value = this.LDAPMessage.getValues( "givenName",{} );
+        if ( value instanceof Array)
+            this.AbCard.firstName = value[0];
+    },
+    sn: function() {
      value = this.LDAPMessage.getValues( "sn",{} );
      if ( value instanceof Array)
         this.AbCard.lastName = value[0];
-  },
+    },
+
   //surname: ["LastName"],
-  surname: function() {
-     value = this.LDAPMessage.getValues( "sn",{} );
-     if ( value instanceof Array)
-        this.AbCard.lastName = value[0];
-  },
+    surname: function() {
+        value = this.LDAPMessage.getValues( "sn",{} );
+        if ( value instanceof Array)
+            this.AbCard.lastName = value[0];
+    },
 
-  //cn: ["DisplayName"], 
-  cn: function() {
-     value = this.LDAPMessage.getValues( "cn",{} );
-     if ( value instanceof Array)
-        this.AbCard.displayName = value[0];
-  },
-  //commonname: ["DisplayName"], 
-  commonname: function() {
-     value = this.LDAPMessage.getValues( "commonname",{} );
-     if ( value instanceof Array)
-        this.AbCard.displayName = value[0];
-   },
+    //cn: ["DisplayName"], 
+    cn: function() {
+        value = this.LDAPMessage.getValues( "cn",{} );
+        if ( value instanceof Array)
+            this.AbCard.displayName = value[0];
+    },
+    
+    //commonname: ["DisplayName"], 
+    commonname: function() {
+        value = this.LDAPMessage.getValues( "commonname",{} );
+        if ( value instanceof Array)
+            this.AbCard.displayName = value[0];
+    },
 
-  mozillaNickname: ["NickName"],
-  xmozillanickname: ["NickName"],
+    mozillaNickname: ["NickName"],
+    xmozillanickname: ["NickName"],
 
-  // Contact > Internet
-  mail: function() {
+    // Contact > Internet
+    mail: function() {
           // PrimaryEmail
           var mails = this.LDAPMessage.getValues( "mail",{} );
+          
           debugldaptoab("mails = " + mails + "\n");
+          
           this.AbCard.primaryEmail = mails[0];
+          
           debugldaptoab("mails[0] = " + mails[0] + "\n");
+          
           if ( ! (mails[1]==undefined) ) {
              debugldaptoab("mails[1] = " + mails[1] + "\n");
              this.AbCard.setProperty("SecondEmail", mails[1]);
           } 
         },
-  mozillaSecondEmail: ["SecondEmail"],
-  xmozillasecondemail: ["SecondEmail"],
-  mozillaUseHtmlMail: function(){
-      var usehtml = this.LDAPMessage.getValues( "mozillaUseHtmlMail",{} );
-      if (usehtml[0] == "TRUE"){
-         this.AbCard.setProperty("PreferMailFormat", 2 );
-      } else if (usehtml[0] == "FALSE"){
-         this.AbCard.setProperty("PreferMailFormat", 1 );
-      }
-  },
-  nsAIMid: ["_AimScreenName"], 
+        
+    mozillaSecondEmail: ["SecondEmail"],
+    xmozillasecondemail: ["SecondEmail"],
 
-  // Contact > Phones
-  telephoneNumber: ["WorkPhone"], 
-  homePhone: ["HomePhone"],  
-  fax: ["FaxNumber"],  
-  facsimileTelephoneNumber: ["FaxNumber"],
+    mozillaUseHtmlMail: function(){
+        var usehtml = this.LDAPMessage.getValues( "mozillaUseHtmlMail",{} );
+        
+        if (usehtml[0] == "TRUE"){
+            this.AbCard.setProperty("PreferMailFormat", 2 );
+        } else if (usehtml[0] == "FALSE"){
+            this.AbCard.setProperty("PreferMailFormat", 1 );
+        }
+    },
+    
+    nsAIMid: ["_AimScreenName"], 
 
-  pager: ["PagerNumber"],
-  pagerphone: ["PagerNumber"],
+    // Contact > Phones
+    telephoneNumber: ["WorkPhone"], 
+    homePhone: ["HomePhone"],  
+    fax: ["FaxNumber"],  
+    facsimileTelephoneNumber: ["FaxNumber"],
+
+    pager: ["PagerNumber"],
+    pagerphone: ["PagerNumber"],
   
-  mobile: ["CellularNumber"],
-  cellphone: ["CellularNumber"],
-  carphone: ["CellularNumber"],
+    mobile: ["CellularNumber"],
+    cellphone: ["CellularNumber"],
+    carphone: ["CellularNumber"],
 
-  // Address > Home
-  mozillaHomeStreet: ["HomeAddress"],
-  mozillaHomeStreet2: ["HomeAddress2"],
+    // Address > Home
+    mozillaHomeStreet: ["HomeAddress"],
+    mozillaHomeStreet2: ["HomeAddress2"],
 
-  mozillaHomeLocalityName: ["HomeCity"],
-  mozillaHomeState: ["HomeState"],
-  mozillaHomePostalCode: ["HomeZipCode"],
-  mozillaHomeCountryName: ["HomeCountry"],
-  mozillaHomeUrl: ["WebPage2"],
-  homeurl: ["WebPage2"],
+    mozillaHomeLocalityName: ["HomeCity"],
+    mozillaHomeState: ["HomeState"],
+    mozillaHomePostalCode: ["HomeZipCode"],
+    mozillaHomeCountryName: ["HomeCountry"],
+    mozillaHomeUrl: ["WebPage2"],
+    homeurl: ["WebPage2"],
+
     // Address > Work
-  title: ["JobTitle"],
-  ou: ["Department"],
-  department: ["Department"],
-  departmentnumber: ["Department"],
-  orgunit: ["Department"],
+    title: ["JobTitle"],
+    ou: ["Department"],
+    department: ["Department"],
+    departmentnumber: ["Department"],
+    orgunit: ["Department"],
 
-  o: ["Company"],
-  company: ["Company"],
+    o: ["Company"],
+    company: ["Company"],
   
-  street: ["WorkAddress"],
-  streetaddress: ["WorkAddress"],
-  postOfficeBox: ["WorkAddress"],
+    street: ["WorkAddress"],
+    streetaddress: ["WorkAddress"],
+    postOfficeBox: ["WorkAddress"],
 
-  mozillaWorkStreet2: ["WorkAddress2"],
+    mozillaWorkStreet2: ["WorkAddress2"],
 
-  l: ["WorkCity"],
-  locality: ["WorkCity"],
+    l: ["WorkCity"],
+    locality: ["WorkCity"],
 
-  st: ["WorkState"],
-  region: ["WorkState"],
+    st: ["WorkState"],
+    region: ["WorkState"],
 
-  postalCode: ["WorkZipCode"],
-  zip: ["WorkZipCode"],
+    postalCode: ["WorkZipCode"],
+    zip: ["WorkZipCode"],
 
-  c: ["WorkCountry"],
-  countryname: ["WorkCountry"],
+    c: ["WorkCountry"],
+    countryname: ["WorkCountry"],
 
-  workurl: ["WebPage1"],
-  mozillaWorkUrl: ["WebPage1"],
-  labeledURI: ["WebPage1"],
-            // Other > (custom)
-  custom1: ["Custom1"],
-  mozillaCustom1: ["Custom1"],
+    workurl: ["WebPage1"],
+    mozillaWorkUrl: ["WebPage1"],
+    labeledURI: ["WebPage1"],
+    
+    // Other > (custom)
+    custom1: ["Custom1"],
+    mozillaCustom1: ["Custom1"],
  
-  custom2: ["Custom2"],
-  mozillaCustom2: ["Custom2"],
+    custom2: ["Custom2"],
+    mozillaCustom2: ["Custom2"],
 
-  custom3: ["Custom3"],
-  mozillaCustom3: ["Custom3"],
+    custom3: ["Custom3"],
+    mozillaCustom3: ["Custom3"],
 
-  custom4: ["Custom4"],
-  mozillaCustom4: ["Custom4"],
+    custom4: ["Custom4"],
+    mozillaCustom4: ["Custom4"],
 
     // Other > Notes
-  description: ["Notes"],
-  notes: ["Notes"],
+    description: ["Notes"],
+    notes: ["Notes"],
 
-  // service attributes
-  uid: ["uid"],
+    // service attributes
+    uid: ["uid"],
 
-  jpegPhoto: function() {   
-    var dir = Components.classes["@mozilla.org/file/directory_service;1"]
+    jpegPhoto: function() {   
+        var dir = Components.classes["@mozilla.org/file/directory_service;1"]
                         .getService(Components.interfaces.nsIProperties)
                         .get("ProfD", Components.interfaces.nsIFile);  
     
-    var file = Components.classes["@mozilla.org/file/local;1"]
+        var file = Components.classes["@mozilla.org/file/local;1"]
                          .createInstance(Components.interfaces.nsILocalFile);
     
-    dir.append("Photos");
-    dir.append(this.LDAPMessage.dn + ".jpg");
-    var fullpath = dir.path;
+        dir.append("Photos");
+        dir.append(this.LDAPMessage.dn + ".jpg");
+        var fullpath = dir.path;
 
 //    if( replace == undefined ) {
-    if ( true ){
-      file.initWithPath( fullpath );  
-      if (file.exists())  
-        file.remove(true);  
-      file.create(file.NORMAL_FILE_TYPE, 0600);  
-    } else {
-      dir.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0600);
-      file = dir;
-    }
+        if ( true ){
+            file.initWithPath( fullpath );  
+            if (file.exists()) file.remove(true);  
+            
+            file.create(file.NORMAL_FILE_TYPE, 0600);  
+        } else {
+            dir.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0600);
+            file = dir;
+        }
     
-    var fileStream = Components.classes['@mozilla.org/network/file-output-stream;1']
+        var fileStream = Components.classes['@mozilla.org/network/file-output-stream;1']
                                .createInstance(Components.interfaces.nsIFileOutputStream);  
-    fileStream.init(file, 2, 0x200, false);  
-    var binaryStream = Components.classes['@mozilla.org/binaryoutputstream;1']  
+        fileStream.init(file, 2, 0x200, false);  
+        
+        var binaryStream = Components.classes['@mozilla.org/binaryoutputstream;1']  
                                  .createInstance(Components.interfaces.nsIBinaryOutputStream);  
-    binaryStream.setOutputStream(fileStream); 
+
+        binaryStream.setOutputStream(fileStream); 
   
-    var array = this.LDAPMessage.getBinaryValues("jpegPhoto",{})[0].get({});
-    try {
-      binaryStream.writeByteArray(array , array.length);
-      this.AbCard.setProperty("PhotoURI", "file://" + fullpath);
-      this.AbCard.setProperty("PhotoType", "file");
-      this.AbCard.setProperty("PhotoName", this.LDAPMessage.dn + ".jpg" );
-    } catch(e) {
-      dumperrors(e + "\n");
-    }
+        var array = this.LDAPMessage.getBinaryValues("jpegPhoto",{})[0].get({});
+        try {
+            binaryStream.writeByteArray(array , array.length);
+            this.AbCard.setProperty("PhotoURI", "file://" + fullpath);
+            this.AbCard.setProperty("PhotoType", "file");
+            this.AbCard.setProperty("PhotoName", this.LDAPMessage.dn + ".jpg" );
+        } catch(e) {
+            dumperrors(e + "\n");
+        }
   
-    binaryStream.close();  
-    fileStream.close();
+        binaryStream.close();  
+        fileStream.close();
     
-  },
+    },
 
-  modifytimestamp: function() {
-    var d = this.LDAPMessage.getValues("modifytimestamp", {} ).toString();
-    this.AbCard.setProperty("modifytimestamp", d);
-    var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
+    modifytimestamp: function() {
+        var d = this.LDAPMessage.getValues("modifytimestamp", {} ).toString();
+        
+        this.AbCard.setProperty("modifytimestamp", d);
+        
+        var ldapdate = new Date ( Date.UTC (d.substring(0,4), d.substring(4,6) - 1, d.substring(6,8), d.substring(8,10), d.substring(10,12), d.substring(12,14) ) );
 
-    var str = ldapdate.getTime().toString().substring(0,10);
+        var str = ldapdate.getTime().toString().substring(0,10);
 //    this.AbCard.setProperty("LastModifiedDate", str);
-    this.AbCard.setProperty("LdapModifiedDate", str);
-  }
-
+        this.AbCard.setProperty("LdapModifiedDate", str);
+    }
 }
 
 

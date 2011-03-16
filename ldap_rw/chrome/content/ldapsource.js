@@ -46,6 +46,9 @@ function dumperrors(str){
 
 //Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
+/*
+ * short functions
+ */
 function getService(aContract, aInterface) {
   return Components.classes[aContract].getService(Components.interfaces[aInterface]);
 }
@@ -54,7 +57,12 @@ function createInstance(aContract, aInterface) {
   return Components.classes[aContract].createInstance(Components.interfaces[aInterface]);
 }
 
-
+/*
+ * get thread
+ * @param aObject
+ * @param aInterface
+ * @return thread
+ */
 function getProxyThread(aObject, aInterface) {
 
   var mainThread;
@@ -72,7 +80,7 @@ function getProxyThread(aObject, aInterface) {
 
 /* 
  * Generator of function for convert ldap errors code to string 
- * */
+ */
 function genLdapErrorsToStr() {
   var errors = [];
   for ( var i in Components.interfaces.nsILDAPErrors) { 
@@ -83,25 +91,38 @@ function genLdapErrorsToStr() {
   }
 }
 
+
 var LdapErrorsToStr = genLdapErrorsToStr();
 
-
-      function genquery (caller, operation) {
-        return  function (queryURL, aBindName, getpassword, getquery, callback) {
-           function callmetod(aMsg) {
-               if (!( getquery == undefined )) {
+/*
+ * generator query
+ * @param caller
+ * @param operation
+ */
+function genquery (caller, operation) {
+    return  function (queryURL, aBindName, getpassword, getquery, callback) {
+        function callmetod(aMsg) {
+            if (!( getquery == undefined )) {
                  var query = null;
+                 
                  if ( aMsg == undefined || aMsg.operation == undefined ) 
                      query = getquery(aMsg, null);
                  else {
                      query = getquery(aMsg, caller.mOperations[aMsg.operation.messageID] );
                      delete caller.mOperations[aMsg.operation.messageID];
                  }
+                 
                  if ( query ){
                    var mOperation = Components.classes["@mozilla.org/network/ldap-operation;1"].createInstance(Components.interfaces.nsILDAPOperation);
+                   
                    try {
                      mOperation.init(caller.mConnection, caller.generateGetTargetsQueryCallback(caller, callmetod, callback), null);
+                     
+                     /*
+                      * call lambda function
+                      */
                      operation (mOperation, query, queryURL);
+                     
                      caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation /*maybe need: , card:card*/};
                    } catch (e) {
                      dumperrors("init error: " + e + "\n");
@@ -110,6 +131,7 @@ var LdapErrorsToStr = genLdapErrorsToStr();
                  }
                  return;
                }
+               
                dumperrors("query getquery undefined\n");               
                return;
              }
@@ -133,18 +155,19 @@ var LdapErrorsToStr = genLdapErrorsToStr();
             } catch (e) {
               dumperrors ("Error:" + e + "\n");
             }
-        };
-      }
+    };
+}
 
 
 /*
- *
- * */
-//class constructor
+ * constructor
+ */
 function LdapDataSource() {
 }
 
-//class definition
+/*
+ * class definition
+ */
 LdapDataSource.prototype = {
 
   mIOSvc: {},
@@ -168,7 +191,11 @@ LdapDataSource.prototype = {
 };
 
 
-// ************** INIT *****************
+/*
+ * init
+ * @param attrs
+ * @param maxmess
+ */
 LdapDataSource.prototype.init = function(attrs, maxmess) {
       if (this.kInited == -1 ){
           this.mIOSvc = Components.classes["@mozilla.org/network/io-service;1"]
@@ -191,6 +218,9 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
       this.mOperations = {};
       if (maxmess != undefined) this.kMaxMess = maxmess;
 
+      /*
+       * function generators
+       */
       function gensearchfunc(kAttributes, kMaxMess){
           return function (mOperation, query, queryURL){
             mOperation.searchExt(query.dn, queryURL.scope, query.filter, kAttributes.length, kAttributes, 0, kMaxMess);
@@ -220,6 +250,7 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
             mOperation.deleteExt(query.dn);
           }
       }
+      
 //      this.search = gensearchfunc(attrs, maxmess);
      this.query = genquery (this, gensearchfunc(attrs, maxmess) );
      this.add = genquery (this, genaddfunc() );
@@ -228,8 +259,14 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
      this.deleteext = genquery (this, gendeletefunc() );
 };
 
-
+/*
+ * @param caller
+ * @param queryURL
+ * @param getpassword
+ * @param metod
+ */
 LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, queryURL, getpassword, metod ){ 
+
   function binder(aMsg) {
     try {
       caller.mOperationBind.init(caller.mConnection, 
@@ -243,7 +280,8 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
       return
     }
   }
-  ////////////////////////////////////////////
+
+
   function getTargetsBoundCallback () {}
   getTargetsBoundCallback.prototype = { 
     QueryInterface: function QI(iid) {
@@ -284,41 +322,49 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
                   return;
                 }
             }
+            
             return getProxyThread(new getTargetsBoundCallback(), Components.interfaces.nsILDAPMessageListener);
 };
           
 
-          //////////////////////////////////////////////////////
+/*
+ * @param caller
+ * @param metod
+ * @param callbackresult
+ */
 LdapDataSource.prototype.generateGetTargetsQueryCallback = function (caller, metod, callbackresult) {
-            function getTargetsQueryCallback() {
-
-            }
+    /*
+     * constructor
+     */
+    function getTargetsQueryCallback() {
+    }
             
-            getTargetsQueryCallback.prototype = {
-              QueryInterface: function(iid) {
-                  if (iid.equals(Components.interfaces.nsISupports) ||
-                      iid.equals(Components.interfaces.nsILDAPMessageListener))
-                    return this;
+    getTargetsQueryCallback.prototype = {
+        QueryInterface: function(iid) {
+            if (iid.equals(Components.interfaces.nsISupports) ||
+                 iid.equals(Components.interfaces.nsILDAPMessageListener))
+                return this;
                 
-                  throw Components.results.NS_ERROR_NO_INTERFACE;
-                },
-              
-              onLDAPMessage: function (aMsg) {
-                caller.mMessages[caller.mMessages.length] = aMsg;
-                if ( aMsg.type == aMsg.RES_SEARCH_ENTRY ){
-                    caller.mMessagesEntry[caller.mMessagesEntry.length] = aMsg;
-                    caller.mMessagesEntry[aMsg.dn] = aMsg;
-                
-                    if ( !(callbackresult == undefined)) callbackresult(aMsg);
-                }
-                                
-                caller.mFinished++;
-                if ( !(metod == undefined)) metod(aMsg);
-              }
-            }
-
-              return getProxyThread(new getTargetsQueryCallback(), Components.interfaces.nsILDAPMessageListener);
+                throw Components.results.NS_ERROR_NO_INTERFACE;
             },
+              
+        onLDAPMessage: function (aMsg) {
+            caller.mMessages[caller.mMessages.length] = aMsg;
+                
+            if ( aMsg.type == aMsg.RES_SEARCH_ENTRY ){
+                caller.mMessagesEntry[caller.mMessagesEntry.length] = aMsg;
+                caller.mMessagesEntry[aMsg.dn] = aMsg;
+                
+                if ( !(callbackresult == undefined)) callbackresult(aMsg);
+            }
+                                
+            caller.mFinished++;
+            if ( !(metod == undefined)) metod(aMsg);
+        }
+    }
+
+    return getProxyThread(new getTargetsQueryCallback(), Components.interfaces.nsILDAPMessageListener);
+}
 
 
 

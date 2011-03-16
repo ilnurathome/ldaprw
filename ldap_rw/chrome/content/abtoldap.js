@@ -43,6 +43,9 @@ function debugabtoldap(str){
 load("chrome://ldaprw/content/abtoldap.js");                                                          
  */
 
+/*
+ * short functions
+ */
 function CreateLDAPModification() {
   return Components.classes["@mozilla.org/network/ldap-modification;1"].createInstance(Components.interfaces.nsILDAPModification);
 }
@@ -57,67 +60,106 @@ function CreateLdapBerVal() {
   return Components.classes["@mozilla.org/network/ldap-ber-value;1"].createInstance(Components.interfaces.nsILDAPBERValue);
 }
 
+
+/**
+ * create modify query to ldap server
+ * @param type
+ * @param vals
+ * @param operation
+ * @return nsILDAPModification
+ */
 function CreateLDAPMod (type, vals, operation) {
   if (!vals) return null;
   if (vals.length==0) return null;
   var mod = CreateLDAPModification();
+  
   debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
+  
   mod.type = type;
-  if (operation != undefined) mod.operation = operation;
+  if (operation != undefined) {
+    mod.operation = operation;
+  }
+  
   debugabtoldap( "CreateLDAPMod: operation=" + operation + "\n");
+  
   mod.values = CreateNSMutArray();
   if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
+  
     debugabtoldap( "CreateLDAPMod: vals=" + vals + "\n" );   
+    
     for (var i in vals) {
       if(vals[i] == null) {
         debugabtoldap("CreateLDAPMod: vals[" + i + "] is null\n");
         continue;
       }else{
         var val = CreateLdapBerVal();
+        
 //      debugabtoldap( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
+
         val.setFromUTF8(vals[i], false);
         mod.values.appendElement(val, false);
       }
     }
   }
+  
   if(mod.values.length == 0){
     debugabtoldap( "CreateLDAPMod: mod.values.length=0\n");
     return null;
   }
+  
   return mod;
 }
 
+/**
+ * create modify query to ldap server
+ * @param type
+ * @param vals
+ * @param operation
+ * @return nsILDAPModification
+ */
 function CreateLDAPModBin (type, vals, operation) {
   if (!vals) return null;
   if (vals.length==0) return null;
+  
   var mod = CreateLDAPModification();
+  
   debugabtoldap( "CreateLDAPMod: type=" + type + "\n" );
+  
   mod.type = type;
   if (operation != undefined) mod.operation = operation;
+  
   debugabtoldap( "CreateLDAPMod: operation=" + operation + "\n");
+  
   mod.values = CreateNSMutArray();
   if ( mod.values instanceof Components.interfaces.nsIMutableArray ){
     debugabtoldap( "CreateLDAPMod: vals=" + vals + "\n" );   
+    
     for (var i in vals) {
       if(!vals[i]) continue;
       var val = CreateLdapBerVal();
+      
       debugabtoldap( "CreateLDAPMod: vals[" + i + "]=" + vals[i] + "\n" );
+      
       val.set( vals[i].length , vals[i]);
       mod.values.appendElement(val, false);
     }
   }
+  
   if(mod.values.length == 0){
     return null;  
   }
+  
   return mod;
 }
 
 
-
-
-
+/*
+ * constructor for mapper from address book card to ldap queries
+ */
 function ABtoLdap() {
-
+  /*
+   * function generator
+   */
   function genfun (from, to) {
     return function(operation) {
       //      debugabtoldap("from = " + from + " to = " + to + "\n");
@@ -136,7 +178,6 @@ function ABtoLdap() {
     } 
   } 
 
-
   this.getattrs = function(){
     var attrs = new Array();
     for (var i in mapper.__proto__) {
@@ -145,6 +186,12 @@ function ABtoLdap() {
     return attrs;
   }
 
+  /**
+   * map function
+   * @param AbCard
+   * @param LdapModifications
+   * @param OldCard
+   */
   this.map = function(AbCard, LdapModifications, OldCard) {
          this.LdapModifications = LdapModifications;
          this.AbCard = AbCard;
@@ -156,26 +203,31 @@ function ABtoLdap() {
          var props = this.AbCard.properties;
          while ( props.hasMoreElements() ){
            var attr = props.getNext();
+           
            if (attr instanceof Components.interfaces.nsIProperty){
              //if (attr.value){
                if( this[attr.name]==undefined ) continue;
+               
                if( OldCard == undefined ) {
                  if (attr.value.length > 0) {               
                    this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
                  } 
                } else {
                  var oldprop = OldCard.getProperty(attr.name, null);
+                 
                  if ( oldprop != null ){
                    if ( oldprop != attr.value ){
                      if (attr.value.length > 0) {
                        this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
                      } 
+                     
                      debugabtoldap("mod attr=" + attr.name + "\n" ); // + attr.value + "\n");                    
                    }
                  }else {
                    if (attr.value.length > 0) {
                      this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
                    } 
+                   
                    debugabtoldap("add attr=" + attr.name + "\n"); // + "\t" + attr.value + "\n");
                  }
                }
@@ -186,6 +238,10 @@ function ABtoLdap() {
        }
 }
 
+/*
+ * there are lambda functions
+ * constructor replace fields to lambda functions
+ */
 ABtoLdap.prototype = {
 /*
   dn: function(operation) {
@@ -326,7 +382,10 @@ ABtoLdap.prototype = {
 }
 
 
-
+/**
+ * constructor for mapper mail list to ldap queries
+ * @todo undone
+ */
 function MLtoLdap() {
 
   function genfun (from, to) {
@@ -334,6 +393,7 @@ function MLtoLdap() {
       //      debugabtoldap("from = " + from + " to = " + to + "\n");
       for (var i in to) {
         var mods =  CreateLDAPMod( to[i], [this.ml.card.getProperty( from, "")], operation );
+        
         if (mods)
           this.LdapModifications.appendElement( mods, false  );
       }
@@ -348,43 +408,52 @@ function MLtoLdap() {
 
   this.getattrs = function(){
     var attrs = new Array();
+    
     for (var i in mapper.__proto__) {
       attrs[attrs.length] = i;
     };
+    
     return attrs;
   }
 
   this.map = function(ml, LdapModifications, oldmaillist) {
          debugabtoldap("mailing list map begin\n");
+         
          this.LdapModifications = LdapModifications;
          this.ml = ml;
-
 
          if (ml.card == undefined ){
            throw "MLtoLdap.map ml.card does not exists";
          }
+         
          if (! (ml.card instanceof Components.interfaces.nsIAbCard) ){
            throw "MLtoLdap.map ml.card does not nsIAbCard";
          }
 
 	 // NEED to change code to use onnsIAbCardPropsDo(card, func)
          var props = this.ml.card.properties;
+         
          while ( props.hasMoreElements() ){
            var attr = props.getNext();
+           
            if (attr instanceof Components.interfaces.nsIProperty){
              //if (attr.value){
                if( this[attr.name]==undefined ) continue;
+               
                if( oldmaillist == undefined ) {
                  this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
                } else {
                  var oldprop = oldmaillist.card.getProperty(attr.name, null);
+                 
                  if ( oldprop != null ){
                    if ( oldprop != attr.value ){
                      this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                     
                     debugabtoldap("mod attr=" + attr.name + "\n" ); // + attr.value + "\n");                    
                    }
                  }else {
                    this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
+                   
                    debugabtoldap("add attr=" + attr.name + "\n"); // + "\t" + attr.value + "\n");
                  }
                }
@@ -412,6 +481,7 @@ function MLtoLdap() {
          var members = new Array();
          while( addresslistenum.hasMoreElements() ){
            var card = addresslistenum.getNext();
+           
            if ( card instanceof Components.interfaces.nsIAbCard ){
              members[members.length] = "cn=" + card.displayName + ",mail=" + card.primaryEmail;
            }          
@@ -422,6 +492,7 @@ function MLtoLdap() {
          if ( oldmaillist == undefined ) {
            var operation = Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES;
            var mods = CreateLDAPMod( "member", members, operation );
+           
            if (mods)
              this.LdapModifications.appendElement( mods, false  );
          } else {
@@ -431,6 +502,10 @@ function MLtoLdap() {
        }
 }
 
+/*
+ * there are lambda functions
+ * constructor replace fields to lambda functions
+ */
 MLtoLdap.prototype = {
 
   DisplayName: ["cn"], //["commonname"],
