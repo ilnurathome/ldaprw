@@ -65,7 +65,7 @@ var mymdn = new Array();
 function callback(aMsg, mdn) {
     if( mdn != undefined ) mymdn[mymdn.length] = mdn
     if(aMsg == undefined || aMsg.errorCode == Components.interfaces.nsILDAPErrors.SUCCESS) 
-        return {dn: "cn=illll,ou=addressbook,dc=local", filter: "(objectclass=" + pref.objClassesAR[0] + ")"}; 
+        return {dn: "uid=add3test,ou=addressbook,dc=dyndns,dc=org", filter: "(objectclass=" + pref.objClassesAR[0] + ")"}; 
     mymsgs2[mymsgs2.length] = aMsg; 
 }
 
@@ -83,5 +83,5 @@ ldap.query(queryURL, pref.binddn, gengetpassword(), callback, callbacksearchresu
 
 /*
   in command shell
-  /usr/lib64/mozldap/ldapsearch -b "cn=test,ou=addressbook,dc=local" "(objectClass=*)" 
+  /usr/lib64/mozldap/ldapsearch -b "uid=add3test,ou=addressbook,dc=dyndns,dc=org" "(objectClass=*)" 
 */

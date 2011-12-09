@@ -43,7 +43,6 @@ function dumperrors(str){
    alert(str);
 }
 
-
 //Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 /*
@@ -221,9 +220,16 @@ LdapDataSource.prototype.init = function(attrs, maxmess) {
       /*
        * function generators
        */
-      function gensearchfunc(kAttributes, kMaxMess){
-          return function (mOperation, query, queryURL){
-            mOperation.searchExt(query.dn, queryURL.scope, query.filter, kAttributes.length, kAttributes, 0, kMaxMess);
+      function gensearchfunc(kAttributes, kMaxMess) {
+          if (getVersionChecker().compare(Application.version, "8.0") >= 0) {
+              var attrStr = kAttributes.toString();
+              return function (mOperation, query, queryURL) {
+                  mOperation.searchExt(query.dn, queryURL.scope, query.filter, attrStr, 0, kMaxMess);
+              }
+          } else {
+              return function (mOperation, query, queryURL) {
+                  mOperation.searchExt(query.dn, queryURL.scope, query.filter, kAttributes.length, kAttributes, 0, kMaxMess);
+              }
           }
       }
       

@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 function debuglistener(str){
-  dump("listener.js: " + str);
+//  dump("listener.js: " + str);
 }
 
 function dumperrors(str){

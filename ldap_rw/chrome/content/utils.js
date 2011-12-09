@@ -120,5 +120,9 @@ function getSelectedDir() {
   }
 }
 
+function getVersionChecker() {
+    return Components.classes["@mozilla.org/xpcom/version-comparator;1"].getService(Components.interfaces.nsIVersionComparator); 
+}
+
 //function getSelectedCards() {}
 

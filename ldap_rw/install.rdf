@@ -4,7 +4,7 @@
     <em:id>{dc6df62a-7051-46f3-b602-d53b56d707e0}</em:id>
     <em:type>2</em:type>
     <em:name>LDAP Read Write</em:name>
-    <em:version>0.4.201103162027</em:version>
+    <em:version>0.4.201112092246</em:version>
     <em:creator>Ilnur Kiyamov &lt;ilnurathome _at_ gmail com&gt;</em:creator>
     <em:contributor></em:contributor>
     <em:description>LDAP Read Write Sync</em:description>
@@ -14,8 +14,8 @@
     <em:targetApplication>
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id> <!-- Thunderbird -->
-        <em:minVersion>3.0a1pre</em:minVersion>
-        <em:maxVersion>3.2a1pre</em:maxVersion>
+        <em:minVersion>3.1</em:minVersion>
+        <em:maxVersion>8.0</em:maxVersion>
       </Description>
     </em:targetApplication>
     <em:translator>&quot;Kenny&quot; &lt;quenenni@bruxxel.org&gt;</em:translator>
