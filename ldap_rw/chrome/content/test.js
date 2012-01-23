@@ -40,6 +40,8 @@ load("chrome://ldaprw/content/ldapsource.js");
 load("chrome://ldaprw/content/sync.js");
 load("chrome://ldaprw/content/prefs.js");
 
+// var win = window.open("chrome://messenger/content/addressbook/addressbook.xul", "AddressBook", "chrome");
+
 var messgs=[]; 
 function callbacksearchres(aMsg){ 
   messgs[messgs.length] = aMsg; 

@@ -34,6 +34,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/**
+ * recursive templates
+ */
 function onnsIAbCardPropsDo(card, func) {
 //  dump("onnsIAbCardPropsDo\n");
   var props = card.properties;
@@ -59,11 +62,17 @@ function onSelectedDirDo(func) {
     }
 }
 
+/**
+ * short wrapper
+ */
 function CreateNSMutArray() {
   return Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
  ;
 }
 
+/**
+ * convertor from Array to nsIArray
+ */
 function convertArraytonsIArray(arr){
   var nsar = CreateNSMutArray();
   if( nsar instanceof Components.interfaces.nsIMutableArray ){
@@ -95,6 +104,9 @@ function dirWrapper(dir, cards) {
   };
 }
 
+/**
+ * iterate for all cards template
+ */
 function childCardsIterate(dir, func) {
   var cards = dir.childCards;
   while (cards.hasMoreElements()){
@@ -105,21 +117,33 @@ function childCardsIterate(dir, func) {
   }
 }
 
+/**
+ * Get selected ab directory
+ * FIXME test for old version window.GetSelectedDirectory() function
+ */
 function getSelectedDir() {
-  var mybook = null;
-  var dirTree = document.getElementById("dirTree");
-  if (dirTree == null){
-    throw "getSelectedDir: Can't find dirTree";
-  }else{
-    if (dirTree.currentIndex < 0){
-      return null;
+    if (getVersionChecker().compare(Application.version, "8.0") >= 0) {
+       var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+       return abManager.getDirectory( window.GetSelectedDirectory() ); 
+    } else {
+       var mybook = null;
+       var dirTree = document.getElementById("dirTree");
+       if (dirTree == null){
+          throw "getSelectedDir: Can't find dirTree";
+       }else{
+       if (dirTree.currentIndex < 0){
+          return null;
+       }
+       var selected = dirTree.builderView.getResourceAtIndex(dirTree.currentIndex);
+       var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+       return abManager.getDirectory( selected.Value ); 
     }
-    var selected = dirTree.builderView.getResourceAtIndex(dirTree.currentIndex);
-    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-    return abManager.getDirectory( selected.Value ); 
   }
 }
 
+/**
+ * version checker short wrapper
+ */
 function getVersionChecker() {
     return Components.classes["@mozilla.org/xpcom/version-comparator;1"].getService(Components.interfaces.nsIVersionComparator); 
 }
