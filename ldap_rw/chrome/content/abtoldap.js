@@ -217,14 +217,14 @@ function ABtoLdap() {
                  
                  if ( oldprop != null ){
                    if ( oldprop != attr.value ){
-                     if (attr.value.length > 0) {
+                     if (attr.value!=undefined && attr.value.length > 0) {
                        this[attr.name]( Components.interfaces.nsILDAPModification.MOD_REPLACE | Components.interfaces.nsILDAPModification.MOD_BVALUES );
                      } 
                      
                      debugabtoldap("mod attr=" + attr.name + "\n" ); // + attr.value + "\n");                    
                    }
                  }else {
-                   if (attr.value.length > 0) {
+                   if (attr.value!=undefined && attr.value.length > 0) {
                      this[attr.name]( Components.interfaces.nsILDAPModification.MOD_ADD | Components.interfaces.nsILDAPModification.MOD_BVALUES );
                    } 
                    

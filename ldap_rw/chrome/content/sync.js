@@ -162,7 +162,7 @@ function gengetpassword() {
               debugsync("old login removed");
           }
         }catch(e){
-          dumperrors("getpassword:" + e + "\n");
+          dumperrors("getpassword:" + e + "\n"  + e.stack + "\n");
         }
         debugsync("getpassword counter changed"+ counter + "\n");
       }
@@ -177,7 +177,7 @@ function gengetpassword() {
           return null;
         }
       }catch(e){
-        dumperrors("getpassword: "+e);
+        dumperrors("getpassword: "+e + "\n"  + e.stack + "\n");
       } 
 
       return pw.value;
@@ -309,7 +309,7 @@ function syncpolitic2(pref,backstatus, mybook){
                          genmodquery( [ { dn: aMsg.dn, mods: mods} ] ) ); 
             if (backstatus != undefined) backstatus(QUEUEUPDATEADD, 0);
           } catch (e) {
-            dumperrors("Error: " + e+ "\n"); 
+            dumperrors("Error: " + e+ "\n"  + e.stack + "\n"); 
           }    
         }else{
           debugsync("modify card in LDAP nothing to modify\n");
@@ -474,7 +474,7 @@ function syncpolitic2(pref,backstatus, mybook){
   //  queryURL.filter = "(objectclass=inetorgperson)"
     ldap.query(queryURL, pref.binddn, gengetpassword(), gengetsearchquery(pref.queryURL), callbacksearchresult );
   } catch (e) {
-    dumperrors ("Error: " + e + "\n" );
+    dumperrors ("Error: " + e + "\n"  + e.stack + "\n");
   }
 
 }
@@ -546,7 +546,7 @@ function genaddtoldap(pref, ldapser, backstatus) {
           debugsync("addquery abortall\n");
           ldap.abortall();
         }catch(e){
-          dumperrors("addquery aborting failed: " + e + "\n");
+          dumperrors("addquery aborting failed: " + e + "\n"  + e.stack + "\n");
         }
         return null;
       }
@@ -559,7 +559,7 @@ function genaddtoldap(pref, ldapser, backstatus) {
             dump("addtoldap: aborting\n");
             ldap.abortall();
           }catch(e){
-            dumperrors("addquery aborting failed: " + e + "\n");
+            dumperrors("addquery aborting failed: " + e + "\n"  + e.stack + "\n");
           }
 
           dumperrors("Error: addquery " + aMsg.errorCode + "\n" 
@@ -600,7 +600,7 @@ function genaddtoldap(pref, ldapser, backstatus) {
         ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods /* maybe need: , card:card */}]) );
         if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
       } catch(e) {
-        dumperrors("Error: " + e+"\n");
+        dumperrors("Error: " + e+"\n"  + e.stack + "\n");
       }      
     }
 }
@@ -677,7 +677,7 @@ function genaddtoldapML(pref, ldapser, backstatus) {
         ldap.add(queryURL, pref.binddn, gengetpassword(), genaddquery(card, [{dn: dn, mods: mods}]) );
         if (backstatus != undefined) backstatus(QUEUEADDADD, 0);        
       } catch(e) {
-        dumperrors("Error: " + e+"\n");
+        dumperrors("Error: " + e+"\n"  + e.stack + "\n");
       }      
     }
 }

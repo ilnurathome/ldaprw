@@ -208,7 +208,7 @@ function gencallbacksearchresult(tree, attrs){
                 }
               }catch(e){
                     //debugexplorer(e+"\n");
-                    dumperrors("Error not exist "+ e);
+                    dumperrors("Error not exist "+ e + "\n" + e.stack + "\n");
               }finally{ 
                     debugexplorer("\n");
               }
@@ -256,7 +256,7 @@ function ldapexploreronEnterInSearchBar(value){
                          gencallbacksearchresult(cardtreeView, 
                                       ["cn","mail", "sn", "givenName"] ));
   } catch (e) {
-    dumperrors ("Error: " + e + "\n" );
+    dumperrors ("Error: " + e + "\n" + e.stack + "\n" );
   } 
 }
 
@@ -314,7 +314,7 @@ function doselect(){
          */
         if (DisplayCardViewPane != undefined) DisplayCardViewPane(card);
       }catch(e){
-        dumperrors("Error: " + e + "\n");
+        dumperrors("Error: " + e + "\n" + e.stack + "\n");
     }
 }
 
@@ -360,7 +360,7 @@ function doAdd() {
             debugexplorer("card allready exists, sync it.");
         }
        }catch(e){
-            dumperrors("Error:"+e+"\n");
+            dumperrors("Error:"+e+"\n" + e.stack + "\n");
      } } );
 }
 
@@ -417,7 +417,7 @@ function deleteonldap(v) {
         ldap.deleteext(queryURL, curpref.binddn, gengetpassword(), 
             gendelquery(v) );
     } catch (e) {
-        dumperrors ("Error: " + e + "\n" );
+        dumperrors ("Error: " + e + "\n"  + e.stack + "\n");
     }
 }
 
@@ -519,7 +519,7 @@ function modifyonldap(card) {
     ldap.modify(queryURL, curpref.binddn, gengetpassword(), 
         genmodquery( [ { dn: aMsg.dn, mods: mods} ] ) );
   } catch (e) {
-    dumperrors ("Error: " + e + "\n" );
+    dumperrors ("Error: " + e + "\n"  + e.stack + "\n");
   } 
 }
 */
@@ -587,7 +587,7 @@ function doEdit() {
         debugexplorer("modify card in LDAP nothing to modify\n");
       }      
     }catch(e){
-      dumperrors("Error: " + e + "\n");
+      dumperrors("Error: " + e + "\n" + e.stack + "\n");
     }
 }
 

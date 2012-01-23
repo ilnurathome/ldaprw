@@ -124,7 +124,7 @@ function genquery (caller, operation) {
                      
                      caller.mOperations[mOperation.messageID] = {mid: mOperation.messageID, dn: query.dn, mop: mOperation /*maybe need: , card:card*/};
                    } catch (e) {
-                     dumperrors("init error: " + e + "\n");
+                     dumperrors("init error: " + e + "\n" + e.stack + "\n");
                      return;
                    }
                  }
@@ -152,7 +152,7 @@ function genquery (caller, operation) {
             try {
               caller.mConnection.init(queryURL, aBindName, caller.generateGetTargetsBoundCallback(caller, queryURL, getpassword, callmetod), null, Components.interfaces.nsILDAPConnection.VERSION3 );
             } catch (e) {
-              dumperrors ("Error:" + e + "\n");
+              dumperrors ("Error:" + e + "\n" + e.stack + "\n");
             }
     };
 }
@@ -282,7 +282,7 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
       if ( pw == null ) return;
       caller.mOperationBind.simpleBind(pw);
     } catch (e) {
-      dumperrors("init error: " + e + "\n");
+      dumperrors("init error: " + e + "\n" + e.stack + "\n");
       return
     }
   }

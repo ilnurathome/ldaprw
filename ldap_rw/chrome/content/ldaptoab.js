@@ -304,7 +304,7 @@ LdaptoAB.prototype = {
             this.AbCard.setProperty("PhotoType", "file");
             this.AbCard.setProperty("PhotoName", this.LDAPMessage.dn + ".jpg" );
         } catch(e) {
-            dumperrors(e + "\n");
+            dumperrors(e + "\n" + e.stack + "\n");
         }
   
         binaryStream.close();  

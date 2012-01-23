@@ -109,7 +109,7 @@ function getprefs(){
           list[key].filename=   abprefs.getCharPref("filename");          
         } catch(e) {
           if (window.location != "chrome://ldaprw/content/prefs.xul"){
-            dumperrors("Error getprefs " + e + "\n"
+            dumperrors("Error getprefs " + e + "\n"  + e.stack + "\n"
                    + "Please check preferences");
             window.open("chrome://ldaprw/content/prefs.xul", "Preferences", "chrome");
           }
