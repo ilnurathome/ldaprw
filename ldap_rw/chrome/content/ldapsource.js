@@ -328,8 +328,12 @@ LdapDataSource.prototype.generateGetTargetsBoundCallback = function (caller, que
                   return;
                 }
             }
-            
-            return getProxyThread(new getTargetsBoundCallback(), Components.interfaces.nsILDAPMessageListener);
+
+    if (getVersionChecker().compare(Application.version, "12.0") >= 0) {
+        return new getTargetsBoundCallback();
+    } else {
+        return getProxyThread(new getTargetsBoundCallback(), Components.interfaces.nsILDAPMessageListener);
+    }
 };
           
 
@@ -369,7 +373,11 @@ LdapDataSource.prototype.generateGetTargetsQueryCallback = function (caller, met
         }
     }
 
-    return getProxyThread(new getTargetsQueryCallback(), Components.interfaces.nsILDAPMessageListener);
+    if (getVersionChecker().compare(Application.version, "12.0") >= 0) {
+       return new getTargetsQueryCallback();
+    } else {
+       return getProxyThread(new getTargetsQueryCallback(), Components.interfaces.nsILDAPMessageListener);
+    }
 }
 
 
